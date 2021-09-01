@@ -1,0 +1,21 @@
+{
+  "name": "fedeway-reference",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start-gateway": "node gateway.js",
+    "start-service-accounts": "node accounts.js",
+    "start-service-reviews": "node reviews.js",
+    "start-service-products": "node products.js",
+    "start-service-inventory": "node inventory.js",
+    "start-services": "concurrently \"npm:start-service-*\""
+  },
+  "dependencies": {
+    "@apollo/gateway": "^0.39.0",
+    "apollo-server": "^3.3.0",
+    "graphql": "^15.5.2"
+  },
+  "devDependencies": {
+    "concurrently": "^6.2.1"
+  }
+}
