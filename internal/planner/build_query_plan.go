@@ -211,19 +211,16 @@ func splitSubfields(ctx context.Context, qpctx *queryPlanningContext, path ast.P
 		// in order to get the tests passing before making further changes. But the
 		// type explosion fix this depends on is fundamentally flawed and needs to
 		// be replaced.
-		if parentType.Kind != ast.Object {
+		var isValueType bool
+		{
 			metadata := qpctx.getFederationMetadataForType(parentType)
-			if metadata != nil {
-				if _, ok := metadata.(*FederationValueTypeMetadata); ok {
-					baseService = parentGroup.ServiceName
-					owningService = parentGroup.ServiceName
-				}
-			}
+			_, isValueType = metadata.(*FederationValueTypeMetadata)
 		}
-		if baseService == "" {
+		if parentType.Kind != ast.Object || isValueType {
+			baseService = parentGroup.ServiceName
+			owningService = parentGroup.ServiceName
+		} else {
 			baseService = qpctx.getBaseService(ctx, parentType)
-		}
-		if owningService == "" {
 			owningService = qpctx.getOwningService(ctx, parentType, fieldDef)
 		}
 
@@ -474,6 +471,10 @@ type FetchGroup struct {
 }
 
 func (fg *FetchGroup) dependentGroupForService(serviceName string, requiredFields FieldSet) (*FetchGroup, error) {
+	if fg.dependentGroupsByService == nil {
+		fg.dependentGroupsByService = make(map[string]*FetchGroup)
+	}
+
 	group := fg.dependentGroupsByService[serviceName]
 
 	if group == nil {

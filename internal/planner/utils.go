@@ -9,9 +9,48 @@ import (
 	"github.com/vektah/gqlparser/v2/parser"
 )
 
+var schemaMetaFieldDef = &ast.FieldDefinition{
+	Name:        "__schema",
+	Description: "Access the current type schema of this server.",
+	Type:        ast.NamedType("__Schema", nil),
+}
+
+var typeMetaFieldDef = &ast.FieldDefinition{
+	Name:        "__type",
+	Description: "Request the type information of a single type.",
+	Type:        ast.NamedType("__Type", nil),
+	Arguments: []*ast.ArgumentDefinition{
+		{
+			Name: "name",
+			Type: ast.NonNullNamedType("String", nil),
+		},
+	},
+}
+
 var typeNameMetaFieldDef = &ast.FieldDefinition{
 	Name: "__typename",
 	Type: ast.NamedType("String", nil),
+}
+
+func getFieldDef(schema *ast.Schema, parentType *ast.Definition, fieldName string) *ast.FieldDefinition {
+	if fieldName == schemaMetaFieldDef.Name && schema.Query == parentType {
+		return schemaMetaFieldDef
+	}
+	if fieldName == typeMetaFieldDef.Name && schema.Query == parentType {
+		return typeMetaFieldDef
+	}
+	if fieldName == typeNameMetaFieldDef.Name && (parentType.Kind == ast.Object ||
+		parentType.Kind == ast.Interface ||
+		parentType.Kind == ast.Union) {
+		return typeNameMetaFieldDef
+	}
+	if parentType.Kind == ast.Object ||
+		parentType.Kind == ast.Interface {
+
+		return parentType.Fields.ForName(fieldName)
+	}
+
+	return nil
 }
 
 func containsType(defs []*ast.Definition, elem *ast.Definition) bool {

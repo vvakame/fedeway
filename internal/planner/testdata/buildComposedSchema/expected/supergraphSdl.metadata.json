@@ -31,7 +31,7 @@
     "Account": {},
     "Amazon": {},
     "Book": {
-      "GraphName": "BOOKS",
+      "GraphName": "books",
       "Keys": {
         "books": [
           {
@@ -48,7 +48,7 @@
       }
     },
     "Car": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Keys": {
         "product": [
           {
@@ -66,7 +66,7 @@
     },
     "Error": {},
     "Furniture": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Keys": {
         "product": [
           {
@@ -87,7 +87,7 @@
     "ImageAttributes": {},
     "KeyValue": {},
     "Library": {
-      "GraphName": "BOOKS",
+      "GraphName": "books",
       "Keys": {
         "books": [
           {
@@ -106,7 +106,7 @@
     "Mutation": {},
     "Name": {},
     "PasswordAccount": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Keys": {
         "accounts": [
           {
@@ -126,7 +126,7 @@
     "ProductDetailsFurniture": {},
     "Query": {},
     "Review": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Keys": {
         "reviews": [
           {
@@ -143,7 +143,7 @@
       }
     },
     "SMSAccount": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Keys": {
         "accounts": [
           {
@@ -162,7 +162,7 @@
     "Text": {},
     "TextAttributes": {},
     "User": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Keys": {
         "accounts": [
           {
@@ -180,7 +180,7 @@
     },
     "UserMetadata": {},
     "Van": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Keys": {
         "product": [
           {
@@ -199,32 +199,32 @@
   },
   "Field": {
     "Book.details": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Book.inStock": {
-      "GraphName": "INVENTORY",
+      "GraphName": "inventory",
       "Requires": null,
       "Provides": null
     },
     "Book.isCheckedOut": {
-      "GraphName": "INVENTORY",
+      "GraphName": "inventory",
       "Requires": null,
       "Provides": null
     },
     "Book.isbn": {
-      "GraphName": "BOOKS",
+      "GraphName": "books",
       "Requires": null,
       "Provides": null
     },
     "Book.metadata": {
-      "GraphName": "BOOKS",
+      "GraphName": "books",
       "Requires": null,
       "Provides": null
     },
     "Book.name": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": [
         {
           "Alias": "title",
@@ -250,12 +250,12 @@
       "Provides": null
     },
     "Book.price": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Book.relatedReviews": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": [
         {
           "Alias": "similarBooks",
@@ -282,52 +282,52 @@
       "Provides": null
     },
     "Book.reviews": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": null,
       "Provides": null
     },
     "Book.similarBooks": {
-      "GraphName": "BOOKS",
+      "GraphName": "books",
       "Requires": null,
       "Provides": null
     },
     "Book.sku": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Book.title": {
-      "GraphName": "BOOKS",
+      "GraphName": "books",
       "Requires": null,
       "Provides": null
     },
     "Book.upc": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Book.year": {
-      "GraphName": "BOOKS",
+      "GraphName": "books",
       "Requires": null,
       "Provides": null
     },
     "Car.description": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Car.id": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Car.price": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Car.retailPrice": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": [
         {
           "Alias": "price",
@@ -343,67 +343,67 @@
       "Provides": null
     },
     "Furniture.brand": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Furniture.details": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Furniture.inStock": {
-      "GraphName": "INVENTORY",
+      "GraphName": "inventory",
       "Requires": null,
       "Provides": null
     },
     "Furniture.isHeavy": {
-      "GraphName": "INVENTORY",
+      "GraphName": "inventory",
       "Requires": null,
       "Provides": null
     },
     "Furniture.metadata": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Furniture.name": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Furniture.price": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Furniture.reviews": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": null,
       "Provides": null
     },
     "Furniture.sku": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Furniture.upc": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Library.id": {
-      "GraphName": "BOOKS",
+      "GraphName": "books",
       "Requires": null,
       "Provides": null
     },
     "Library.name": {
-      "GraphName": "BOOKS",
+      "GraphName": "books",
       "Requires": null,
       "Provides": null
     },
     "Library.userAccount": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Requires": [
         {
           "Alias": "name",
@@ -419,87 +419,87 @@
       "Provides": null
     },
     "Mutation.deleteReview": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": null,
       "Provides": null
     },
     "Mutation.login": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Requires": null,
       "Provides": null
     },
     "Mutation.reviewProduct": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": null,
       "Provides": null
     },
     "Mutation.updateReview": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": null,
       "Provides": null
     },
     "PasswordAccount.email": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Requires": null,
       "Provides": null
     },
     "Query.body": {
-      "GraphName": "DOCUMENTS",
+      "GraphName": "documents",
       "Requires": null,
       "Provides": null
     },
     "Query.book": {
-      "GraphName": "BOOKS",
+      "GraphName": "books",
       "Requires": null,
       "Provides": null
     },
     "Query.books": {
-      "GraphName": "BOOKS",
+      "GraphName": "books",
       "Requires": null,
       "Provides": null
     },
     "Query.library": {
-      "GraphName": "BOOKS",
+      "GraphName": "books",
       "Requires": null,
       "Provides": null
     },
     "Query.me": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Requires": null,
       "Provides": null
     },
     "Query.product": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Query.topCars": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Query.topProducts": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Query.topReviews": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": null,
       "Provides": null
     },
     "Query.user": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Requires": null,
       "Provides": null
     },
     "Query.vehicle": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Review.author": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": null,
       "Provides": [
         {
@@ -515,47 +515,47 @@
       ]
     },
     "Review.body": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": null,
       "Provides": null
     },
     "Review.id": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": null,
       "Provides": null
     },
     "Review.metadata": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": null,
       "Provides": null
     },
     "Review.product": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": null,
       "Provides": null
     },
     "SMSAccount.number": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Requires": null,
       "Provides": null
     },
     "User.account": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Requires": null,
       "Provides": null
     },
     "User.accountType": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Requires": null,
       "Provides": null
     },
     "User.birthDate": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Requires": null,
       "Provides": null
     },
     "User.goodAddress": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": [
         {
           "Alias": "metadata",
@@ -582,7 +582,7 @@
       "Provides": null
     },
     "User.goodDescription": {
-      "GraphName": "INVENTORY",
+      "GraphName": "inventory",
       "Requires": [
         {
           "Alias": "metadata",
@@ -609,62 +609,62 @@
       "Provides": null
     },
     "User.id": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Requires": null,
       "Provides": null
     },
     "User.metadata": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Requires": null,
       "Provides": null
     },
     "User.name": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Requires": null,
       "Provides": null
     },
     "User.numberOfReviews": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": null,
       "Provides": null
     },
     "User.reviews": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": null,
       "Provides": null
     },
     "User.thing": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "User.username": {
-      "GraphName": "ACCOUNTS",
+      "GraphName": "accounts",
       "Requires": null,
       "Provides": null
     },
     "User.vehicle": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Van.description": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Van.id": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Van.price": {
-      "GraphName": "PRODUCT",
+      "GraphName": "product",
       "Requires": null,
       "Provides": null
     },
     "Van.retailPrice": {
-      "GraphName": "REVIEWS",
+      "GraphName": "reviews",
       "Requires": [
         {
           "Alias": "price",

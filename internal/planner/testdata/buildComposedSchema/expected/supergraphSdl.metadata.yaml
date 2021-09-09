@@ -22,7 +22,7 @@ type:
   Account: {}
   Amazon: {}
   Book:
-    graphname: BOOKS
+    graphname: books
     keys:
       books:
       - alias: isbn
@@ -34,7 +34,7 @@ type:
         definition: null
         objectdefinition: null
   Car:
-    graphname: PRODUCT
+    graphname: product
     keys:
       product:
       - alias: id
@@ -47,7 +47,7 @@ type:
         objectdefinition: null
   Error: {}
   Furniture:
-    graphname: PRODUCT
+    graphname: product
     keys:
       product:
       - alias: upc
@@ -63,7 +63,7 @@ type:
   ImageAttributes: {}
   KeyValue: {}
   Library:
-    graphname: BOOKS
+    graphname: books
     keys:
       books:
       - alias: id
@@ -77,7 +77,7 @@ type:
   Mutation: {}
   Name: {}
   PasswordAccount:
-    graphname: ACCOUNTS
+    graphname: accounts
     keys:
       accounts:
       - alias: email
@@ -92,7 +92,7 @@ type:
   ProductDetailsFurniture: {}
   Query: {}
   Review:
-    graphname: REVIEWS
+    graphname: reviews
     keys:
       reviews:
       - alias: id
@@ -104,7 +104,7 @@ type:
         definition: null
         objectdefinition: null
   SMSAccount:
-    graphname: ACCOUNTS
+    graphname: accounts
     keys:
       accounts:
       - alias: number
@@ -118,7 +118,7 @@ type:
   Text: {}
   TextAttributes: {}
   User:
-    graphname: ACCOUNTS
+    graphname: accounts
     keys:
       accounts:
       - alias: id
@@ -131,7 +131,7 @@ type:
         objectdefinition: null
   UserMetadata: {}
   Van:
-    graphname: PRODUCT
+    graphname: product
     keys:
       product:
       - alias: id
@@ -144,27 +144,27 @@ type:
         objectdefinition: null
 field:
   Book.details:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Book.inStock:
-    graphname: INVENTORY
+    graphname: inventory
     requires: []
     provides: []
   Book.isCheckedOut:
-    graphname: INVENTORY
+    graphname: inventory
     requires: []
     provides: []
   Book.isbn:
-    graphname: BOOKS
+    graphname: books
     requires: []
     provides: []
   Book.metadata:
-    graphname: BOOKS
+    graphname: books
     requires: []
     provides: []
   Book.name:
-    graphname: PRODUCT
+    graphname: product
     requires:
     - alias: title
       name: title
@@ -184,11 +184,11 @@ field:
       objectdefinition: null
     provides: []
   Book.price:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Book.relatedReviews:
-    graphname: REVIEWS
+    graphname: reviews
     requires:
     - alias: similarBooks
       name: similarBooks
@@ -208,43 +208,43 @@ field:
       objectdefinition: null
     provides: []
   Book.reviews:
-    graphname: REVIEWS
+    graphname: reviews
     requires: []
     provides: []
   Book.similarBooks:
-    graphname: BOOKS
+    graphname: books
     requires: []
     provides: []
   Book.sku:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Book.title:
-    graphname: BOOKS
+    graphname: books
     requires: []
     provides: []
   Book.upc:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Book.year:
-    graphname: BOOKS
+    graphname: books
     requires: []
     provides: []
   Car.description:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Car.id:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Car.price:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Car.retailPrice:
-    graphname: REVIEWS
+    graphname: reviews
     requires:
     - alias: price
       name: price
@@ -256,55 +256,55 @@ field:
       objectdefinition: null
     provides: []
   Furniture.brand:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Furniture.details:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Furniture.inStock:
-    graphname: INVENTORY
+    graphname: inventory
     requires: []
     provides: []
   Furniture.isHeavy:
-    graphname: INVENTORY
+    graphname: inventory
     requires: []
     provides: []
   Furniture.metadata:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Furniture.name:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Furniture.price:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Furniture.reviews:
-    graphname: REVIEWS
+    graphname: reviews
     requires: []
     provides: []
   Furniture.sku:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Furniture.upc:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Library.id:
-    graphname: BOOKS
+    graphname: books
     requires: []
     provides: []
   Library.name:
-    graphname: BOOKS
+    graphname: books
     requires: []
     provides: []
   Library.userAccount:
-    graphname: ACCOUNTS
+    graphname: accounts
     requires:
     - alias: name
       name: name
@@ -316,71 +316,71 @@ field:
       objectdefinition: null
     provides: []
   Mutation.deleteReview:
-    graphname: REVIEWS
+    graphname: reviews
     requires: []
     provides: []
   Mutation.login:
-    graphname: ACCOUNTS
+    graphname: accounts
     requires: []
     provides: []
   Mutation.reviewProduct:
-    graphname: REVIEWS
+    graphname: reviews
     requires: []
     provides: []
   Mutation.updateReview:
-    graphname: REVIEWS
+    graphname: reviews
     requires: []
     provides: []
   PasswordAccount.email:
-    graphname: ACCOUNTS
+    graphname: accounts
     requires: []
     provides: []
   Query.body:
-    graphname: DOCUMENTS
+    graphname: documents
     requires: []
     provides: []
   Query.book:
-    graphname: BOOKS
+    graphname: books
     requires: []
     provides: []
   Query.books:
-    graphname: BOOKS
+    graphname: books
     requires: []
     provides: []
   Query.library:
-    graphname: BOOKS
+    graphname: books
     requires: []
     provides: []
   Query.me:
-    graphname: ACCOUNTS
+    graphname: accounts
     requires: []
     provides: []
   Query.product:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Query.topCars:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Query.topProducts:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Query.topReviews:
-    graphname: REVIEWS
+    graphname: reviews
     requires: []
     provides: []
   Query.user:
-    graphname: ACCOUNTS
+    graphname: accounts
     requires: []
     provides: []
   Query.vehicle:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Review.author:
-    graphname: REVIEWS
+    graphname: reviews
     requires: []
     provides:
     - alias: username
@@ -392,39 +392,39 @@ field:
       definition: null
       objectdefinition: null
   Review.body:
-    graphname: REVIEWS
+    graphname: reviews
     requires: []
     provides: []
   Review.id:
-    graphname: REVIEWS
+    graphname: reviews
     requires: []
     provides: []
   Review.metadata:
-    graphname: REVIEWS
+    graphname: reviews
     requires: []
     provides: []
   Review.product:
-    graphname: REVIEWS
+    graphname: reviews
     requires: []
     provides: []
   SMSAccount.number:
-    graphname: ACCOUNTS
+    graphname: accounts
     requires: []
     provides: []
   User.account:
-    graphname: ACCOUNTS
+    graphname: accounts
     requires: []
     provides: []
   User.accountType:
-    graphname: ACCOUNTS
+    graphname: accounts
     requires: []
     provides: []
   User.birthDate:
-    graphname: ACCOUNTS
+    graphname: accounts
     requires: []
     provides: []
   User.goodAddress:
-    graphname: REVIEWS
+    graphname: reviews
     requires:
     - alias: metadata
       name: metadata
@@ -444,7 +444,7 @@ field:
       objectdefinition: null
     provides: []
   User.goodDescription:
-    graphname: INVENTORY
+    graphname: inventory
     requires:
     - alias: metadata
       name: metadata
@@ -464,51 +464,51 @@ field:
       objectdefinition: null
     provides: []
   User.id:
-    graphname: ACCOUNTS
+    graphname: accounts
     requires: []
     provides: []
   User.metadata:
-    graphname: ACCOUNTS
+    graphname: accounts
     requires: []
     provides: []
   User.name:
-    graphname: ACCOUNTS
+    graphname: accounts
     requires: []
     provides: []
   User.numberOfReviews:
-    graphname: REVIEWS
+    graphname: reviews
     requires: []
     provides: []
   User.reviews:
-    graphname: REVIEWS
+    graphname: reviews
     requires: []
     provides: []
   User.thing:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   User.username:
-    graphname: ACCOUNTS
+    graphname: accounts
     requires: []
     provides: []
   User.vehicle:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Van.description:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Van.id:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Van.price:
-    graphname: PRODUCT
+    graphname: product
     requires: []
     provides: []
   Van.retailPrice:
-    graphname: REVIEWS
+    graphname: reviews
     requires:
     - alias: price
       name: price

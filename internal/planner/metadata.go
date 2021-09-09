@@ -35,8 +35,6 @@ type FederationFieldMetadata struct {
 	Provides  ast.SelectionSet // readonly (FieldNode | InlineFragmentNode)[];
 }
 
-type contextFieldMetadataKey struct{}
-
 var _ json.Marshaler = (*metadataHolder)(nil)
 var _ yaml.InterfaceMarshaler = (*metadataHolder)(nil)
 

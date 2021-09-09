@@ -1,0 +1,18 @@
+# schema: supergraphSdl.graphqls
+
+# should not confuse union types with overlapping field names
+query {
+    body {
+        ... on Image {
+            attributes {
+                url
+            }
+        }
+        ... on Text {
+            attributes {
+                bold
+                text
+            }
+        }
+    }
+}

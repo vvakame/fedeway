@@ -108,12 +108,14 @@ func (qpctx *queryPlanningContext) collectFields(ctx context.Context, scope *Sco
 }
 
 func (qpctx *queryPlanningContext) getFieldDef(ctx context.Context, parentType *ast.Definition, fieldNode *ast.Field) (*ast.FieldDefinition, error) {
-	fieldDef := parentType.Fields.ForName(fieldNode.Name)
+	fieldName := fieldNode.Name
+
+	fieldDef := getFieldDef(qpctx.schema, parentType, fieldName)
 	if fieldDef == nil {
 		return nil, gqlerror.ErrorPosf(
 			fieldNode.Position,
 			"cannot query field '%s' on type '%s'",
-			fieldDef.Name,
+			fieldNode.Name,
 			parentType.Name,
 		)
 	}
@@ -122,11 +124,21 @@ func (qpctx *queryPlanningContext) getFieldDef(ctx context.Context, parentType *
 }
 
 func (qpctx *queryPlanningContext) getFragmentCondition(ctx context.Context, parentType *ast.Definition, fragment *ast.FragmentDefinition) *ast.Definition {
-	if fragment.TypeCondition != "" {
+	typeConditionNode := qpctx.schema.Types[fragment.TypeCondition]
+	if typeConditionNode == nil {
 		return parentType
 	}
 
-	return qpctx.schema.Types[fragment.TypeCondition]
+	return typeConditionNode
+}
+
+func (qpctx *queryPlanningContext) getInlineFragmentCondition(ctx context.Context, parentType *ast.Definition, fragment *ast.InlineFragment) *ast.Definition {
+	typeConditionNode := qpctx.schema.Types[fragment.TypeCondition]
+	if typeConditionNode == nil {
+		return parentType
+	}
+
+	return typeConditionNode
 }
 
 func (qpctx *queryPlanningContext) scopeForFragment(ctx context.Context, currentScope *Scope, fragment *ast.FragmentDefinition, appliedDirectives ast.DirectiveList) (*Scope, error) {
@@ -136,16 +148,25 @@ func (qpctx *queryPlanningContext) scopeForFragment(ctx context.Context, current
 		return nil, err
 	}
 
-	_ = newScope
+	if len(newScope.possibleRuntimeTypes()) == 0 {
+		return nil, nil
+	}
 
-	panic("not implemented") // TODO
+	return newScope, nil
 }
 
 func (qpctx *queryPlanningContext) scopeForInlineFragment(ctx context.Context, currentScope *Scope, fragment *ast.InlineFragment, appliedDirectives ast.DirectiveList) (*Scope, error) {
-	// *ast.InlineFragment
-	// *ast.FragmentDefinition
+	condition := qpctx.getInlineFragmentCondition(ctx, currentScope.parentType, fragment)
+	newScope, err := currentScope.refine(ctx, condition, appliedDirectives)
+	if err != nil {
+		return nil, err
+	}
 
-	panic("not implemented") // TODO
+	if len(newScope.possibleRuntimeTypes()) == 0 {
+		return nil, nil
+	}
+
+	return newScope, nil
 }
 
 func (qpctx *queryPlanningContext) getBaseService(ctx context.Context, parentType *ast.Definition) string {

@@ -146,7 +146,7 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 				)
 			}
 			typeMetadata = &FederationEntityTypeMetadata{
-				GraphName: graphName,
+				GraphName: graph.Name,
 				Keys:      make(map[string]ast.SelectionSet),
 			}
 		} else {
@@ -257,7 +257,7 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 					)
 				}
 				fieldMetadata = &FederationFieldMetadata{
-					GraphName: graphName,
+					GraphName: graph.Name,
 				}
 			} else {
 				fieldMetadata = &FederationFieldMetadata{}

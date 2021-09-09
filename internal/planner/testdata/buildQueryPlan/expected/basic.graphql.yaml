@@ -1,5 +1,5 @@
 node:
-  servicename: ACCOUNTS
+  servicename: accounts
   variableusages: []
   requires: []
   operation: |

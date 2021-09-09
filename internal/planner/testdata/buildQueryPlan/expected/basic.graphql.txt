@@ -1,5 +1,5 @@
 QueryPlan {
-	Fetch(service: "ACCOUNTS") {
+	Fetch(service: "accounts") {
 		query {
 			me {
 				id
