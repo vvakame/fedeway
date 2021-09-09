@@ -6,6 +6,7 @@ replace github.com/go-logr/logr => github.com/vvakame/logr v1.1.1-0.202109060623
 
 require (
 	github.com/99designs/gqlgen v0.13.0
+	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/go-logr/logr v1.1.0
 	github.com/goccy/go-yaml v1.9.3
 	github.com/pmezard/go-difflib v1.0.0

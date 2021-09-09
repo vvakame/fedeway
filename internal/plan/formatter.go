@@ -58,6 +58,14 @@ func (f *formatter) WriteWord(word string) *formatter {
 	return f
 }
 
+func (f *formatter) WriteMultiLine(text string) *formatter {
+	ss := strings.Split(text, "\n")
+	for _, s := range ss {
+		f.WriteString(s).WriteNewline()
+	}
+	return f
+}
+
 func (f *formatter) WriteString(s string) *formatter {
 	if f.lineHead {
 		f.writeIndent()
@@ -93,8 +101,13 @@ func (f *formatter) NeedPadding() *formatter {
 
 func (f *formatter) FormatQueryPlan(queryPlan *QueryPlan) {
 	f.WriteWord("QueryPlan").WriteWord("{")
+	f.IncrementIndent()
+
 	f.FormatPlanNodes([]PlanNode{queryPlan.Node})
-	f.WriteWord("}")
+
+	f.DecrementIndent()
+	f.WriteNewline()
+	f.WriteString("}")
 }
 
 func (f *formatter) FormatPlanNodes(nodes []PlanNode) {
@@ -112,38 +125,55 @@ func (f *formatter) FormatPlanNode(node PlanNode) {
 	var nodes []PlanNode
 	switch node := node.(type) {
 	case *FetchNode:
+		f.WriteNewline()
 		f.WriteString(`Fetch(service: "`)
 		f.WriteString(node.ServiceName)
 		f.WriteWord(`")`)
 
 		f.WriteWord("{")
+		f.IncrementIndent()
 
 		if len(node.Requires) != 0 {
 			f.FormatQueryPlanSelectionNodes(node.Requires)
 			f.WriteWord("=>")
 		}
 
-		f.WriteWord(node.Operation) // TODO parse & format
-		f.WriteWord("}")
+		f.DecrementIndent()
+		f.WriteNewline()
+
+		f.IncrementIndent()
+
+		f.WriteMultiLine(strings.TrimSpace(node.Operation))
+
+		f.DecrementIndent()
+		f.WriteString("}")
 
 	case *FlattenNode:
+		f.WriteNewline()
 		f.WriteString(`Flatten(path: "`)
 		f.WriteString(node.Path.String())
 		f.WriteWord(`")`)
 
 		nodes = []PlanNode{node.Node}
 	case *SequenceNode:
+		f.WriteNewline()
 		f.WriteWord("Sequence")
 		nodes = node.Nodes
 	case *ParallelNode:
+		f.WriteNewline()
 		f.WriteWord("Parallel")
 		nodes = node.Nodes
 	}
 
 	if len(nodes) != 0 {
 		f.WriteWord("{")
+		f.IncrementIndent()
+
 		f.FormatPlanNodes(nodes)
-		f.WriteWord("}")
+
+		f.DecrementIndent()
+		f.WriteNewline()
+		f.WriteString("}")
 	}
 }
 

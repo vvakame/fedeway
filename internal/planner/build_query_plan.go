@@ -46,7 +46,7 @@ func BuildQueryPlan(ctx context.Context, operationContext *OperationContext) (*p
 		"building plan",
 		"operation", qpctx.operation.Operation,
 		"rootType", rootType,
-		"fragments", nil, // TODO // Object.keys(context.fragments)
+		"fragments", qpctx.fragments,
 		"autoFragmentation", qpctx.autoFragmentation,
 	)
 

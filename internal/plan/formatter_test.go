@@ -2,8 +2,11 @@ package plan
 
 import (
 	"bytes"
-	"github.com/vektah/gqlparser/v2/ast"
+	"strings"
 	"testing"
+
+	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/vektah/gqlparser/v2/ast"
 )
 
 func TestFormatter(t *testing.T) {
@@ -15,7 +18,10 @@ func TestFormatter(t *testing.T) {
 		{
 			name: "blank",
 			node: &QueryPlan{},
-			want: `QueryPlan { }`,
+			want: heredoc.Doc(`
+				QueryPlan {
+				}
+			`),
 		},
 		{
 			name: "with fetch node",
@@ -30,7 +36,15 @@ func TestFormatter(t *testing.T) {
 					},
 				},
 			},
-			want: `QueryPlan { Sequence { Fetch(service: "users") { { me { id } } } , } , }`,
+			want: heredoc.Doc(`
+				QueryPlan {
+					Sequence {
+						Fetch(service: "users") {
+							{ me { id } }
+						},
+					},
+				}
+			`),
 		},
 		{
 			name: "with fetch node + requires",
@@ -54,7 +68,15 @@ func TestFormatter(t *testing.T) {
 					},
 				},
 			},
-			want: `QueryPlan { Sequence { Fetch(service: "users") { ... on Product { __typename upc } => { me { id } } } , } , }`,
+			want: heredoc.Doc(`
+				QueryPlan {
+					Sequence {
+						Fetch(service: "users") { ... on Product { __typename upc } =>
+							{ me { id } }
+						},
+					},
+				}
+			`),
 		},
 		{
 			name: "with flatten node",
@@ -76,7 +98,17 @@ func TestFormatter(t *testing.T) {
 					},
 				},
 			},
-			want: `QueryPlan { Sequence { Flatten(path: "me.@.product") { Fetch(service: "users") { { me { id } } } , } , } , }`,
+			want: heredoc.Doc(`
+				QueryPlan {
+					Sequence {
+						Flatten(path: "me.@.product") {
+							Fetch(service: "users") {
+								{ me { id } }
+							},
+						},
+					},
+				}
+			`),
 		},
 	}
 	for _, tt := range tests {
@@ -85,7 +117,7 @@ func TestFormatter(t *testing.T) {
 			f := NewFormatter(w)
 			f.FormatQueryPlan(tt.node)
 
-			if got := w.String(); got != tt.want {
+			if got := strings.TrimSpace(w.String()); got != strings.TrimSpace(tt.want) {
 				t.Errorf("got = %v, want %v", got, tt.want)
 			}
 		})

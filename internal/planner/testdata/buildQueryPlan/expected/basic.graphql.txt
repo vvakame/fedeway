@@ -1,6 +1,10 @@
-QueryPlan { Fetch(service: "ACCOUNTS") { query {
-	me {
-		id
-		username
-	}
-} } , }
+QueryPlan {
+	Fetch(service: "ACCOUNTS") {
+		query {
+			me {
+				id
+				username
+			}
+		}
+	},
+}
