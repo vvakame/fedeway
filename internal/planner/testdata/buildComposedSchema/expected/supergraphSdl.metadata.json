@@ -1,0 +1,683 @@
+{
+  "Schema": {
+    "Graphs": {
+      "ACCOUNTS": {
+        "Name": "accounts",
+        "URL": "undefined"
+      },
+      "BOOKS": {
+        "Name": "books",
+        "URL": "undefined"
+      },
+      "DOCUMENTS": {
+        "Name": "documents",
+        "URL": "undefined"
+      },
+      "INVENTORY": {
+        "Name": "inventory",
+        "URL": "undefined"
+      },
+      "PRODUCT": {
+        "Name": "product",
+        "URL": "undefined"
+      },
+      "REVIEWS": {
+        "Name": "reviews",
+        "URL": "undefined"
+      }
+    }
+  },
+  "Type": {
+    "Account": {},
+    "Amazon": {},
+    "Book": {
+      "GraphName": "BOOKS",
+      "Keys": {
+        "books": [
+          {
+            "Alias": "isbn",
+            "Name": "isbn",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ]
+      }
+    },
+    "Car": {
+      "GraphName": "PRODUCT",
+      "Keys": {
+        "product": [
+          {
+            "Alias": "id",
+            "Name": "id",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ]
+      }
+    },
+    "Error": {},
+    "Furniture": {
+      "GraphName": "PRODUCT",
+      "Keys": {
+        "product": [
+          {
+            "Alias": "upc",
+            "Name": "upc",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ]
+      }
+    },
+    "Ikea": {},
+    "Image": {},
+    "ImageAttributes": {},
+    "KeyValue": {},
+    "Library": {
+      "GraphName": "BOOKS",
+      "Keys": {
+        "books": [
+          {
+            "Alias": "id",
+            "Name": "id",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ]
+      }
+    },
+    "Mutation": {},
+    "Name": {},
+    "PasswordAccount": {
+      "GraphName": "ACCOUNTS",
+      "Keys": {
+        "accounts": [
+          {
+            "Alias": "email",
+            "Name": "email",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ]
+      }
+    },
+    "ProductDetailsBook": {},
+    "ProductDetailsFurniture": {},
+    "Query": {},
+    "Review": {
+      "GraphName": "REVIEWS",
+      "Keys": {
+        "reviews": [
+          {
+            "Alias": "id",
+            "Name": "id",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ]
+      }
+    },
+    "SMSAccount": {
+      "GraphName": "ACCOUNTS",
+      "Keys": {
+        "accounts": [
+          {
+            "Alias": "number",
+            "Name": "number",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ]
+      }
+    },
+    "Text": {},
+    "TextAttributes": {},
+    "User": {
+      "GraphName": "ACCOUNTS",
+      "Keys": {
+        "accounts": [
+          {
+            "Alias": "id",
+            "Name": "id",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ]
+      }
+    },
+    "UserMetadata": {},
+    "Van": {
+      "GraphName": "PRODUCT",
+      "Keys": {
+        "product": [
+          {
+            "Alias": "id",
+            "Name": "id",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ]
+      }
+    }
+  },
+  "Field": {
+    "Book.details": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Book.inStock": {
+      "GraphName": "INVENTORY",
+      "Requires": null,
+      "Provides": null
+    },
+    "Book.isCheckedOut": {
+      "GraphName": "INVENTORY",
+      "Requires": null,
+      "Provides": null
+    },
+    "Book.isbn": {
+      "GraphName": "BOOKS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Book.metadata": {
+      "GraphName": "BOOKS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Book.name": {
+      "GraphName": "PRODUCT",
+      "Requires": [
+        {
+          "Alias": "title",
+          "Name": "title",
+          "Arguments": null,
+          "Directives": null,
+          "SelectionSet": null,
+          "Position": null,
+          "Definition": null,
+          "ObjectDefinition": null
+        },
+        {
+          "Alias": "year",
+          "Name": "year",
+          "Arguments": null,
+          "Directives": null,
+          "SelectionSet": null,
+          "Position": null,
+          "Definition": null,
+          "ObjectDefinition": null
+        }
+      ],
+      "Provides": null
+    },
+    "Book.price": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Book.relatedReviews": {
+      "GraphName": "REVIEWS",
+      "Requires": [
+        {
+          "Alias": "similarBooks",
+          "Name": "similarBooks",
+          "Arguments": null,
+          "Directives": null,
+          "SelectionSet": [
+            {
+              "Alias": "isbn",
+              "Name": "isbn",
+              "Arguments": null,
+              "Directives": null,
+              "SelectionSet": null,
+              "Position": null,
+              "Definition": null,
+              "ObjectDefinition": null
+            }
+          ],
+          "Position": null,
+          "Definition": null,
+          "ObjectDefinition": null
+        }
+      ],
+      "Provides": null
+    },
+    "Book.reviews": {
+      "GraphName": "REVIEWS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Book.similarBooks": {
+      "GraphName": "BOOKS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Book.sku": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Book.title": {
+      "GraphName": "BOOKS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Book.upc": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Book.year": {
+      "GraphName": "BOOKS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Car.description": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Car.id": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Car.price": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Car.retailPrice": {
+      "GraphName": "REVIEWS",
+      "Requires": [
+        {
+          "Alias": "price",
+          "Name": "price",
+          "Arguments": null,
+          "Directives": null,
+          "SelectionSet": null,
+          "Position": null,
+          "Definition": null,
+          "ObjectDefinition": null
+        }
+      ],
+      "Provides": null
+    },
+    "Furniture.brand": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Furniture.details": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Furniture.inStock": {
+      "GraphName": "INVENTORY",
+      "Requires": null,
+      "Provides": null
+    },
+    "Furniture.isHeavy": {
+      "GraphName": "INVENTORY",
+      "Requires": null,
+      "Provides": null
+    },
+    "Furniture.metadata": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Furniture.name": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Furniture.price": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Furniture.reviews": {
+      "GraphName": "REVIEWS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Furniture.sku": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Furniture.upc": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Library.id": {
+      "GraphName": "BOOKS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Library.name": {
+      "GraphName": "BOOKS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Library.userAccount": {
+      "GraphName": "ACCOUNTS",
+      "Requires": [
+        {
+          "Alias": "name",
+          "Name": "name",
+          "Arguments": null,
+          "Directives": null,
+          "SelectionSet": null,
+          "Position": null,
+          "Definition": null,
+          "ObjectDefinition": null
+        }
+      ],
+      "Provides": null
+    },
+    "Mutation.deleteReview": {
+      "GraphName": "REVIEWS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Mutation.login": {
+      "GraphName": "ACCOUNTS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Mutation.reviewProduct": {
+      "GraphName": "REVIEWS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Mutation.updateReview": {
+      "GraphName": "REVIEWS",
+      "Requires": null,
+      "Provides": null
+    },
+    "PasswordAccount.email": {
+      "GraphName": "ACCOUNTS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Query.body": {
+      "GraphName": "DOCUMENTS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Query.book": {
+      "GraphName": "BOOKS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Query.books": {
+      "GraphName": "BOOKS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Query.library": {
+      "GraphName": "BOOKS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Query.me": {
+      "GraphName": "ACCOUNTS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Query.product": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Query.topCars": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Query.topProducts": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Query.topReviews": {
+      "GraphName": "REVIEWS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Query.user": {
+      "GraphName": "ACCOUNTS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Query.vehicle": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Review.author": {
+      "GraphName": "REVIEWS",
+      "Requires": null,
+      "Provides": [
+        {
+          "Alias": "username",
+          "Name": "username",
+          "Arguments": null,
+          "Directives": null,
+          "SelectionSet": null,
+          "Position": null,
+          "Definition": null,
+          "ObjectDefinition": null
+        }
+      ]
+    },
+    "Review.body": {
+      "GraphName": "REVIEWS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Review.id": {
+      "GraphName": "REVIEWS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Review.metadata": {
+      "GraphName": "REVIEWS",
+      "Requires": null,
+      "Provides": null
+    },
+    "Review.product": {
+      "GraphName": "REVIEWS",
+      "Requires": null,
+      "Provides": null
+    },
+    "SMSAccount.number": {
+      "GraphName": "ACCOUNTS",
+      "Requires": null,
+      "Provides": null
+    },
+    "User.account": {
+      "GraphName": "ACCOUNTS",
+      "Requires": null,
+      "Provides": null
+    },
+    "User.accountType": {
+      "GraphName": "ACCOUNTS",
+      "Requires": null,
+      "Provides": null
+    },
+    "User.birthDate": {
+      "GraphName": "ACCOUNTS",
+      "Requires": null,
+      "Provides": null
+    },
+    "User.goodAddress": {
+      "GraphName": "REVIEWS",
+      "Requires": [
+        {
+          "Alias": "metadata",
+          "Name": "metadata",
+          "Arguments": null,
+          "Directives": null,
+          "SelectionSet": [
+            {
+              "Alias": "address",
+              "Name": "address",
+              "Arguments": null,
+              "Directives": null,
+              "SelectionSet": null,
+              "Position": null,
+              "Definition": null,
+              "ObjectDefinition": null
+            }
+          ],
+          "Position": null,
+          "Definition": null,
+          "ObjectDefinition": null
+        }
+      ],
+      "Provides": null
+    },
+    "User.goodDescription": {
+      "GraphName": "INVENTORY",
+      "Requires": [
+        {
+          "Alias": "metadata",
+          "Name": "metadata",
+          "Arguments": null,
+          "Directives": null,
+          "SelectionSet": [
+            {
+              "Alias": "description",
+              "Name": "description",
+              "Arguments": null,
+              "Directives": null,
+              "SelectionSet": null,
+              "Position": null,
+              "Definition": null,
+              "ObjectDefinition": null
+            }
+          ],
+          "Position": null,
+          "Definition": null,
+          "ObjectDefinition": null
+        }
+      ],
+      "Provides": null
+    },
+    "User.id": {
+      "GraphName": "ACCOUNTS",
+      "Requires": null,
+      "Provides": null
+    },
+    "User.metadata": {
+      "GraphName": "ACCOUNTS",
+      "Requires": null,
+      "Provides": null
+    },
+    "User.name": {
+      "GraphName": "ACCOUNTS",
+      "Requires": null,
+      "Provides": null
+    },
+    "User.numberOfReviews": {
+      "GraphName": "REVIEWS",
+      "Requires": null,
+      "Provides": null
+    },
+    "User.reviews": {
+      "GraphName": "REVIEWS",
+      "Requires": null,
+      "Provides": null
+    },
+    "User.thing": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "User.username": {
+      "GraphName": "ACCOUNTS",
+      "Requires": null,
+      "Provides": null
+    },
+    "User.vehicle": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Van.description": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Van.id": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Van.price": {
+      "GraphName": "PRODUCT",
+      "Requires": null,
+      "Provides": null
+    },
+    "Van.retailPrice": {
+      "GraphName": "REVIEWS",
+      "Requires": [
+        {
+          "Alias": "price",
+          "Name": "price",
+          "Arguments": null,
+          "Directives": null,
+          "SelectionSet": null,
+          "Position": null,
+          "Definition": null,
+          "ObjectDefinition": null
+        }
+      ],
+      "Provides": null
+    }
+  }
+}

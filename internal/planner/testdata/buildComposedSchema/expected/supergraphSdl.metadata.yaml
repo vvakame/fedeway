@@ -1,0 +1,521 @@
+schema:
+  graphs:
+    ACCOUNTS:
+      name: accounts
+      url: undefined
+    BOOKS:
+      name: books
+      url: undefined
+    DOCUMENTS:
+      name: documents
+      url: undefined
+    INVENTORY:
+      name: inventory
+      url: undefined
+    PRODUCT:
+      name: product
+      url: undefined
+    REVIEWS:
+      name: reviews
+      url: undefined
+type:
+  Account: {}
+  Amazon: {}
+  Book:
+    graphname: BOOKS
+    keys:
+      books:
+      - alias: isbn
+        name: isbn
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+  Car:
+    graphname: PRODUCT
+    keys:
+      product:
+      - alias: id
+        name: id
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+  Error: {}
+  Furniture:
+    graphname: PRODUCT
+    keys:
+      product:
+      - alias: upc
+        name: upc
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+  Ikea: {}
+  Image: {}
+  ImageAttributes: {}
+  KeyValue: {}
+  Library:
+    graphname: BOOKS
+    keys:
+      books:
+      - alias: id
+        name: id
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+  Mutation: {}
+  Name: {}
+  PasswordAccount:
+    graphname: ACCOUNTS
+    keys:
+      accounts:
+      - alias: email
+        name: email
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+  ProductDetailsBook: {}
+  ProductDetailsFurniture: {}
+  Query: {}
+  Review:
+    graphname: REVIEWS
+    keys:
+      reviews:
+      - alias: id
+        name: id
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+  SMSAccount:
+    graphname: ACCOUNTS
+    keys:
+      accounts:
+      - alias: number
+        name: number
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+  Text: {}
+  TextAttributes: {}
+  User:
+    graphname: ACCOUNTS
+    keys:
+      accounts:
+      - alias: id
+        name: id
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+  UserMetadata: {}
+  Van:
+    graphname: PRODUCT
+    keys:
+      product:
+      - alias: id
+        name: id
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+field:
+  Book.details:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Book.inStock:
+    graphname: INVENTORY
+    requires: []
+    provides: []
+  Book.isCheckedOut:
+    graphname: INVENTORY
+    requires: []
+    provides: []
+  Book.isbn:
+    graphname: BOOKS
+    requires: []
+    provides: []
+  Book.metadata:
+    graphname: BOOKS
+    requires: []
+    provides: []
+  Book.name:
+    graphname: PRODUCT
+    requires:
+    - alias: title
+      name: title
+      arguments: []
+      directives: []
+      selectionset: []
+      position: null
+      definition: null
+      objectdefinition: null
+    - alias: year
+      name: year
+      arguments: []
+      directives: []
+      selectionset: []
+      position: null
+      definition: null
+      objectdefinition: null
+    provides: []
+  Book.price:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Book.relatedReviews:
+    graphname: REVIEWS
+    requires:
+    - alias: similarBooks
+      name: similarBooks
+      arguments: []
+      directives: []
+      selectionset:
+      - alias: isbn
+        name: isbn
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+      position: null
+      definition: null
+      objectdefinition: null
+    provides: []
+  Book.reviews:
+    graphname: REVIEWS
+    requires: []
+    provides: []
+  Book.similarBooks:
+    graphname: BOOKS
+    requires: []
+    provides: []
+  Book.sku:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Book.title:
+    graphname: BOOKS
+    requires: []
+    provides: []
+  Book.upc:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Book.year:
+    graphname: BOOKS
+    requires: []
+    provides: []
+  Car.description:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Car.id:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Car.price:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Car.retailPrice:
+    graphname: REVIEWS
+    requires:
+    - alias: price
+      name: price
+      arguments: []
+      directives: []
+      selectionset: []
+      position: null
+      definition: null
+      objectdefinition: null
+    provides: []
+  Furniture.brand:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Furniture.details:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Furniture.inStock:
+    graphname: INVENTORY
+    requires: []
+    provides: []
+  Furniture.isHeavy:
+    graphname: INVENTORY
+    requires: []
+    provides: []
+  Furniture.metadata:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Furniture.name:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Furniture.price:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Furniture.reviews:
+    graphname: REVIEWS
+    requires: []
+    provides: []
+  Furniture.sku:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Furniture.upc:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Library.id:
+    graphname: BOOKS
+    requires: []
+    provides: []
+  Library.name:
+    graphname: BOOKS
+    requires: []
+    provides: []
+  Library.userAccount:
+    graphname: ACCOUNTS
+    requires:
+    - alias: name
+      name: name
+      arguments: []
+      directives: []
+      selectionset: []
+      position: null
+      definition: null
+      objectdefinition: null
+    provides: []
+  Mutation.deleteReview:
+    graphname: REVIEWS
+    requires: []
+    provides: []
+  Mutation.login:
+    graphname: ACCOUNTS
+    requires: []
+    provides: []
+  Mutation.reviewProduct:
+    graphname: REVIEWS
+    requires: []
+    provides: []
+  Mutation.updateReview:
+    graphname: REVIEWS
+    requires: []
+    provides: []
+  PasswordAccount.email:
+    graphname: ACCOUNTS
+    requires: []
+    provides: []
+  Query.body:
+    graphname: DOCUMENTS
+    requires: []
+    provides: []
+  Query.book:
+    graphname: BOOKS
+    requires: []
+    provides: []
+  Query.books:
+    graphname: BOOKS
+    requires: []
+    provides: []
+  Query.library:
+    graphname: BOOKS
+    requires: []
+    provides: []
+  Query.me:
+    graphname: ACCOUNTS
+    requires: []
+    provides: []
+  Query.product:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Query.topCars:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Query.topProducts:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Query.topReviews:
+    graphname: REVIEWS
+    requires: []
+    provides: []
+  Query.user:
+    graphname: ACCOUNTS
+    requires: []
+    provides: []
+  Query.vehicle:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Review.author:
+    graphname: REVIEWS
+    requires: []
+    provides:
+    - alias: username
+      name: username
+      arguments: []
+      directives: []
+      selectionset: []
+      position: null
+      definition: null
+      objectdefinition: null
+  Review.body:
+    graphname: REVIEWS
+    requires: []
+    provides: []
+  Review.id:
+    graphname: REVIEWS
+    requires: []
+    provides: []
+  Review.metadata:
+    graphname: REVIEWS
+    requires: []
+    provides: []
+  Review.product:
+    graphname: REVIEWS
+    requires: []
+    provides: []
+  SMSAccount.number:
+    graphname: ACCOUNTS
+    requires: []
+    provides: []
+  User.account:
+    graphname: ACCOUNTS
+    requires: []
+    provides: []
+  User.accountType:
+    graphname: ACCOUNTS
+    requires: []
+    provides: []
+  User.birthDate:
+    graphname: ACCOUNTS
+    requires: []
+    provides: []
+  User.goodAddress:
+    graphname: REVIEWS
+    requires:
+    - alias: metadata
+      name: metadata
+      arguments: []
+      directives: []
+      selectionset:
+      - alias: address
+        name: address
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+      position: null
+      definition: null
+      objectdefinition: null
+    provides: []
+  User.goodDescription:
+    graphname: INVENTORY
+    requires:
+    - alias: metadata
+      name: metadata
+      arguments: []
+      directives: []
+      selectionset:
+      - alias: description
+        name: description
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+      position: null
+      definition: null
+      objectdefinition: null
+    provides: []
+  User.id:
+    graphname: ACCOUNTS
+    requires: []
+    provides: []
+  User.metadata:
+    graphname: ACCOUNTS
+    requires: []
+    provides: []
+  User.name:
+    graphname: ACCOUNTS
+    requires: []
+    provides: []
+  User.numberOfReviews:
+    graphname: REVIEWS
+    requires: []
+    provides: []
+  User.reviews:
+    graphname: REVIEWS
+    requires: []
+    provides: []
+  User.thing:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  User.username:
+    graphname: ACCOUNTS
+    requires: []
+    provides: []
+  User.vehicle:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Van.description:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Van.id:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Van.price:
+    graphname: PRODUCT
+    requires: []
+    provides: []
+  Van.retailPrice:
+    graphname: REVIEWS
+    requires:
+    - alias: price
+      name: price
+      arguments: []
+      directives: []
+      selectionset: []
+      position: null
+      definition: null
+      objectdefinition: null
+    provides: []

@@ -76,7 +76,7 @@ type QueryPlanInlineFragmentNode struct {
 
 func (n *QueryPlanInlineFragmentNode) isQueryPlanSelectionNode() {}
 
-func trimSelectionNodes(selections []ast.Selection) []QueryPlanSelectionNode {
+func TrimSelectionNodes(selections []ast.Selection) []QueryPlanSelectionNode {
 	remapped := make([]QueryPlanSelectionNode, 0, len(selections))
 
 	for _, selection := range selections {
@@ -85,12 +85,12 @@ func trimSelectionNodes(selections []ast.Selection) []QueryPlanSelectionNode {
 			remapped = append(remapped, &QueryPlanFieldNode{
 				Alias:      "",
 				Name:       selection.Name,
-				Selections: trimSelectionNodes(selection.SelectionSet),
+				Selections: TrimSelectionNodes(selection.SelectionSet),
 			})
 		case *ast.InlineFragment:
 			remapped = append(remapped, &QueryPlanInlineFragmentNode{
 				TypeCondition: selection.TypeCondition,
-				Selections:    trimSelectionNodes(selection.SelectionSet),
+				Selections:    TrimSelectionNodes(selection.SelectionSet),
 			})
 		default:
 			panic(fmt.Sprintf("unexpected type: %T", selection))

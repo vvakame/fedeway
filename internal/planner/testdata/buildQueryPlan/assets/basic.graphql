@@ -1,0 +1,7 @@
+# schema: supergraphSdl.graphqls
+{
+    me {
+        id
+        username
+    }
+}

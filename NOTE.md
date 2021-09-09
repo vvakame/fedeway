@@ -38,7 +38,10 @@ Apollo Federation Gateway js版の実装見ていく
   * 複数の操作を行う場合、fieldの記述順通りに上から順に実行されないといけない！なるほどね
 * buildQueryPlan.ts の実装が詳細部分っぽい
 * わりと効率とか気にせず愚直に分割してるだけっぽいことがわかってきた…
-
+* buildComposedSchema …
+* Planner系だけ先に実装できるか見たかったけどなかなか厳しい
+  * ApolloGateway.createSchemaFromServiceList 相当の処理が必要
+  * buildComposedSchemaだけでもなんとかなる？
 
 * `autoFragmentization` て何？
 * base service と owning service という表現があるっぽい
