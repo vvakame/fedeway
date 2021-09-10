@@ -656,11 +656,11 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 				continue
 			}
 
+			possibleRuntimeTypeNames := make([]string, 0, len(scope.possibleRuntimeTypes()))
+			for _, possibleRuntimeType := range scope.possibleRuntimeTypes() {
+				possibleRuntimeTypeNames = append(possibleRuntimeTypeNames, possibleRuntimeType.Name)
+			}
 			if parentType.Kind == ast.Object && containsType(scope.possibleRuntimeTypes(), parentType) {
-				possibleRuntimeTypeNames := make([]string, 0, len(scope.possibleRuntimeTypes()))
-				for _, possibleRuntimeType := range scope.possibleRuntimeTypes() {
-					possibleRuntimeTypeNames = append(possibleRuntimeTypeNames, possibleRuntimeType.Name)
-				}
 				logger.Info(
 					"parent type is object and included in scope's possible runtime types",
 					"parentType", parentType.Name,
@@ -684,7 +684,7 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 				logger.Info(
 					"parent type is not object or not included in scope's possible runtime types",
 					"parentType", parentType.Name,
-					"possibleRuntimeTypes", scope.possibleRuntimeTypes(),
+					"possibleRuntimeTypes", possibleRuntimeTypeNames,
 				)
 
 				// For interfaces however, we need to look at all possible runtime types.
@@ -721,6 +721,7 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 				// from which group,
 				groupsIndex := make([]*FetchGroup, 0)
 				groupsByRuntimeParentTypes := make(map[*FetchGroup][]*ast.Definition)
+				groupsByRuntimeParentNames := make(map[string][]string)
 
 				logger.Info("computing fetch groups by runtime parent types")
 				for _, runtimeParentType := range scope.possibleRuntimeTypes() {
@@ -746,9 +747,13 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 						groupsIndex = append(groupsIndex, key)
 					}
 					groupsByRuntimeParentTypes[key] = append(groupsByRuntimeParentTypes[key], runtimeParentType)
+					groupsByRuntimeParentNames[key.ServiceName] = append(groupsByRuntimeParentNames[key.ServiceName], runtimeParentType.Name)
 				}
 
-				logger.Info("groups by runtime parent type", "groupsByRuntimeParentTypes", groupsByRuntimeParentTypes)
+				logger.Info(
+					"groups by runtime parent type",
+					"groupsByRuntimeParentTypes", groupsByRuntimeParentNames,
+				)
 				for _, group := range groupsIndex {
 					runtimeParentTypes := groupsByRuntimeParentTypes[group]
 
