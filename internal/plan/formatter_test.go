@@ -71,7 +71,13 @@ func TestFormatter(t *testing.T) {
 			want: heredoc.Doc(`
 				QueryPlan {
 					Sequence {
-						Fetch(service: "users") { ... on Product { __typename upc } =>
+						Fetch(service: "users") {
+							{
+								... on Product {
+									__typename
+									upc
+								}
+							} =>
 							{ me { id } }
 						},
 					},

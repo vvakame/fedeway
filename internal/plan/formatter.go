@@ -186,6 +186,7 @@ func (f *formatter) FormatQueryPlanSelectionNodes(nodes []QueryPlanSelectionNode
 func (f *formatter) FormatQueryPlanSelectionNode(node QueryPlanSelectionNode) {
 	switch node := node.(type) {
 	case *QueryPlanFieldNode:
+		f.WriteNewline()
 		if node.Alias != "" {
 			f.WriteString(node.Alias)
 			f.WriteWord(":")
@@ -194,16 +195,34 @@ func (f *formatter) FormatQueryPlanSelectionNode(node QueryPlanSelectionNode) {
 
 		if len(node.Selections) != 0 {
 			f.WriteWord("{")
+			f.IncrementIndent()
+
 			f.FormatQueryPlanSelectionNodes(node.Selections)
+
+			f.DecrementIndent()
+			f.WriteNewline()
 			f.WriteWord("}")
 		}
 
 	case *QueryPlanInlineFragmentNode:
+		f.WriteNewline()
+		f.WriteWord("{")
+		f.WriteNewline()
+		f.IncrementIndent()
+
 		f.WriteWord("... on")
 		f.WriteWord(node.TypeCondition)
-
 		f.WriteWord("{")
+		f.IncrementIndent()
+
 		f.FormatQueryPlanSelectionNodes(node.Selections)
+
+		f.DecrementIndent()
+		f.WriteNewline()
+		f.WriteWord("}")
+		f.WriteNewline()
+
+		f.DecrementIndent()
 		f.WriteWord("}")
 	default:
 		panic(fmt.Sprintf("unknown type: %T", node))
