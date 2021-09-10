@@ -1,0 +1,11 @@
+# schema: supergraphSdl.graphqls
+
+# should use two independent fetches when requesting root fields from two services
+{
+    me {
+        username
+    }
+    topProducts {
+        name
+    }
+}

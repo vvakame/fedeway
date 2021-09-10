@@ -44,6 +44,42 @@
             "Definition": null,
             "ObjectDefinition": null
           }
+        ],
+        "inventory": [
+          {
+            "Alias": "isbn",
+            "Name": "isbn",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ],
+        "product": [
+          {
+            "Alias": "isbn",
+            "Name": "isbn",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ],
+        "reviews": [
+          {
+            "Alias": "isbn",
+            "Name": "isbn",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
         ]
       }
     },
@@ -61,6 +97,18 @@
             "Definition": null,
             "ObjectDefinition": null
           }
+        ],
+        "reviews": [
+          {
+            "Alias": "id",
+            "Name": "id",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
         ]
       }
     },
@@ -68,7 +116,31 @@
     "Furniture": {
       "GraphName": "product",
       "Keys": {
+        "inventory": [
+          {
+            "Alias": "sku",
+            "Name": "sku",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ],
         "product": [
+          {
+            "Alias": "sku",
+            "Name": "sku",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ],
+        "reviews": [
           {
             "Alias": "upc",
             "Name": "upc",
@@ -89,6 +161,18 @@
     "Library": {
       "GraphName": "books",
       "Keys": {
+        "accounts": [
+          {
+            "Alias": "id",
+            "Name": "id",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ],
         "books": [
           {
             "Alias": "id",
@@ -166,6 +250,73 @@
       "Keys": {
         "accounts": [
           {
+            "Alias": "username",
+            "Name": "username",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          },
+          {
+            "Alias": "name",
+            "Name": "name",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": [
+              {
+                "Alias": "first",
+                "Name": "first",
+                "Arguments": null,
+                "Directives": null,
+                "SelectionSet": null,
+                "Position": null,
+                "Definition": null,
+                "ObjectDefinition": null
+              },
+              {
+                "Alias": "last",
+                "Name": "last",
+                "Arguments": null,
+                "Directives": null,
+                "SelectionSet": null,
+                "Position": null,
+                "Definition": null,
+                "ObjectDefinition": null
+              }
+            ],
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ],
+        "inventory": [
+          {
+            "Alias": "id",
+            "Name": "id",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ],
+        "product": [
+          {
+            "Alias": "id",
+            "Name": "id",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ],
+        "reviews": [
+          {
             "Alias": "id",
             "Name": "id",
             "Arguments": null,
@@ -183,6 +334,18 @@
       "GraphName": "product",
       "Keys": {
         "product": [
+          {
+            "Alias": "id",
+            "Name": "id",
+            "Arguments": null,
+            "Directives": null,
+            "SelectionSet": null,
+            "Position": null,
+            "Definition": null,
+            "ObjectDefinition": null
+          }
+        ],
+        "reviews": [
           {
             "Alias": "id",
             "Name": "id",

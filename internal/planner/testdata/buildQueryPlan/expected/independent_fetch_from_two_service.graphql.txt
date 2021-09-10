@@ -1,0 +1,56 @@
+QueryPlan {
+	Parallel {
+		Fetch(service: "accounts") {
+			query {
+				me {
+					username
+				}
+			}
+		},
+		Sequence {
+			Fetch(service: "product") {
+				query {
+					topProducts {
+						__typename
+						... on Book {
+							__typename
+							isbn
+						}
+						... on Furniture {
+							name
+						}
+					}
+				}
+			},
+			Flatten(path: "topProducts.@") {
+				Fetch(service: "books") { ... on Product { ... on Book { __typename isbn } } =>
+					query ($representations: [_Any!]!) {
+						_entities(representations: $representations) {
+							... on Product {
+								... on Book {
+									__typename
+									isbn
+									title
+									year
+								}
+							}
+						}
+					}
+				},
+			},
+			Flatten(path: "topProducts.@") {
+				Fetch(service: "product") { ... on Product { ... on Book { __typename isbn title year } } =>
+					query ($representations: [_Any!]!) {
+						_entities(representations: $representations) {
+							... on Product {
+								... on Book {
+									name
+								}
+							}
+						}
+					}
+				},
+			},
+		},
+	},
+}

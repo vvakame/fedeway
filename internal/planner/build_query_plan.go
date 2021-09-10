@@ -391,7 +391,11 @@ func executionNodeForGroup(ctx context.Context, qpctx *queryPlanningContext, fet
 			dependentNodes = append(dependentNodes, node)
 		}
 
-		return flatWrapSequence(ctx, dependentNodes)
+		dependentNode, err := flatWrapParallel(ctx, dependentNodes)
+		if err != nil {
+			return nil, err
+		}
+		return flatWrapSequence(ctx, []plan.PlanNode{node, dependentNode})
 	}
 
 	return node, nil
@@ -636,11 +640,17 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 			fieldDef := field.FieldDef
 			parentType := scope.parentType
 
-			if fieldDef.Name == "__typename" {
-				rootTypes := []*ast.Definition{
-					qpctx.schema.Query,
-					qpctx.schema.Mutation,
-					qpctx.schema.Subscription,
+			if fieldDef.Name == typeNameMetaFieldDef.Name {
+				schema := qpctx.schema
+				var rootTypes []*ast.Definition
+				if schema.Query != nil {
+					rootTypes = append(rootTypes, schema.Query)
+				}
+				if schema.Mutation != nil {
+					rootTypes = append(rootTypes, schema.Mutation)
+				}
+				if schema.Subscription != nil {
+					rootTypes = append(rootTypes, schema.Subscription)
 				}
 				for _, rootType := range rootTypes {
 					if rootType.Name == parentType.Name {

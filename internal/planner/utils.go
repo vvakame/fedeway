@@ -130,7 +130,6 @@ func getArgumentValuesForRepeatableDirective(directiveDef *ast.DirectiveDefiniti
 	for _, directiveNode := range directives {
 		if directiveNode.Name == directiveDef.Name {
 			directiveNodes = append(directiveNodes, directiveNode)
-			break
 		}
 	}
 

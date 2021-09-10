@@ -33,6 +33,33 @@ type:
         position: null
         definition: null
         objectdefinition: null
+      inventory:
+      - alias: isbn
+        name: isbn
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+      product:
+      - alias: isbn
+        name: isbn
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+      reviews:
+      - alias: isbn
+        name: isbn
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
   Car:
     graphname: product
     keys:
@@ -45,11 +72,38 @@ type:
         position: null
         definition: null
         objectdefinition: null
+      reviews:
+      - alias: id
+        name: id
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
   Error: {}
   Furniture:
     graphname: product
     keys:
+      inventory:
+      - alias: sku
+        name: sku
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
       product:
+      - alias: sku
+        name: sku
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+      reviews:
       - alias: upc
         name: upc
         arguments: []
@@ -65,6 +119,15 @@ type:
   Library:
     graphname: books
     keys:
+      accounts:
+      - alias: id
+        name: id
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
       books:
       - alias: id
         name: id
@@ -121,6 +184,57 @@ type:
     graphname: accounts
     keys:
       accounts:
+      - alias: username
+        name: username
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+      - alias: name
+        name: name
+        arguments: []
+        directives: []
+        selectionset:
+        - alias: first
+          name: first
+          arguments: []
+          directives: []
+          selectionset: []
+          position: null
+          definition: null
+          objectdefinition: null
+        - alias: last
+          name: last
+          arguments: []
+          directives: []
+          selectionset: []
+          position: null
+          definition: null
+          objectdefinition: null
+        position: null
+        definition: null
+        objectdefinition: null
+      inventory:
+      - alias: id
+        name: id
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+      product:
+      - alias: id
+        name: id
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+      reviews:
       - alias: id
         name: id
         arguments: []
@@ -134,6 +248,15 @@ type:
     graphname: product
     keys:
       product:
+      - alias: id
+        name: id
+        arguments: []
+        directives: []
+        selectionset: []
+        position: null
+        definition: null
+        objectdefinition: null
+      reviews:
       - alias: id
         name: id
         arguments: []
