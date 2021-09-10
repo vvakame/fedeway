@@ -45,7 +45,7 @@ func BuildQueryPlan(ctx context.Context, operationContext *OperationContext) (*p
 	logger.Info(
 		"building plan",
 		"operation", qpctx.operation.Operation,
-		"rootType", rootType,
+		"rootType", rootType.Name,
 		"fragments", qpctx.fragments,
 		"autoFragmentation", qpctx.autoFragmentation,
 	)
@@ -62,7 +62,7 @@ func BuildQueryPlan(ctx context.Context, operationContext *OperationContext) (*p
 
 	logger.Info(
 		"collected root field",
-		"fields", fields,
+		"fields", fields.MarshalLog(),
 	)
 
 	var groups []*FetchGroup
@@ -133,9 +133,9 @@ func splitRootFieldsSerially(ctx context.Context, qpctx *queryPlanningContext, f
 	}
 
 	err := splitFields(ctx, qpctx, ast.Path{}, fields, func(field *Field) (*FetchGroup, error) {
-		scope := field.scope
-		fieldDef := field.fieldDef
-		fieldNode := field.fieldNode
+		scope := field.Scope
+		fieldDef := field.FieldDef
+		fieldNode := field.FieldNode
 
 		// The root type is necessarily an object type.
 		owningService := qpctx.getOwningService(ctx, scope.parentType, fieldDef)
@@ -168,9 +168,9 @@ func splitRootFields(ctx context.Context, qpctx *queryPlanningContext, fields Fi
 	}
 
 	err := splitFields(ctx, qpctx, ast.Path{}, fields, func(field *Field) (*FetchGroup, error) {
-		scope := field.scope
-		fieldDef := field.fieldDef
-		fieldNode := field.fieldNode
+		scope := field.Scope
+		fieldDef := field.FieldDef
+		fieldNode := field.FieldNode
 
 		// The root type is necessarily an object type.
 		owningService := qpctx.getOwningService(ctx, scope.parentType, fieldDef)
@@ -200,9 +200,9 @@ func splitRootFields(ctx context.Context, qpctx *queryPlanningContext, fields Fi
 
 func splitSubfields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path, fields FieldSet, parentGroup *FetchGroup) error {
 	return splitFields(ctx, qpctx, path, fields, func(field *Field) (*FetchGroup, error) {
-		scope := field.scope
-		fieldNode := field.fieldNode
-		fieldDef := field.fieldDef
+		scope := field.Scope
+		fieldNode := field.FieldNode
+		fieldDef := field.FieldDef
 		parentType := scope.parentType
 
 		var baseService, owningService string
@@ -263,7 +263,7 @@ func splitSubfields(ctx context.Context, qpctx *queryPlanningContext, path ast.P
 			}
 			if len(keyFields) == 0 ||
 				(len(keyFields) == 1 &&
-					keyFields[0].fieldDef.Name == "__typename") {
+					keyFields[0].FieldDef.Name == "__typename") {
 				// Only __typename key found.
 				// In some cases, the parent group does not have any @key directives.
 				// Fall back to owning group's keys
@@ -620,7 +620,10 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 			// arguments. We only need the other nodes when merging selection sets, to take node-specific subfields and
 			// directives into account.
 
-			logger.Info("splitFields loop", "fieldsForScope", fieldsForScope)
+			logger.Info(
+				"splitFields loop",
+				"fieldsForScope", fieldsForScope.MarshalLog(),
+			)
 
 			if len(fieldsForScope) == 0 {
 				panic("fieldsForScope length is 0")
@@ -629,8 +632,8 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 			// All the fields in fieldsForScope have the same scope, so that means the same parent type and possible runtime
 			// types, so we effectively can just use the first one and ignore the rest.
 			field := fieldsForScope[0]
-			scope := field.scope
-			fieldDef := field.fieldDef
+			scope := field.Scope
+			fieldDef := field.FieldDef
 			parentType := scope.parentType
 
 			if fieldDef.Name == "__typename" {
@@ -654,10 +657,14 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 			}
 
 			if parentType.Kind == ast.Object && containsType(scope.possibleRuntimeTypes(), parentType) {
+				possibleRuntimeTypeNames := make([]string, 0, len(scope.possibleRuntimeTypes()))
+				for _, possibleRuntimeType := range scope.possibleRuntimeTypes() {
+					possibleRuntimeTypeNames = append(possibleRuntimeTypeNames, possibleRuntimeType.Name)
+				}
 				logger.Info(
 					"parent type is object and included in scope's possible runtime types",
 					"parentType", parentType.Name,
-					"possibleRuntimeTypes", scope.possibleRuntimeTypes(),
+					"possibleRuntimeTypes", possibleRuntimeTypeNames,
 				)
 
 				// If parent type is an object type, we can directly look for the right
@@ -684,7 +691,7 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 				var possibleFieldDefs []*ast.FieldDefinition
 				hasNoExtendingFieldDefs := true
 				for _, typ := range scope.possibleRuntimeTypes() {
-					fd, err := qpctx.getFieldDef(ctx, typ, field.fieldNode)
+					fd, err := qpctx.getFieldDef(ctx, typ, field.FieldNode)
 					if err != nil {
 						return err
 					}
@@ -717,7 +724,7 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 
 				logger.Info("computing fetch groups by runtime parent types")
 				for _, runtimeParentType := range scope.possibleRuntimeTypes() {
-					fieldDef, err := qpctx.getFieldDef(ctx, runtimeParentType, field.fieldNode)
+					fieldDef, err := qpctx.getFieldDef(ctx, runtimeParentType, field.FieldNode)
 					if err != nil {
 						return err
 					}
@@ -728,9 +735,9 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 					}
 
 					key, err := groupForField(&Field{
-						scope:     newScope,
-						fieldNode: field.fieldNode,
-						fieldDef:  fieldDef,
+						Scope:     newScope,
+						FieldNode: field.FieldNode,
+						FieldDef:  fieldDef,
 					})
 					if err != nil {
 						return err
@@ -746,7 +753,7 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 					runtimeParentTypes := groupsByRuntimeParentTypes[group]
 
 					for _, runtimeParentType := range runtimeParentTypes {
-						fieldDef, err := qpctx.getFieldDef(ctx, runtimeParentType, field.fieldNode)
+						fieldDef, err := qpctx.getFieldDef(ctx, runtimeParentType, field.FieldNode)
 						if err != nil {
 							return err
 						}
@@ -754,7 +761,7 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 						fieldsWithRuntimeParentType := make(FieldSet, 0, len(fieldsForScope))
 						for _, field := range fieldsForScope {
 							copied := *field
-							copied.fieldDef = fieldDef
+							copied.FieldDef = fieldDef
 							fieldsWithRuntimeParentType = append(fieldsWithRuntimeParentType, &copied)
 						}
 
@@ -778,17 +785,17 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 }
 
 func completeField(ctx context.Context, qpctx *queryPlanningContext, scope *Scope, parentGroup *FetchGroup, path ast.Path, fields FieldSet) (*Field, error) {
-	fieldNode := fields[0].fieldNode
-	fieldDef := fields[0].fieldDef
+	fieldNode := fields[0].FieldNode
+	fieldDef := fields[0].FieldDef
 
 	returnType := qpctx.schema.Types[fieldDef.Type.Name()]
 	if !isCompositeType(returnType) {
 		// FIXME: We should look at all field nodes to make sure we take directives
 		// into account (or remove directives for the time being).
 		return &Field{
-			scope:     scope,
-			fieldNode: fieldNode,
-			fieldDef:  fieldDef,
+			Scope:     scope,
+			FieldNode: fieldNode,
+			FieldDef:  fieldDef,
 		}, nil
 	}
 
@@ -813,9 +820,9 @@ func completeField(ctx context.Context, qpctx *queryPlanningContext, scope *Scop
 			return nil, err
 		}
 		subGroup.Fields = append(subGroup.Fields, &Field{
-			scope:     newScope,
-			fieldNode: typenameField,
-			fieldDef:  typeNameMetaFieldDef,
+			Scope:     newScope,
+			FieldNode: typenameField,
+			FieldDef:  typeNameMetaFieldDef,
 		})
 	}
 
@@ -855,9 +862,9 @@ func completeField(ctx context.Context, qpctx *queryPlanningContext, scope *Scop
 	copied := *fieldNode
 	copied.SelectionSet = selectionSet
 	return &Field{
-		scope:     scope,
-		fieldNode: &copied,
-		fieldDef:  fieldDef,
+		Scope:     scope,
+		FieldNode: &copied,
+		FieldDef:  fieldDef,
 	}, nil
 }
 
@@ -896,7 +903,7 @@ func collectSubfields(ctx context.Context, qpctx *queryPlanningContext, returnTy
 	var subfields FieldSet
 
 	for _, field := range fields {
-		selectionSet := field.fieldNode.SelectionSet
+		selectionSet := field.FieldNode.SelectionSet
 
 		if len(selectionSet) != 0 {
 			newScope, err := newScope(qpctx, returnType, nil, nil)

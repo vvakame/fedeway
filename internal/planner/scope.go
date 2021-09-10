@@ -36,6 +36,18 @@ type Scope struct {
 	cachedIdentityKey  string
 }
 
+func (scope *Scope) MarshalLog() interface{} {
+	if scope == nil {
+		return nil
+	}
+
+	result := make(map[string]interface{})
+	result["ParentType"] = scope.parentType.Name
+	// TODO result["Directives"] = scope.directives
+	result["Enclosing"] = scope.enclosing.MarshalLog()
+	return result
+}
+
 func (s *Scope) refine(ctx context.Context, typeDef *ast.Definition, directives ast.DirectiveList) (*Scope, error) {
 	if len(directives) == 0 {
 		directives = nil
@@ -137,7 +149,6 @@ func (s *Scope) isStrictlyRefining(typ *ast.Definition) bool {
 	}
 	return false
 }
-
 
 func valueIdentityKey(value *ast.Value) interface{} {
 	switch value.Kind {

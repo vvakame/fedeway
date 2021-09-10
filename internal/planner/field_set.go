@@ -3,16 +3,33 @@ package planner
 import "github.com/vektah/gqlparser/v2/ast"
 
 type Field struct {
-	scope     *Scope
-	fieldNode *ast.Field
-	fieldDef  *ast.FieldDefinition
+	Scope     *Scope
+	FieldNode *ast.Field
+	FieldDef  *ast.FieldDefinition
+}
+
+func (field *Field) MarshalLog() interface{} {
+	result := make(map[string]interface{})
+	result["Scope"] = field.Scope.MarshalLog()
+	// TODO
+	result["FieldNode"] = field.FieldNode.Name
+	result["FieldDef"] = field.FieldDef.Name
+	return result
 }
 
 type FieldSet []*Field
 
+func (fieldSet FieldSet) MarshalLog() interface{} {
+	result := make([]interface{}, 0, len(fieldSet))
+	for _, field := range fieldSet {
+		result = append(result, field.MarshalLog())
+	}
+	return result
+}
+
 func matchesField(fieldA *Field, fieldB *Field) bool {
 	// TODO: Compare parent type and arguments
-	return fieldA.fieldDef.Name == fieldB.fieldDef.Name
+	return fieldA.FieldDef.Name == fieldB.FieldDef.Name
 }
 
 func groupByResponseName(fields FieldSet) []FieldSet {
@@ -22,7 +39,7 @@ func groupByResponseName(fields FieldSet) []FieldSet {
 	nameIdx := make(map[string]int)
 
 	for _, field := range fields {
-		name := getResponseName(field.fieldNode)
+		name := getResponseName(field.FieldNode)
 		idx, ok := nameIdx[name]
 		if !ok {
 			idx = len(nameIdx)
@@ -43,7 +60,7 @@ func groupByScope(fields FieldSet) []FieldSet {
 	nameIdx := make(map[string]int)
 
 	for _, field := range fields {
-		name := field.scope.identityKey()
+		name := field.Scope.identityKey()
 		idx, ok := nameIdx[name]
 		if !ok {
 			idx = len(nameIdx)
@@ -60,10 +77,10 @@ func groupByScope(fields FieldSet) []FieldSet {
 func selectionSetFromFieldSet(schema *ast.Schema, fields FieldSet, parentType *ast.Definition) ast.SelectionSet {
 	var result ast.SelectionSet
 	for _, fieldsByScope := range groupByScope(fields) {
-		scope := fieldsByScope[0].scope
+		scope := fieldsByScope[0].Scope
 		var selectionSet ast.SelectionSet
 		for _, fieldsByResponseName := range groupByResponseName(fieldsByScope) {
-			fieldNode := combineFields(schema, fieldsByResponseName).fieldNode
+			fieldNode := combineFields(schema, fieldsByResponseName).FieldNode
 			selectionSet = append(selectionSet, fieldNode)
 		}
 		selection := wrapInInlineFragmentIfNeeded(selectionSet, scope, parentType)
@@ -98,29 +115,29 @@ func wrapInInlineFragment(selections ast.SelectionSet, typeCondition *ast.Defini
 }
 
 func combineFields(schema *ast.Schema, fields FieldSet) *Field {
-	scope := fields[0].scope
-	fieldNode := fields[0].fieldNode
-	fieldDef := fields[0].fieldDef
+	scope := fields[0].Scope
+	fieldNode := fields[0].FieldNode
+	fieldDef := fields[0].FieldDef
 	returnType := getNamedType(schema, fieldDef.Type)
 
 	if isCompositeType(returnType) {
 		copied := *fieldNode
 		var selectionSet []*ast.Field
 		for _, field := range fields {
-			selectionSet = append(selectionSet, field.fieldNode)
+			selectionSet = append(selectionSet, field.FieldNode)
 		}
 		copied.SelectionSet = mergeSelectionSets(selectionSet)
 		return &Field{
-			scope:     scope,
-			fieldNode: &copied,
-			fieldDef:  fieldDef,
+			Scope:     scope,
+			FieldNode: &copied,
+			FieldDef:  fieldDef,
 		}
 	}
 
 	return &Field{
-		scope:     scope,
-		fieldNode: fieldNode,
-		fieldDef:  fieldDef,
+		Scope:     scope,
+		FieldNode: fieldNode,
+		FieldDef:  fieldDef,
 	}
 }
 

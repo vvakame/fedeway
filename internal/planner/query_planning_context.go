@@ -62,9 +62,9 @@ func (qpctx *queryPlanningContext) collectFields(ctx context.Context, scope *Sco
 				return nil, err
 			}
 			fields = append(fields, &Field{
-				scope:     scope,
-				fieldNode: selection,
-				fieldDef:  fieldDef,
+				Scope:     scope,
+				FieldNode: selection,
+				FieldDef:  fieldDef,
 			})
 
 		case *ast.InlineFragment:
@@ -194,9 +194,9 @@ func (qpctx *queryPlanningContext) getKeyFields(ctx context.Context, scope *Scop
 	var keyFields FieldSet
 
 	keyFields = append(keyFields, &Field{
-		scope:     scope,
-		fieldNode: typenameField,
-		fieldDef:  typeNameMetaFieldDef,
+		Scope:     scope,
+		FieldNode: typenameField,
+		FieldDef:  typeNameMetaFieldDef,
 	})
 
 	for _, possibleType := range scope.possibleRuntimeTypes() {
