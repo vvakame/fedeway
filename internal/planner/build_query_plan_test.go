@@ -3,8 +3,6 @@ package planner
 import (
 	"bytes"
 	"context"
-	"github.com/goccy/go-yaml"
-	"github.com/vvakame/fedeway/internal/plan"
 	"io/ioutil"
 	"path"
 	"regexp"
@@ -17,6 +15,7 @@ import (
 	"github.com/vektah/gqlparser/v2/parser"
 	"github.com/vektah/gqlparser/v2/validator"
 	"github.com/vvakame/fedeway/internal/log"
+	"github.com/vvakame/fedeway/internal/plan"
 )
 
 func TestBuildQueryPlan(t *testing.T) {
@@ -100,13 +99,6 @@ func TestBuildQueryPlan(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-
-			b3, err := yaml.Marshal(qp)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			checkGoldenFile(t, b3, path.Join(expectFileDir, file.Name()+".yaml"))
 
 			var buf bytes.Buffer
 			plan.NewFormatter(&buf).FormatQueryPlan(qp)

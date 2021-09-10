@@ -276,7 +276,7 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 							return nil, nil, err
 						}
 					} else {
-						return nil, nil, fmt.Errorf("unexpected type: %T", v)
+						return nil, nil, fmt.Errorf("unexpected 'requires' type: %T", v)
 					}
 				}
 			}
@@ -293,7 +293,7 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 							return nil, nil, err
 						}
 					} else {
-						return nil, nil, fmt.Errorf("unexpected type: %T", v)
+						return nil, nil, fmt.Errorf("unexpected 'provides' type: %T", v)
 					}
 				}
 			}

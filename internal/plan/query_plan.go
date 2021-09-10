@@ -93,7 +93,7 @@ func TrimSelectionNodes(selections []ast.Selection) []QueryPlanSelectionNode {
 				Selections:    TrimSelectionNodes(selection.SelectionSet),
 			})
 		default:
-			panic(fmt.Sprintf("unexpected type: %T", selection))
+			panic(fmt.Sprintf("unexpected selection type: %T", selection))
 		}
 	}
 

@@ -572,10 +572,8 @@ func flatWrapSequence(ctx context.Context, nodes []plan.PlanNode) (plan.PlanNode
 		switch node := node.(type) {
 		case *plan.SequenceNode:
 			newNodes = append(newNodes, node.Nodes...)
-		case *plan.ParallelNode:
-			newNodes = append(newNodes, node)
 		default:
-			return nil, fmt.Errorf("unexpected type: %T", node)
+			newNodes = append(newNodes, node)
 		}
 	}
 
@@ -596,12 +594,10 @@ func flatWrapParallel(ctx context.Context, nodes []plan.PlanNode) (plan.PlanNode
 	var newNodes []plan.PlanNode
 	for _, node := range nodes {
 		switch node := node.(type) {
-		case *plan.SequenceNode:
-			newNodes = append(newNodes, node)
 		case *plan.ParallelNode:
 			newNodes = append(newNodes, node.Nodes...)
 		default:
-			return nil, fmt.Errorf("unexpected type: %T", node)
+			newNodes = append(newNodes, node)
 		}
 	}
 
