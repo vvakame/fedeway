@@ -2,7 +2,6 @@ QueryPlan {
 	Fetch(service: "accounts") {
 		query {
 			me {
-				id
 				username
 			}
 		}

@@ -3,7 +3,6 @@
 # should use a single fetch when requesting a root field from one service
 {
     me {
-        id
         username
     }
 }

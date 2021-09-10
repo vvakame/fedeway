@@ -1,0 +1,21 @@
+diff --git a/gateway-js/src/__tests__/execution-utils.ts b/gateway-js/src/__tests__/execution-utils.ts
+index 49d66729..d746e43d 100644
+--- a/gateway-js/src/__tests__/execution-utils.ts
++++ b/gateway-js/src/__tests__/execution-utils.ts
+@@ -23,6 +23,7 @@ import { queryPlanSerializer, astSerializer } from 'apollo-federation-integratio
+ import gql from 'graphql-tag';
+ import { fixtures } from 'apollo-federation-integration-testsuite';
+ import { parse } from 'graphql';
++import * as fs from "fs";
+ 
+ const prettyFormat = require('pretty-format');
+ 
+@@ -99,6 +100,8 @@ export function getFederatedTestingSchema(services: ServiceDefinitionModule[] =
+     throw new GraphQLSchemaValidationError(compositionResult.errors);
+   }
+ 
++  fs.writeFileSync("supergraphSdl.graphqls", compositionResult.supergraphSdl);
++
+   const schema = buildComposedSchema(parse(compositionResult.supergraphSdl))
+ 
+   const queryPlanner = new QueryPlanner(schema);

@@ -13,14 +13,13 @@ import (
 	"github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/parser"
-	"github.com/vektah/gqlparser/v2/validator"
 	"github.com/vvakame/fedeway/internal/log"
 	"github.com/vvakame/fedeway/internal/plan"
 )
 
 func TestBuildQueryPlan(t *testing.T) {
 	const testFileDir = "./testdata/buildQueryPlan/assets"
-	expectFileDir := "./testdata/buildQueryPlan/expected"
+	const expectFileDir = "./testdata/buildQueryPlan/expected"
 
 	files, err := ioutil.ReadDir(testFileDir)
 	if err != nil {
@@ -30,6 +29,21 @@ func TestBuildQueryPlan(t *testing.T) {
 	re, err := regexp.Compile("^# schema:\\s*([^\\s]+)")
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	var preludeSource string
+	{
+		b, err := ioutil.ReadFile(path.Join(testFileDir, "prelude.graphqls"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		preludeSource = string(b)
+	}
+
+	prelude := &ast.Source{
+		Name:    "prelude.graphql",
+		Input:   preludeSource,
+		BuiltIn: true,
 	}
 
 	for _, file := range files {
@@ -64,7 +78,7 @@ func TestBuildQueryPlan(t *testing.T) {
 			}
 
 			schemaDoc, gErr := parser.ParseSchemas(
-				validator.Prelude,
+				prelude,
 				&ast.Source{
 					Name:  file.Name(),
 					Input: string(b2),
