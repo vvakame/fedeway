@@ -229,34 +229,3 @@ func isCompositeType(def *ast.Definition) bool {
 		return false
 	}
 }
-
-func isAbstractType(def *ast.Definition) bool {
-	switch def.Kind {
-	case ast.Interface, ast.Union:
-		return true
-	default:
-		return false
-	}
-}
-
-func isTypeDefSubTypeOf(schema *ast.Schema, maybeSubType, superType *ast.Definition) bool {
-	// Equivalent type is a valid subtype
-	if maybeSubType == superType {
-		return true
-	}
-
-	// If superType type is an abstract type, check if it is super type of maybeSubType.
-	// Otherwise, the child type is not a valid subtype of the parent type.
-	if !isAbstractType(superType) {
-		return false
-	}
-	if maybeSubType.Kind != ast.Interface && maybeSubType.Kind != ast.Object {
-		return false
-	}
-	for _, def := range schema.GetPossibleTypes(superType) {
-		if def == maybeSubType {
-			return true
-		}
-	}
-	return false
-}

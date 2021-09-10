@@ -11,7 +11,7 @@ type Field struct {
 func (field *Field) MarshalLog() interface{} {
 	result := make(map[string]interface{})
 	result["Scope"] = field.Scope.MarshalLog()
-	// TODO
+	// TODO わかるデータ量もうちょい増やす
 	result["FieldNode"] = field.FieldNode.Name
 	result["FieldDef"] = field.FieldDef.Name
 	return result

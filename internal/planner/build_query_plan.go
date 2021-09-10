@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
+
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/formatter"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vvakame/fedeway/internal/log"
 	"github.com/vvakame/fedeway/internal/plan"
-	"sort"
+	"github.com/vvakame/fedeway/internal/utils"
 )
 
 type OperationContext struct {
@@ -829,7 +831,7 @@ func completeField(ctx context.Context, qpctx *queryPlanningContext, scope *Scop
 	subGroup.ProvidedFields = providedFields
 
 	// For abstract types, we always need to request `__typename`
-	if isAbstractType(returnType) {
+	if utils.IsAbstractType(returnType) {
 		newScope, err := newScope(qpctx, returnType, nil, nil)
 		if err != nil {
 			return nil, err

@@ -3,12 +3,12 @@ package planner
 import (
 	"context"
 	"fmt"
-	"github.com/vvakame/fedeway/internal/utils"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/vektah/gqlparser/v2/ast"
+	"github.com/vvakame/fedeway/internal/utils"
 )
 
 func createScope(qpctx *queryPlanningContext, parentType *ast.Definition) (*Scope, error) {
@@ -43,25 +43,23 @@ func (scope *Scope) MarshalLog() interface{} {
 
 	result := make(map[string]interface{})
 	result["ParentType"] = scope.parentType.Name
-	// TODO result["Directives"] = scope.directives
+	// TODO データ量いい感じに
+	// result["Directives"] = scope.directives
 	result["Enclosing"] = scope.enclosing.MarshalLog()
 	return result
 }
 
-func (s *Scope) refine(ctx context.Context, typeDef *ast.Definition, directives ast.DirectiveList) (*Scope, error) {
-	if len(directives) == 0 {
-		directives = nil
-	}
-	if len(directives) == 0 && typeDef == s.parentType {
+func (s *Scope) refine(ctx context.Context, typ *ast.Definition, directives ast.DirectiveList) (*Scope, error) {
+	if len(directives) == 0 && typ == s.parentType {
 		return s, nil
 	}
 
-	prunedScope, err := pruneRefinedTypes(s, typeDef)
+	prunedScope, err := pruneRefinedTypes(s, typ)
 	if err != nil {
 		return nil, err
 	}
 
-	return newScope(s.qpctx, typeDef, directives, prunedScope)
+	return newScope(s.qpctx, typ, directives, prunedScope)
 }
 
 func (s *Scope) computePossibleRuntimeTypes() []*ast.Definition {
@@ -120,7 +118,7 @@ func pruneRefinedTypes(toPrune *Scope, refiningType *ast.Definition) (*Scope, er
 		return nil, nil
 	}
 
-	if len(toPrune.directives) == 0 && utils.IsTypeSubTypeOf(toPrune.qpctx.schema, refiningType, toPrune.parentType) {
+	if len(toPrune.directives) == 0 && utils.IsTypeDefSubTypeOf(toPrune.qpctx.schema, refiningType, toPrune.parentType) {
 		return pruneRefinedTypes(toPrune.enclosing, refiningType)
 	}
 
@@ -142,7 +140,7 @@ func (s *Scope) isStrictlyRefining(typ *ast.Definition) bool {
 	// the type in the chain.
 	scope := s
 	for scope != nil {
-		if scope.parentType != typ && isTypeDefSubTypeOf(s.qpctx.schema, scope.parentType, typ) {
+		if scope.parentType != typ && utils.IsTypeDefSubTypeOf(s.qpctx.schema, scope.parentType, typ) {
 			return true
 		}
 		scope = scope.enclosing

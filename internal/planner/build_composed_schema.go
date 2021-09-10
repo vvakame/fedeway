@@ -218,7 +218,6 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 		}
 
 		for _, fieldDef := range typ.Fields {
-			// TODO
 			//if len(fieldDef.Directives) == 0 {
 			//	// TODO この条件マジ？
 			//	return nil, nil, gqlerror.ErrorPosf(
