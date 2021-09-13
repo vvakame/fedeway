@@ -30,14 +30,12 @@ QueryPlan {
 							isbn
 						}
 					} =>
-					query ($representations: [_Any!]!) {
-						_entities(representations: $representations) {
-							... on Book {
-								__typename
-								isbn
-								title
-								year
-							}
+					{
+						... on Book {
+							__typename
+							isbn
+							title
+							year
 						}
 					}
 				},
@@ -52,11 +50,9 @@ QueryPlan {
 							year
 						}
 					} =>
-					query ($representations: [_Any!]!) {
-						_entities(representations: $representations) {
-							... on Book {
-								name
-							}
+					{
+						... on Book {
+							name
 						}
 					}
 				},

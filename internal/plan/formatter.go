@@ -1,9 +1,14 @@
 package plan
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/vektah/gqlparser/v2/ast"
+	gqlformatter "github.com/vektah/gqlparser/v2/formatter"
+	"github.com/vektah/gqlparser/v2/parser"
 )
 
 type Formatter interface {
@@ -143,7 +148,7 @@ func (f *formatter) FormatPlanNode(node PlanNode) {
 
 		f.IncrementIndent()
 
-		f.WriteMultiLine(strings.TrimSpace(node.Operation))
+		f.formatOperationString(node.Operation)
 
 		f.DecrementIndent()
 		f.WriteString("}")
@@ -227,4 +232,50 @@ func (f *formatter) FormatQueryPlanSelectionNode(node QueryPlanSelectionNode) {
 	default:
 		panic(fmt.Sprintf("unknown type: %T", node))
 	}
+}
+
+func (f *formatter) formatOperationString(operation string) {
+	document, err := parser.ParseQuery(&ast.Source{
+		Input: operation,
+	})
+	if err != nil {
+		panic(err)
+	}
+	document = flattenEntitiesField(document)
+	var buf bytes.Buffer
+	gqlformatter.NewFormatter(&buf).FormatQueryDocument(document)
+	f.WriteMultiLine(strings.TrimSpace(buf.String()))
+}
+
+func flattenEntitiesField(document *ast.QueryDocument) *ast.QueryDocument {
+	for _, operation := range document.Operations {
+		if operation.Operation != ast.Query {
+			continue
+		} else if len(operation.SelectionSet) == 0 {
+			continue
+		}
+
+		firstSelection := operation.SelectionSet[0]
+		field, ok := firstSelection.(*ast.Field)
+		if !ok || field == nil {
+			continue
+		}
+
+		if field.Name != "_entities" {
+			continue
+		}
+
+		document = &ast.QueryDocument{
+			Operations: ast.OperationList{
+				&ast.OperationDefinition{
+					Operation:    "",
+					SelectionSet: field.SelectionSet,
+				},
+			},
+			Fragments: document.Fragments,
+		}
+		break
+	}
+
+	return document
 }

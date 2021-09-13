@@ -40,7 +40,11 @@ func TestFormatter(t *testing.T) {
 				QueryPlan {
 					Sequence {
 						Fetch(service: "users") {
-							{ me { id } }
+							query {
+								me {
+									id
+								}
+							}
 						},
 					},
 				}
@@ -78,7 +82,11 @@ func TestFormatter(t *testing.T) {
 									upc
 								}
 							} =>
-							{ me { id } }
+							query {
+								me {
+									id
+								}
+							}
 						},
 					},
 				}
@@ -109,7 +117,11 @@ func TestFormatter(t *testing.T) {
 					Sequence {
 						Flatten(path: "me.@.product") {
 							Fetch(service: "users") {
-								{ me { id } }
+								query {
+									me {
+										id
+									}
+								}
 							},
 						},
 					},
