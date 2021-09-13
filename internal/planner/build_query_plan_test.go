@@ -3,6 +3,7 @@ package planner
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"path"
 	"regexp"
@@ -22,11 +23,6 @@ func TestBuildQueryPlan(t *testing.T) {
 	const expectFileDir = "./testdata/buildQueryPlan/expected"
 
 	files, err := ioutil.ReadDir(testFileDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	re, err := regexp.Compile("^# schema:\\s*([^\\s]+)")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,13 +59,13 @@ func TestBuildQueryPlan(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var schemaFile string
-			{
-				ss := re.FindStringSubmatch(string(b1))
-				if len(ss) != 2 {
-					t.Fatal("schema file directive mismatch")
-				}
-				schemaFile = ss[1]
+			schemaFile := findSchemaFileName(t, string(b1))
+			t.Logf("schema: %s, operation: %s", schemaFile, file.Name())
+
+			var qpOpts []QueryPlanOption
+			if findOptionAutoFragmentization(t, string(b1)) {
+				qpOpts = append(qpOpts, WithAutoFragmentation(true))
+				t.Log("use autoFragmentation")
 			}
 
 			b2, err := ioutil.ReadFile(path.Join(testFileDir, schemaFile))
@@ -102,14 +98,12 @@ func TestBuildQueryPlan(t *testing.T) {
 				t.Fatal("operation length is 0")
 			}
 
-			t.Logf("schema: %s, operation: %s", schemaFile, file.Name())
-
 			opctx, err := buildOperationContext(ctx, schema, mh, query, "")
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			qp, err := BuildQueryPlan(ctx, opctx)
+			qp, err := BuildQueryPlan(ctx, opctx, qpOpts...)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -120,4 +114,44 @@ func TestBuildQueryPlan(t *testing.T) {
 			checkGoldenFile(t, buf.Bytes(), path.Join(expectFileDir, file.Name()+".txt"))
 		})
 	}
+}
+
+func findSchemaFileName(t *testing.T, source string) string {
+	t.Helper()
+
+	re, err := regexp.Compile("(?m)^# schema:\\s*([^\\s]+)$")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ss := re.FindStringSubmatch(source)
+	if len(ss) != 2 {
+		t.Fatal("schema file directive mismatch")
+	}
+
+	return ss[1]
+}
+
+func findOptionValue(t *testing.T, optionName, source string) string {
+	t.Helper()
+
+	pattern := fmt.Sprintf("(?m)^# option:%s:\\s*([^\\s]+)$", optionName)
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ss := re.FindStringSubmatch(source)
+	if len(ss) != 2 {
+		t.Logf("option %s value is not found", optionName)
+		return ""
+	}
+
+	return ss[1]
+}
+
+func findOptionAutoFragmentization(t *testing.T, source string) bool {
+	t.Helper()
+
+	return findOptionValue(t, "autoFragmentization", source) == "true"
 }

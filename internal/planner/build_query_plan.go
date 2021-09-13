@@ -24,10 +24,27 @@ type OperationContext struct {
 	metadata      *metadataHolder
 }
 
-func BuildQueryPlan(ctx context.Context, operationContext *OperationContext) (*plan.QueryPlan, error) {
+type queryPlanConfig struct {
+	autoFragmentation bool
+}
+
+type QueryPlanOption func(cfg *queryPlanConfig)
+
+func WithAutoFragmentation(autoFragmentation bool) QueryPlanOption {
+	return func(cfg *queryPlanConfig) {
+		cfg.autoFragmentation = autoFragmentation
+	}
+}
+
+func BuildQueryPlan(ctx context.Context, operationContext *OperationContext, opts ...QueryPlanOption) (*plan.QueryPlan, error) {
 	logger := log.FromContext(ctx)
 
-	qpctx, err := buildQueryPlanningContext(operationContext, false)
+	cfg := &queryPlanConfig{}
+	for _, opt := range opts {
+		opt(cfg)
+	}
+
+	qpctx, err := buildQueryPlanningContext(operationContext, cfg.autoFragmentation)
 	if err != nil {
 		return nil, err
 	}

@@ -1,0 +1,20 @@
+# schema: supergraphSdl.graphqls
+# option:autoFragmentization: true
+
+# experimental compression to downstream services
+# should generate fragments internally to downstream requests
+query {
+    topReviews {
+        body
+        author {
+            username
+        }
+        product {
+            name
+            price
+            details {
+                country
+            }
+        }
+    }
+}
