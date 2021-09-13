@@ -1,0 +1,15 @@
+# schema: supergraphSdl.graphqls
+
+# for abstract types
+# should preserve directives on inline fragments even if the fragment is otherwise useless
+
+# TODO query ($b: Boolean!) { ← 変数定義部分がPlanに出力されるけどあっていいのかこれ？
+query myQuery($b: Boolean!) {
+    body {
+        ... on Image {
+            ... on NamedObject @include(if: $b) {
+                name
+            }
+        }
+    }
+}

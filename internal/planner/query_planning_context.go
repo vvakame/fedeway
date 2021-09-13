@@ -27,7 +27,7 @@ func buildQueryPlanningContext(operationContext *OperationContext, autoFragmenta
 	}
 
 	for _, varDef := range qpc.operation.VariableDefinitions {
-		qpc.variableDefinitions[varDef.Definition.Name] = varDef
+		qpc.variableDefinitions[varDef.Variable] = varDef
 	}
 
 	return qpc, nil
@@ -315,7 +315,11 @@ func (qpctx *queryPlanningContext) getVariableUsages(selectionSet ast.SelectionS
 	observers.OnValue(func(walker *validator.Walker, value *ast.Value) {
 		if value.Kind == ast.Variable {
 			if usages.ForName(value.Raw) == nil {
-				usages = append(usages, qpctx.variableDefinitions[value.Raw])
+				varDef := qpctx.variableDefinitions[value.Raw]
+				if varDef == nil {
+					panic(fmt.Sprintf("variable %s definition not found", value.Raw))
+				}
+				usages = append(usages, varDef)
 			}
 		}
 	})
