@@ -1,0 +1,11 @@
+# schema: supergraphSdl.graphqls
+
+# should use a single fetch when requesting multiple root fields from the same service
+query {
+    topProducts {
+        name
+    }
+    product(upc: "1") {
+        name
+    }
+}

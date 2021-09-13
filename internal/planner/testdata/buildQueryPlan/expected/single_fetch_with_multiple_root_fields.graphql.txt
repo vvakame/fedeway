@@ -1,0 +1,104 @@
+QueryPlan {
+	Sequence {
+		Fetch(service: "product") {
+			query {
+				topProducts {
+					__typename
+					... on Book {
+						__typename
+						isbn
+					}
+					... on Furniture {
+						name
+					}
+				}
+				product(upc: "1") {
+					__typename
+					... on Book {
+						__typename
+						isbn
+					}
+					... on Furniture {
+						name
+					}
+				}
+			}
+		},
+		Parallel {
+			Sequence {
+				Flatten(path: "topProducts.@") {
+					Fetch(service: "books") {
+						{
+							... on Book {
+								__typename
+								isbn
+							}
+						} =>
+						{
+							... on Book {
+								__typename
+								isbn
+								title
+								year
+							}
+						}
+					},
+				},
+				Flatten(path: "topProducts.@") {
+					Fetch(service: "product") {
+						{
+							... on Book {
+								__typename
+								isbn
+								title
+								year
+							}
+						} =>
+						{
+							... on Book {
+								name
+							}
+						}
+					},
+				},
+			},
+			Sequence {
+				Flatten(path: "product") {
+					Fetch(service: "books") {
+						{
+							... on Book {
+								__typename
+								isbn
+							}
+						} =>
+						{
+							... on Book {
+								__typename
+								isbn
+								title
+								year
+							}
+						}
+					},
+				},
+				Flatten(path: "product") {
+					Fetch(service: "product") {
+						{
+							... on Book {
+								__typename
+								isbn
+								title
+								year
+							}
+						} =>
+						{
+							... on Book {
+								name
+							}
+						}
+					},
+				},
+			},
+		},
+	},
+}
