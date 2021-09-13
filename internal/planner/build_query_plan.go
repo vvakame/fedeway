@@ -286,13 +286,17 @@ func splitSubfields(ctx context.Context, qpctx *queryPlanningContext, path ast.P
 
 		// Can we fetch the required fields from the parent group?
 		satisfied := true
-	OUTER:
 		for _, requiredField := range requiredFields {
+			var found bool
 			for _, providedField := range parentGroup.ProvidedFields {
-				if !matchesField(requiredField, providedField) {
-					satisfied = false
-					break OUTER
+				if matchesField(requiredField, providedField) {
+					found = true
+					break
 				}
+			}
+			if !found {
+				satisfied = false
+				break
 			}
 		}
 		if satisfied {
@@ -521,14 +525,11 @@ func (fg *FetchGroup) mergeDependentGroups(that *FetchGroup) {
 		// groups with the same service and merge path first.
 		var existingDependentGroup *FetchGroup
 		for _, group := range fg.dependentGroups() {
-			if group.ServiceName != dependentGroup.ServiceName {
-				continue
+			if group.ServiceName == dependentGroup.ServiceName &&
+				group.MergeAt.String() == dependentGroup.MergeAt.String() {
+				existingDependentGroup = group
+				break
 			}
-			if group.MergeAt.String() != dependentGroup.MergeAt.String() {
-				continue
-			}
-			existingDependentGroup = group
-			break
 		}
 		if existingDependentGroup != nil {
 			existingDependentGroup.mergeDependentGroups(dependentGroup)
@@ -804,8 +805,8 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 func completeField(ctx context.Context, qpctx *queryPlanningContext, scope *Scope, parentGroup *FetchGroup, path ast.Path, fields FieldSet) (*Field, error) {
 	fieldNode := fields[0].FieldNode
 	fieldDef := fields[0].FieldDef
-
 	returnType := qpctx.schema.Types[fieldDef.Type.Name()]
+
 	if !isCompositeType(returnType) {
 		// FIXME: We should look at all field nodes to make sure we take directives
 		// into account (or remove directives for the time being).
@@ -817,6 +818,7 @@ func completeField(ctx context.Context, qpctx *queryPlanningContext, scope *Scop
 	}
 
 	// For composite types, we need to recurse.
+
 	fieldPath := addPath(path, getResponseName(fieldNode), fieldDef.Type)
 
 	subGroup := &FetchGroup{
@@ -940,6 +942,7 @@ func collectSubfields(ctx context.Context, qpctx *queryPlanningContext, returnTy
 }
 
 func addPath(path ast.Path, name string, typ *ast.Type) ast.Path {
+	path = append(ast.Path{}, path...)
 	path = append(path, ast.PathName(name))
 	for typ != nil && typ.NamedType == "" {
 		if typ.Elem != nil {
