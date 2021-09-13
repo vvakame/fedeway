@@ -1,0 +1,13 @@
+# schema: supergraphSdl.graphqls
+
+# interface fragments should expand into possible types only
+query {
+    books {
+        ... on Product {
+            name
+            ... on Furniture {
+                upc
+            }
+        }
+    }
+}

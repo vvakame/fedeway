@@ -1,0 +1,10 @@
+# schema: supergraphSdl.graphqls
+
+# interface inside interface should expand into possible types only
+query {
+    product(upc: "") {
+        details {
+            country
+        }
+    }
+}

@@ -1,0 +1,19 @@
+QueryPlan {
+	Fetch(service: "product") {
+		query {
+			product(upc: "") {
+				__typename
+				... on Book {
+					details {
+						country
+					}
+				}
+				... on Furniture {
+					details {
+						country
+					}
+				}
+			}
+		}
+	},
+}

@@ -1,0 +1,12 @@
+# schema: supergraphSdl.graphqls
+
+# for abstract types
+# should break up when traversing an extension field on an interface type from a service
+query {
+    topProducts {
+        price
+        reviews {
+            body
+        }
+    }
+}
