@@ -1,0 +1,14 @@
+# schema: supergraphSdl.graphqls
+# option:autoFragmentization: true
+
+# experimental compression to downstream services
+# should generate fragments for selection sets of length 3 or greater
+query {
+    topReviews {
+        id
+        body
+        author {
+            username
+        }
+    }
+}

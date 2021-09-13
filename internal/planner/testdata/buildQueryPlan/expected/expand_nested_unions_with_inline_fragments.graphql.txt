@@ -1,0 +1,19 @@
+QueryPlan {
+	Fetch(service: "documents") {
+		query {
+			body {
+				__typename
+				... on Image {
+					attributes {
+						url
+					}
+				}
+				... on Text {
+					attributes {
+						bold
+					}
+				}
+			}
+		}
+	},
+}

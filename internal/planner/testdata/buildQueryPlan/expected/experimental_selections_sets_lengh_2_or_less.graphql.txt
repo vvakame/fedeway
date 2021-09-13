@@ -1,0 +1,12 @@
+QueryPlan {
+	Fetch(service: "reviews") {
+		query {
+			topReviews {
+				body
+				author {
+					username
+				}
+			}
+		}
+	},
+}

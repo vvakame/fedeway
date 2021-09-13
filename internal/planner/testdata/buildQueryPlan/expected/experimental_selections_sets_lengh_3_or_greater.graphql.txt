@@ -1,0 +1,16 @@
+QueryPlan {
+	Fetch(service: "reviews") {
+		query {
+			topReviews {
+				... __QueryPlanFragment_0__
+			}
+		}
+		fragment __QueryPlanFragment_0__ on Review {
+			id
+			body
+			author {
+				username
+			}
+		}
+	},
+}

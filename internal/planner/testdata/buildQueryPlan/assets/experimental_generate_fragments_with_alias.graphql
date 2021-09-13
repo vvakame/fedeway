@@ -1,0 +1,20 @@
+# schema: supergraphSdl.graphqls
+# option:autoFragmentization: true
+
+# experimental compression to downstream services
+# should generate fragments correctly when aliases are used
+query {
+    reviews: topReviews {
+        content: body
+        author {
+            username
+        }
+        product {
+            name
+            cost: price
+            details {
+                origin: country
+            }
+        }
+    }
+}

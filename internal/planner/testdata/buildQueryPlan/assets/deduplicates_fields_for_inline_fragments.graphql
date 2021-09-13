@@ -1,0 +1,31 @@
+# schema: supergraphSdl.graphqls
+
+# deduplicates fields / selections regardless of adjacency and type condition nesting
+# for inline fragments
+query {
+    body {
+        ... on Image {
+            ... on Body {
+                ... on Text {
+                    attributes {
+                        bold
+                    }
+                }
+            }
+        }
+        ... on Body {
+            ... on Text {
+                attributes {
+                    bold
+                    text
+                }
+            }
+        }
+        ... on Text {
+            attributes {
+                bold
+                text
+            }
+        }
+    }
+}

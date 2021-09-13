@@ -1,0 +1,27 @@
+# schema: supergraphSdl.graphqls
+
+# should properly expand nested unions with inline fragments
+query {
+    body {
+        ... on Image {
+            ... on Body {
+                ... on Image {
+                    attributes {
+                        url
+                    }
+                }
+                ... on Text {
+                    attributes {
+                        bold
+                        text
+                    }
+                }
+            }
+        }
+        ... on Text {
+            attributes {
+                bold
+            }
+        }
+    }
+}
