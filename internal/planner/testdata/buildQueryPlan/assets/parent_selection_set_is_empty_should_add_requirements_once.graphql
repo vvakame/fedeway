@@ -1,0 +1,12 @@
+# schema: supergraphSdl.graphqls
+
+# when the parent selection set is empty
+# should only add requirements once
+query {
+    me {
+        reviews {
+            body
+        }
+        numberOfReviews
+    }
+}

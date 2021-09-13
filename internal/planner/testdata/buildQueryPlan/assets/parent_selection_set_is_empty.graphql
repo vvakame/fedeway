@@ -1,0 +1,11 @@
+# schema: supergraphSdl.graphqls
+
+# when the parent selection set is empty
+# should add the field's requirements to the parent selection set and use a dependent fetch
+query {
+    me {
+        reviews {
+            body
+        }
+    }
+}

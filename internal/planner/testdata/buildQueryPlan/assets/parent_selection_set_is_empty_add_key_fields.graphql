@@ -1,0 +1,13 @@
+# schema: supergraphSdl.graphqls
+
+# when the parent selection set is empty
+# should add key fields to the parent selection set and use a dependent fetch
+query {
+    topReviews {
+        author {
+            name {
+                first
+            }
+        }
+    }
+}

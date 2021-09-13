@@ -1,0 +1,19 @@
+# schema: supergraphSdl.graphqls
+
+# for abstract types
+# should not get confused by an inline fragment multiple times
+query {
+    topProducts {
+        __typename
+        ... on Book {
+            ...on Product {
+                price
+            }
+        }
+        ... on Furniture {
+            ... on Product {
+                price
+            }
+        }
+    }
+}

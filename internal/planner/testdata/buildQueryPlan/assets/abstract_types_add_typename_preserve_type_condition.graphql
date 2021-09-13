@@ -1,0 +1,13 @@
+# schema: supergraphSdl.graphqls
+
+# for abstract types
+# should preserve type conditions for value types
+query {
+    body {
+        ... on Image {
+            ... on NamedObject {
+                name
+            }
+        }
+    }
+}

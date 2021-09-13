@@ -1,0 +1,14 @@
+# schema: supergraphSdl.graphqls
+
+# should use a single fetch when requesting relationship subfields and provided keys from the same service
+query {
+    topReviews {
+        body
+        author {
+            id
+            reviews {
+                body
+            }
+        }
+    }
+}

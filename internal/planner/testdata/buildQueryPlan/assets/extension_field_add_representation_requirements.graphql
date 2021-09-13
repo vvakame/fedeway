@@ -1,0 +1,12 @@
+# schema: supergraphSdl.graphqls
+
+# when requesting an extension field from another service
+# should add the field's representation requirements to the parent selection set and use a dependent fetch
+query {
+    me {
+        username
+        reviews {
+            body
+        }
+    }
+}

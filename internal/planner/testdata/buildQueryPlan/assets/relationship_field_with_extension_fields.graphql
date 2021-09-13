@@ -1,0 +1,11 @@
+# schema: supergraphSdl.graphqls
+
+# when requesting a relationship field with extension subfields from a different service
+# should first fetch the object using a key from the base service and then pass through the requirements
+query {
+    topReviews {
+        author {
+            birthDate
+        }
+    }
+}

@@ -1,0 +1,9 @@
+# schema: supergraphSdl.graphqls
+
+# for abstract types
+# should add __typename when fetching objects of an interface type from a service
+query {
+    topProducts {
+        price
+    }
+}

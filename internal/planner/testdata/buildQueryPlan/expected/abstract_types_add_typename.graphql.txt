@@ -1,0 +1,15 @@
+QueryPlan {
+	Fetch(service: "product") {
+		query {
+			topProducts {
+				__typename
+				... on Book {
+					price
+				}
+				... on Furniture {
+					price
+				}
+			}
+		}
+	},
+}

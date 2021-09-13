@@ -1,0 +1,31 @@
+QueryPlan {
+	Sequence {
+		Fetch(service: "reviews") {
+			query {
+				topReviews {
+					author {
+						__typename
+						id
+					}
+				}
+			}
+		},
+		Flatten(path: "topReviews.@.author") {
+			Fetch(service: "accounts") {
+				{
+					... on User {
+						__typename
+						id
+					}
+				} =>
+				{
+					... on User {
+						name {
+							first
+						}
+					}
+				}
+			},
+		},
+	},
+}

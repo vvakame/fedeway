@@ -1,0 +1,29 @@
+QueryPlan {
+	Sequence {
+		Fetch(service: "product") {
+			query {
+				topCars {
+					__typename
+					id
+					price
+				}
+			}
+		},
+		Flatten(path: "topCars.@") {
+			Fetch(service: "reviews") {
+				{
+					... on Car {
+						__typename
+						id
+						price
+					}
+				} =>
+				{
+					... on Car {
+						retailPrice
+					}
+				}
+			},
+		},
+	},
+}

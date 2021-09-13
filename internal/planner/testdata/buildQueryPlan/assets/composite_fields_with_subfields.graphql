@@ -1,0 +1,14 @@
+# schema: supergraphSdl.graphqls
+
+# when requesting a composite field with subfields from another service
+# should add key fields to the parent selection set and use a dependent fetch
+query {
+    topReviews {
+        body
+        author {
+            name {
+                first
+            }
+        }
+    }
+}

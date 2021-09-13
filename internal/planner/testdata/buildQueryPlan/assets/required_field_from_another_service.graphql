@@ -1,0 +1,9 @@
+# schema: supergraphSdl.graphqls
+
+# when requesting a field defined in another service which requires a field in the base service
+# should add the field provided by base service in first Fetch
+query {
+    topCars {
+        retailPrice
+    }
+}

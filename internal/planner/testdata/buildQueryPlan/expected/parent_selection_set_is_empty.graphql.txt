@@ -1,0 +1,29 @@
+QueryPlan {
+	Sequence {
+		Fetch(service: "accounts") {
+			query {
+				me {
+					__typename
+					id
+				}
+			}
+		},
+		Flatten(path: "me") {
+			Fetch(service: "reviews") {
+				{
+					... on User {
+						__typename
+						id
+					}
+				} =>
+				{
+					... on User {
+						reviews {
+							body
+						}
+					}
+				}
+			},
+		},
+	},
+}

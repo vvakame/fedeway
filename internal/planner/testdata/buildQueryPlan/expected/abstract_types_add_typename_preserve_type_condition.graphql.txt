@@ -1,0 +1,14 @@
+QueryPlan {
+	Fetch(service: "documents") {
+		query {
+			body {
+				__typename
+				... on Image {
+					... on NamedObject {
+						name
+					}
+				}
+			}
+		}
+	},
+}

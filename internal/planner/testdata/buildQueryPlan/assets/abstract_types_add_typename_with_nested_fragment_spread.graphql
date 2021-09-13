@@ -1,0 +1,19 @@
+# schema: supergraphSdl.graphqls
+
+# for abstract types
+# should not get confused by a fragment spread multiple times
+fragment Price on Product {
+    price
+}
+
+query {
+    topProducts {
+        __typename
+        ... on Book {
+            ...Price
+        }
+        ... on Furniture {
+            ...Price
+        }
+    }
+}
