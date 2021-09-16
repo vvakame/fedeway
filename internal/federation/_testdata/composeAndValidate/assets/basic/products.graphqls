@@ -1,0 +1,10 @@
+# option:name: Products
+extend type Query {
+    topProducts(first: Int): [Product]
+}
+type Product @key(fields: "upc") {
+    upc: String!
+    sku: String!
+    name: String
+    price: String
+}

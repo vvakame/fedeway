@@ -1,0 +1,6 @@
+# option:name: Inventory
+extend type Product @key(fields: "upc") {
+    upc: String! @external
+    inStock: Boolean
+    # quantity: Int
+}

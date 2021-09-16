@@ -9,6 +9,7 @@ require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/go-logr/logr v1.1.0
 	github.com/goccy/go-yaml v1.9.3
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/vektah/gqlparser/v2 v2.2.0
 )
@@ -16,6 +17,7 @@ require (
 require (
 	github.com/agnivade/levenshtein v1.0.3 // indirect
 	github.com/fatih/color v1.12.0 // indirect
+	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
