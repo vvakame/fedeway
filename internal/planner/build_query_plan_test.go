@@ -19,8 +19,8 @@ import (
 )
 
 func TestBuildQueryPlan(t *testing.T) {
-	const testFileDir = "./testdata/buildQueryPlan/assets"
-	const expectFileDir = "./testdata/buildQueryPlan/expected"
+	const testFileDir = "./_testdata/buildQueryPlan/assets"
+	const expectFileDir = "./_testdata/buildQueryPlan/expected"
 
 	files, err := ioutil.ReadDir(testFileDir)
 	if err != nil {

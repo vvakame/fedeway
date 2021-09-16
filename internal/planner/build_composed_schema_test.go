@@ -19,8 +19,8 @@ import (
 )
 
 func TestBuildComposedSchema(t *testing.T) {
-	const testFileDir = "./testdata/buildComposedSchema/assets"
-	expectFileDir := "./testdata/buildComposedSchema/expected"
+	const testFileDir = "./_testdata/buildComposedSchema/assets"
+	expectFileDir := "./_testdata/buildComposedSchema/expected"
 
 	files, err := ioutil.ReadDir(testFileDir)
 	if err != nil {
