@@ -1,15 +1,14 @@
-package planner
+package testutils
 
 import (
 	"io/ioutil"
 	"os"
 	"path"
-	"testing"
 
 	"github.com/pmezard/go-difflib/difflib"
 )
 
-func checkGoldenFile(t *testing.T, actual []byte, expectFilePath string) {
+func CheckGoldenFile(t TestingT, actual []byte, expectFilePath string) {
 	t.Helper()
 
 	expectFileDir := path.Dir(expectFilePath)

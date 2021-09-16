@@ -3,10 +3,8 @@ package planner
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io/ioutil"
 	"path"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -16,6 +14,7 @@ import (
 	"github.com/vektah/gqlparser/v2/parser"
 	"github.com/vvakame/fedeway/internal/log"
 	"github.com/vvakame/fedeway/internal/plan"
+	"github.com/vvakame/fedeway/internal/testutils"
 )
 
 func TestBuildQueryPlan(t *testing.T) {
@@ -59,11 +58,11 @@ func TestBuildQueryPlan(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			schemaFile := findSchemaFileName(t, string(b1))
+			schemaFile := testutils.FindSchemaFileName(t, string(b1))
 			t.Logf("schema: %s, operation: %s", schemaFile, file.Name())
 
 			var qpOpts []QueryPlanOption
-			if findOptionAutoFragmentization(t, string(b1)) {
+			if testutils.FindOptionBool(t, "autoFragmentization", string(b1)) {
 				qpOpts = append(qpOpts, WithAutoFragmentation(true))
 				t.Log("use autoFragmentation")
 			}
@@ -111,47 +110,7 @@ func TestBuildQueryPlan(t *testing.T) {
 			var buf bytes.Buffer
 			plan.NewFormatter(&buf).FormatQueryPlan(qp)
 
-			checkGoldenFile(t, buf.Bytes(), path.Join(expectFileDir, file.Name()+".txt"))
+			testutils.CheckGoldenFile(t, buf.Bytes(), path.Join(expectFileDir, file.Name()+".txt"))
 		})
 	}
-}
-
-func findSchemaFileName(t *testing.T, source string) string {
-	t.Helper()
-
-	re, err := regexp.Compile("(?m)^# schema:\\s*([^\\s]+)$")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ss := re.FindStringSubmatch(source)
-	if len(ss) != 2 {
-		t.Fatal("schema file directive mismatch")
-	}
-
-	return ss[1]
-}
-
-func findOptionValue(t *testing.T, optionName, source string) string {
-	t.Helper()
-
-	pattern := fmt.Sprintf("(?m)^# option:%s:\\s*([^\\s]+)$", optionName)
-	re, err := regexp.Compile(pattern)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ss := re.FindStringSubmatch(source)
-	if len(ss) != 2 {
-		t.Logf("option %s value is not found", optionName)
-		return ""
-	}
-
-	return ss[1]
-}
-
-func findOptionAutoFragmentization(t *testing.T, source string) bool {
-	t.Helper()
-
-	return findOptionValue(t, "autoFragmentization", source) == "true"
 }

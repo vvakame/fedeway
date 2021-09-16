@@ -16,6 +16,7 @@ import (
 	"github.com/vektah/gqlparser/v2/parser"
 	"github.com/vektah/gqlparser/v2/validator"
 	"github.com/vvakame/fedeway/internal/log"
+	"github.com/vvakame/fedeway/internal/testutils"
 )
 
 func TestBuildComposedSchema(t *testing.T) {
@@ -64,19 +65,19 @@ func TestBuildComposedSchema(t *testing.T) {
 
 			var buf bytes.Buffer
 			formatter.NewFormatter(&buf).FormatSchema(schema)
-			checkGoldenFile(t, buf.Bytes(), path.Join(expectFileDir, fileName+".composed.graphqls"))
+			testutils.CheckGoldenFile(t, buf.Bytes(), path.Join(expectFileDir, fileName+".composed.graphqls"))
 
 			b, err = yaml.Marshal(mh)
 			if err != nil {
 				t.Fatal(err)
 			}
-			checkGoldenFile(t, b, path.Join(expectFileDir, fileName+".metadata.yaml"))
+			testutils.CheckGoldenFile(t, b, path.Join(expectFileDir, fileName+".metadata.yaml"))
 
 			b, err = json.MarshalIndent(mh, "", "  ")
 			if err != nil {
 				t.Fatal(err)
 			}
-			checkGoldenFile(t, b, path.Join(expectFileDir, fileName+".metadata.json"))
+			testutils.CheckGoldenFile(t, b, path.Join(expectFileDir, fileName+".metadata.json"))
 		})
 	}
 }
