@@ -2,8 +2,10 @@ package federation
 
 import (
 	"context"
+	"sort"
 
 	"github.com/vektah/gqlparser/v2/ast"
+	"github.com/vvakame/fedeway/internal/graphql"
 )
 
 var emptyQueryDefinition = &TypeDefinitionEntity{
@@ -72,6 +74,17 @@ type KeyDirectivesMap map[string]ServiceNameToKeyDirectivesMap
 // shared across at least 2 services.
 // original: type ValueTypes = Set<string>;
 type ValueTypes []string
+
+type buildMaps struct {
+	typeToServiceMap        TypeToServiceMap
+	typeDefinitionsMap      TypeDefinitionsMap
+	typeExtensionsMap       TypeDefinitionsMap
+	directiveDefinitionsMap DirectiveDefinitionsMap
+	externalFields          []*ExternalFieldDefinition
+	keyDirectivesMap        KeyDirectivesMap
+	valueTypes              ValueTypes
+	directiveMetadata       *DirectiveMetadata
+}
 
 func buildMapsFromServiceList(ctx context.Context, serviceList []*ServiceDefinition) (*buildMaps, error) {
 	typeDefinitionsMap := TypeDefinitionsMap{}
@@ -279,15 +292,139 @@ func buildMapsFromServiceList(ctx context.Context, serviceList []*ServiceDefinit
 	}, nil
 }
 
-type buildMaps struct {
-	typeToServiceMap        TypeToServiceMap
-	typeDefinitionsMap      TypeDefinitionsMap
-	typeExtensionsMap       TypeDefinitionsMap
-	directiveDefinitionsMap DirectiveDefinitionsMap
-	externalFields          []*ExternalFieldDefinition
-	keyDirectivesMap        KeyDirectivesMap
-	valueTypes              ValueTypes
-	directiveMetadata       *DirectiveMetadata
+func buildSchemaFromDefinitionsAndExtensions(typeDefinitionsMap TypeDefinitionsMap, typeExtensionsMap TypeDefinitionsMap, directiveDefinitionsMap DirectiveDefinitionsMap, directiveMetadata *DirectiveMetadata, serviceList []*ServiceDefinition) (*ast.SchemaDocument, []error) {
+	// TODO errors の型が gqlerror のやつかもしれない
+	var errors []error
+
+	// We only want to include the definitions of other known Apollo directives
+	// (currently just @tag) if there are usages.
+	var otherKnownDirectiveDefinitionsToInclude ast.DirectiveDefinitionList
+	for _, directive := range otherKnownDirectiveDefinitions {
+		if directiveMetadata.HasUsage(directive.Name) {
+			otherKnownDirectiveDefinitionsToInclude = append(otherKnownDirectiveDefinitionsToInclude, directive)
+		}
+	}
+
+	graphNameToEnumValueName, fieldSetScalar, joinTypeDirective, joinFieldDirective, joinOwnerDirective, joinGraphEnum, joinGraphDirective := getJoinDefinitions(serviceList)
+	_ = graphNameToEnumValueName
+
+	// original では ast.Schema を組み立てているが、validatorの詳細が公開されていなかったりするので ast.SchemaDocument を組み立てる
+	schemaDoc := &ast.SchemaDocument{}
+	schemaDoc.Directives = append(schemaDoc.Directives, CoreDirective)
+	schemaDoc.Directives = append(schemaDoc.Directives, joinFieldDirective)
+	schemaDoc.Directives = append(schemaDoc.Directives, joinTypeDirective)
+	schemaDoc.Directives = append(schemaDoc.Directives, joinOwnerDirective)
+	schemaDoc.Directives = append(schemaDoc.Directives, joinGraphDirective)
+	schemaDoc.Directives = append(schemaDoc.Directives, graphql.SpecifiedDirectives...)
+	schemaDoc.Directives = append(schemaDoc.Directives, federationDirectives...)
+	schemaDoc.Directives = append(schemaDoc.Directives, otherKnownDirectiveDefinitionsToInclude...)
+	schemaDoc.Definitions = append(schemaDoc.Definitions, fieldSetScalar, joinGraphEnum)
+
+	// Extend the blank schema with the base type definitions (as an AST node)
+	// originalではschemaとdefinitionsDocumentを別個に扱っているがこの実装では最初からschema documentを増築していく
+	typeDefinitionNames := make([]string, 0, len(typeDefinitionsMap))
+	for k := range typeDefinitionsMap {
+		typeDefinitionNames = append(typeDefinitionNames, k)
+	}
+	sort.Strings(typeDefinitionNames)
+	for _, typeDefinitionName := range typeDefinitionNames {
+		typeDefinitions := typeDefinitionsMap[typeDefinitionName]
+		// See if any of our Objects or Interfaces implement any interfaces at all.
+		// If not, we can return early.
+		var foundInterfaceLike bool
+		definitions := make(ast.DefinitionList, 0, len(typeDefinitions))
+		for _, typeDefinition := range typeDefinitions {
+			definitions = append(definitions, typeDefinition.Definition)
+			if len(typeDefinition.Definition.Interfaces) != 0 {
+				foundInterfaceLike = true
+				break
+			}
+		}
+		if !foundInterfaceLike {
+			// TODO ここで ServiceName の情報が失われている気がするが…？
+			schemaDoc.Definitions = append(schemaDoc.Definitions, definitions...)
+			continue
+		}
+
+		var uniqueInterfaces []string
+		for _, objectTypeDef := range typeDefinitions {
+		OUTER:
+			for _, interfaceName := range objectTypeDef.Definition.Interfaces {
+				for _, knownInterface := range uniqueInterfaces {
+					if interfaceName == knownInterface {
+						continue OUTER
+					}
+				}
+				uniqueInterfaces = append(uniqueInterfaces, interfaceName)
+			}
+		}
+
+		// No interfaces, no aggregation - just return what we got.
+		if len(uniqueInterfaces) == 0 {
+			// TODO ここで ServiceName の情報が失われている気がするが…？
+			schemaDoc.Definitions = append(schemaDoc.Definitions, definitions...)
+			continue
+		}
+
+		first := typeDefinitions[0]
+		rest := typeDefinitions[1:]
+
+		for _, typeDefinition := range rest {
+			// TODO ここで ServiceName の情報が失われている気がするが…？
+			schemaDoc.Definitions = append(schemaDoc.Definitions, typeDefinition.Definition)
+		}
+
+		// TODO ここで ServiceName の情報が失われている気がするが…？
+		{
+			copied := *first.Definition
+			first.Definition = &copied
+		}
+		first.Definition.Interfaces = uniqueInterfaces
+		schemaDoc.Definitions = append(schemaDoc.Definitions, first.Definition)
+	}
+	directiveDefinitionNames := make([]string, 0, len(directiveDefinitionsMap))
+	for k := range directiveDefinitionsMap {
+		directiveDefinitionNames = append(directiveDefinitionNames, k)
+	}
+	sort.Strings(directiveDefinitionNames)
+	for _, directiveDefinitionName := range directiveDefinitionNames {
+		definitions := directiveDefinitionsMap[directiveDefinitionName]
+		for _, definition := range definitions {
+			schemaDoc.Directives = append(schemaDoc.Directives, definition)
+			break // 先頭を処理したら後続は全部内容同じ… のはず
+		}
+	}
+
+	// TODO errors = validateSDL(definitionsDocument, schema, compositionRules);
+
+	// Extend the schema with the extension definitions (as an AST node)
+	typeExtensionNames := make([]string, 0, len(typeExtensionsMap))
+	for k := range typeExtensionsMap {
+		typeExtensionNames = append(typeExtensionNames, k)
+	}
+	sort.Strings(typeExtensionNames)
+	for _, typeExtensionName := range typeExtensionNames {
+		typeExtensions := typeExtensionsMap[typeExtensionName]
+		for _, typeExtension := range typeExtensions {
+			// TODO ここで ServiceName の情報が失われている気がするが…？
+			schemaDoc.Extensions = append(schemaDoc.Extensions, typeExtension.Definition)
+		}
+	}
+
+	// TODO   errors.push(...validateSDL(extensionsDocument, schema, compositionRules));
+
+	// Remove apollo type system directives from the final schema
+	newDirectives := make(ast.DirectiveDefinitionList, 0, len(schemaDoc.Directives))
+	for _, directive := range schemaDoc.Directives {
+		if isFederationDirective(directive) {
+			continue
+		}
+		newDirectives = append(newDirectives, directive)
+	}
+	schemaDoc.Directives = newDirectives
+
+	// TODO ここvalidateしてschemaにしてから返すか悩ましい
+	return schemaDoc, errors
 }
 
 func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.Schema, string, []error) {
@@ -306,13 +443,13 @@ func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.S
 	directiveMetadata := buildMapsResult.directiveMetadata
 
 	_ = typeToServiceMap
-	_ = typeDefinitionsMap
-	_ = typeExtensionsMap
-	_ = directiveDefinitionsMap
 	_ = externalFields
 	_ = keyDirectivesMap
 	_ = valueTypes
-	_ = directiveMetadata
+
+	schemaDoc, errors := buildSchemaFromDefinitionsAndExtensions(typeDefinitionsMap, typeExtensionsMap, directiveDefinitionsMap, directiveMetadata, services)
+	_ = schemaDoc
+	_ = errors
 
 	panic("not implemented")
 }

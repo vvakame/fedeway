@@ -8,6 +8,13 @@ import (
 	"github.com/vektah/gqlparser/v2/parser"
 )
 
+// for formatter
+var blankPos = &ast.Position{
+	Src: &ast.Source{
+		BuiltIn: false,
+	},
+}
+
 func stripExternalFieldsFromTypeDefs(typeDefs *ast.SchemaDocument, serviceName string) (*ast.SchemaDocument, []*ExternalFieldDefinition) {
 	var strippedFields []*ExternalFieldDefinition
 
@@ -164,4 +171,14 @@ func typeNodesAreEquivalent(firstNode *ast.Definition, secondNode *ast.Definitio
 	}
 
 	return true
+}
+
+func isFederationDirective(directive *ast.DirectiveDefinition) bool {
+	for _, node := range federationDirectives {
+		if node.Name == directive.Name {
+			return true
+		}
+	}
+
+	return false
 }
