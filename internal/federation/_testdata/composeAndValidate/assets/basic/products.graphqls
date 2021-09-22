@@ -1,4 +1,5 @@
 # option:name: Products
+# option:url:  http://products.example.com/query
 extend type Query {
     topProducts(first: Int): [Product]
 }

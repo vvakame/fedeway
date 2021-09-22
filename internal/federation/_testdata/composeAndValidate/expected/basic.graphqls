@@ -8,7 +8,7 @@ directive @join__type(graph: join__Graph!, key: join__FieldSet) on OBJECT | INTE
 directive @key(fields: String!) on OBJECT | INTERFACE
 directive @provides(fields: String!) on FIELD_DEFINITION
 directive @requires(fields: String!) on FIELD_DEFINITION
-type Product @key(fields: "upc") @key(fields: "upc") @key(fields: "upc") {
+type Product @key(fields: "upc") {
 	upc: String!
 	sku: String!
 	name: String
@@ -26,7 +26,7 @@ type Review @key(fields: "id") {
 	author: User
 	product: Product
 }
-type User @key(fields: "id") @key(fields: "id") {
+type User @key(fields: "id") {
 	id: ID!
 	name: String
 	username: String
@@ -45,8 +45,8 @@ enum core__Purpose {
 }
 scalar join__FieldSet
 enum join__Graph {
-	REVIEWS
-	ACCOUNTS
-	INVENTORY
-	PRODUCTS
+	ACCOUNTS @join__graph(name: "Accounts", url: "http://accounts.example.com/query")
+	INVENTORY @join__graph(name: "Inventory", url: "http://inventory.example.com/query")
+	PRODUCTS @join__graph(name: "Products", url: "http://products.example.com/query")
+	REVIEWS @join__graph(name: "Reviews", url: "http://reviews.example.com/query")
 }

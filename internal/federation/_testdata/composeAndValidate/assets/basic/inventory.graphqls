@@ -1,4 +1,5 @@
 # option:name: Inventory
+# option:url:  http://inventory.example.com/query
 extend type Product @key(fields: "upc") {
     upc: String! @external
     inStock: Boolean

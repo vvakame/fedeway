@@ -1,4 +1,5 @@
 # option:name: Accounts
+# option:url:  http://accounts.example.com/query
 extend type Query {
     me: User
 }

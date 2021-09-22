@@ -1,4 +1,5 @@
 # option:name: Reviews
+# option:url:  http://reviews.example.com/query
 type Review @key(fields: "id") {
     id: ID!
     body: String

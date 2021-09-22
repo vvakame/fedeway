@@ -509,6 +509,33 @@ func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.S
 		errors = append(errors, gErr)
 		return nil, "", errors
 	}
+	{
+		// @key(fields: "upc") @key(fields: "upc") みたいな感じで定義が重複する場合があるので除去してやる
+		for _, def := range schema.Types {
+			newDirectives := make(ast.DirectiveList, 0, len(def.Directives))
+		OUTER:
+			for _, directive := range def.Directives {
+				for _, knownDirective := range newDirectives {
+					if directive.Name == knownDirective.Name {
+						if len(directive.Arguments) == len(knownDirective.Arguments) {
+							for idx := range directive.Arguments {
+								argA := directive.Arguments[idx]
+								argB := knownDirective.Arguments[idx]
+
+								if argA.Name == argB.Name && argA.Value.Kind == argB.Value.Kind && argA.Value.Raw == argB.Value.Raw {
+									continue OUTER
+								}
+							}
+						}
+					}
+				}
+
+				newDirectives = append(newDirectives, directive)
+			}
+
+			def.Directives = newDirectives
+		}
+	}
 
 	// TODO schema = lexicographicSortSchema(schema);
 

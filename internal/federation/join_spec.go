@@ -101,12 +101,42 @@ func getJoinGraphEnum(serviceList []*ServiceDefinition) (map[string]string, *ast
 		Name:     "join__Graph",
 		Position: blankPos,
 	}
-	for enumValueName, service := range enumValueNameToServiceDefinition {
+	enumValueNames := make([]string, 0, len(enumValueNameToServiceDefinition))
+	for enumValueName, _ := range enumValueNameToServiceDefinition {
+		enumValueNames = append(enumValueNames, enumValueName)
+	}
+	sort.Strings(enumValueNames)
+	for _, enumValueName := range enumValueNames {
+		service := enumValueNameToServiceDefinition[enumValueName]
 		graphNameToEnumValueName[service.Name] = enumValueName
-		// TODO ここで service を使ってないのはoriginalと違って明らかにおかしいんだけどどういう意図のコードなのかわからず、AST上再現もできないので一旦ほうっておく…
-		// TODO enum join__Graph に対して @join__graph をいつ付与しているか現時点では謎で、ここなのでは…？という気がしなくもない…
-		joinGraphEnum.EnumValues = append(joinGraphEnum.EnumValues, &ast.EnumValueDefinition{
+		enumValue := &ast.EnumValueDefinition{
 			Name: enumValueName,
+		}
+		joinGraphEnum.EnumValues = append(joinGraphEnum.EnumValues, enumValue)
+
+		// NOTE: original では printSupergraphSdl でやってる処理をここでやる
+		enumValue.Directives = append(enumValue.Directives, &ast.Directive{
+			Name: JoinGraphDirective.Name,
+			Arguments: ast.ArgumentList{
+				&ast.Argument{
+					Name: "name",
+					Value: &ast.Value{
+						Raw:  service.Name,
+						Kind: ast.StringValue,
+					},
+					Position: blankPos,
+				},
+				&ast.Argument{
+					Name: "url",
+					Value: &ast.Value{
+						Raw:  service.URL,
+						Kind: ast.StringValue,
+					},
+					Position: blankPos,
+				},
+			},
+			Location: ast.LocationEnumValue,
+			Position: blankPos,
 		})
 	}
 

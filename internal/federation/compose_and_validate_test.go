@@ -53,6 +53,10 @@ func TestComposeAndValidate(t *testing.T) {
 			if name == "" {
 				t.Fatalf("option:name is not exists on %s", filePath)
 			}
+			urlValue := testutils.FindOptionString(t, "url", string(b))
+			if name == "" {
+				t.Fatalf("option:name is not exists on %s", filePath)
+			}
 
 			schemaDoc, gErr := parser.ParseSchema(&ast.Source{
 				Name:  file.Name(),
@@ -65,6 +69,7 @@ func TestComposeAndValidate(t *testing.T) {
 			serviceDefs = append(serviceDefs, &ServiceDefinition{
 				TypeDefs: schemaDoc,
 				Name:     name,
+				URL:      urlValue,
 			})
 		}
 		sort.SliceStable(serviceDefs, func(i, j int) bool {
