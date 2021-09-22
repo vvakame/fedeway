@@ -15,6 +15,7 @@ var CorePurpose = &ast.Definition{
 			Description: "`SECURITY` features provide metadata necessary to securely resolve fields.",
 		},
 	},
+	Position: blankPos,
 }
 
 var CoreDirective = &ast.DirectiveDefinition{

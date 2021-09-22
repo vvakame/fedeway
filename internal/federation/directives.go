@@ -90,7 +90,7 @@ var tagDirective = &ast.DirectiveDefinition{
 		ast.LocationUnion,
 	},
 	IsRepeatable: true,
-	Position: blankPos,
+	Position:     blankPos,
 }
 
 var federationDirectives = ast.DirectiveDefinitionList{

@@ -10,9 +10,9 @@ import (
 )
 
 var FieldSetScalar = &ast.Definition{
-	Kind: ast.Scalar,
-	Name: "join__FieldSet",
-	Position:     blankPos,
+	Kind:     ast.Scalar,
+	Name:     "join__FieldSet",
+	Position: blankPos,
 }
 
 var JoinGraphDirective = &ast.DirectiveDefinition{
@@ -36,7 +36,7 @@ var JoinGraphDirective = &ast.DirectiveDefinition{
 	Locations: []ast.DirectiveLocation{
 		ast.LocationEnumValue,
 	},
-	Position:     blankPos,
+	Position: blankPos,
 }
 
 // Expectations
@@ -97,9 +97,9 @@ func getJoinGraphEnum(serviceList []*ServiceDefinition) (map[string]string, *ast
 
 	graphNameToEnumValueName := make(map[string]string)
 	joinGraphEnum := &ast.Definition{
-		Kind: ast.Enum,
-		Name: "join__Graph",
-		Position:     blankPos,
+		Kind:     ast.Enum,
+		Name:     "join__Graph",
+		Position: blankPos,
 	}
 	for enumValueName, service := range enumValueNameToServiceDefinition {
 		graphNameToEnumValueName[service.Name] = enumValueName
@@ -139,7 +139,7 @@ func getJoinFieldDirective(joinGraphEnum *ast.Definition) *ast.DirectiveDefiniti
 		Locations: []ast.DirectiveLocation{
 			ast.LocationFieldDefinition,
 		},
-		Position:     blankPos,
+		Position: blankPos,
 	}
 }
 
@@ -159,7 +159,7 @@ func getJoinOwnerDirective(joinGraphEnum *ast.Definition) *ast.DirectiveDefiniti
 			ast.LocationObject,
 			ast.LocationInterface,
 		},
-		Position:     blankPos,
+		Position: blankPos,
 	}
 }
 

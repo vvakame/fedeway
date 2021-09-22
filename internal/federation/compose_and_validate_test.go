@@ -16,8 +16,6 @@ import (
 )
 
 func TestComposeAndValidate(t *testing.T) {
-	t.SkipNow()
-
 	const testFileDir = "./_testdata/composeAndValidate/assets"
 	expectFileDir := "./_testdata/composeAndValidate/expected"
 

@@ -2,6 +2,7 @@ package plan
 
 import (
 	"fmt"
+
 	"github.com/vektah/gqlparser/v2/ast"
 )
 

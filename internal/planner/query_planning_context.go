@@ -3,6 +3,7 @@ package planner
 import (
 	"context"
 	"fmt"
+
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vektah/gqlparser/v2/validator"
