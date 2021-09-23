@@ -1,6 +1,7 @@
 package federation
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 
@@ -181,4 +182,40 @@ func isFederationDirective(directive *ast.DirectiveDefinition) bool {
 	}
 
 	return false
+}
+
+func printSelectionSet(selections ast.SelectionSet) string {
+	// alias とかはサポートしない…一旦… めんどいから…
+
+	var buf bytes.Buffer
+
+	pad := func() {
+		if buf.Len() != 0 {
+			buf.WriteString(" ")
+		}
+	}
+	var p func(selections ast.SelectionSet)
+	p = func(selections ast.SelectionSet) {
+		for _, selection := range selections {
+			switch v := selection.(type) {
+			case *ast.Field:
+				pad()
+				buf.WriteString(v.Name)
+				if len(v.SelectionSet) != 0 {
+					pad()
+					buf.WriteString("{")
+					p(v.SelectionSet)
+					pad()
+					buf.WriteString("}")
+				}
+
+			default:
+				panic(fmt.Errorf("unsupported Selection type: %T", selection))
+			}
+		}
+	}
+
+	p(selections)
+
+	return buf.String()
 }

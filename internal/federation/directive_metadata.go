@@ -105,3 +105,53 @@ func (dm *DirectiveMetadata) HasUsage(directiveName string) bool {
 	}
 	return false
 }
+
+// traverse the map of directive usages and apply metadata to the corresponding
+// `extensions` fields on the provided schema.
+func (dm *DirectiveMetadata) applyMetadataToSupergraphSchema(schema *ast.Schema) {
+	federationTypeMap := FederationTypeMap{}
+	federationFieldMap := FederationFieldMap{}
+
+	// TODO sort いる？
+	for _, directiveUsagesPerType := range dm.DirectiveUsagesPerSubgraph {
+		for typeName, entity := range directiveUsagesPerType {
+			directives := entity.Directives
+			fields := entity.Fields
+
+			namedType := schema.Types[typeName]
+			if namedType == nil {
+				continue
+			}
+
+			existingMetadata := federationTypeMap.Get(namedType)
+			directiveUsages := existingMetadata.DirectiveUsages
+			if len(directiveUsages) > 0 {
+				for directiveName, usages := range directiveUsages {
+					usages = append(usages, directives[directiveName]...)
+				}
+			} else {
+				directiveUsages = directives
+			}
+			existingMetadata.DirectiveUsages = directiveUsages
+
+			for fieldName, usagesPerDirective := range fields {
+				field := namedType.Fields.ForName(fieldName)
+				if field == nil {
+					continue
+				}
+
+				originalMetadata := federationFieldMap.Get(field)
+				directiveUsages := originalMetadata.DirectiveUsages
+
+				if len(directiveUsages) > 0 {
+					for directiveName, usages := range directiveUsages {
+						usages = append(usages, usagesPerDirective[directiveName]...)
+					}
+				} else {
+					directiveUsages = directives
+				}
+				originalMetadata.DirectiveUsages = directiveUsages
+			}
+		}
+	}
+}

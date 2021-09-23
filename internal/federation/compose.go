@@ -3,6 +3,7 @@ package federation
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"sort"
 
 	"github.com/vektah/gqlparser/v2/ast"
@@ -78,6 +79,15 @@ type KeyDirectivesMap map[string]ServiceNameToKeyDirectivesMap
 // shared across at least 2 services.
 // original: type ValueTypes = Set<string>;
 type ValueTypes []string
+
+func (vts ValueTypes) Has(name string) bool {
+	for _, vt := range vts {
+		if vt == name {
+			return true
+		}
+	}
+	return false
+}
 
 type buildMaps struct {
 	typeToServiceMap        TypeToServiceMap
@@ -443,6 +453,275 @@ func buildSchemaFromDefinitionsAndExtensions(typeDefinitionsMap TypeDefinitionsM
 	return schemaDoc, errors
 }
 
+// Using the various information we've collected about the schema, augment the
+// `schema` itself with `federation` metadata to the types and fields
+func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap TypeToServiceMap, externalFields []*ExternalFieldDefinition, keyDirectivesMap KeyDirectivesMap, valueTypes ValueTypes, directiveDefinitionsMap DirectiveDefinitionsMap, directiveMetadata *DirectiveMetadata, graphNameToEnumValueName map[string]string) error {
+	// original では addFederationMetadataToSchemaNodes という名前
+	// もともとの動作原理をざっくり解説しておく
+	//   @join__owner, @join__type, @join__field, @join__graph あたりをschemaに追加するのが最終目的
+	//   addFederationMetadataToSchemaNodes では ASTNodeのextensionsにfederationという属性を追加したい
+	//   そして、その後の printSupergraphSdl で metadata とここまでの schema を組み合わせて最終的なSDLを生成している
+	// ただ、Go版では既存の型に外部からフィールドを追加したりできないこと、schema 自体はresolverを持たない(executableではない)などの差がある
+	// なので、ここでは metadata の生成と print での出力という構成を改め、 schema に直接各種データを盛り付けていくことにする
+
+	// TODO ↑を鑑みてrenameしたほうがよくない？
+
+	federationTypeMap := FederationTypeMap{}
+	federationFieldMap := FederationFieldMap{}
+	federationDirectiveMap := FederationDirectiveMap{}
+
+	for typeName, entity := range typeToServiceMap {
+		owningService := entity.OwningService
+		extensionFieldsToOwningServiceMap := entity.ExtensionFieldsToOwningServiceMap
+
+		namedType := schema.Types[typeName]
+		if namedType == nil {
+			continue
+		}
+
+		// Extend each type in the GraphQLSchema with the serviceName that owns it
+		// and the key directives that belong to it
+		isValue := valueTypes.Has(typeName)
+		var serviceName string
+		if !isValue {
+			serviceName = owningService
+		}
+
+		federationType := federationTypeMap.Get(namedType)
+		federationType.ServiceName = serviceName
+		federationType.IsValueType = isValue
+		federationType.Keys = keyDirectivesMap[typeName]
+
+		// For object types, add metadata for all the @provides directives from its fields
+		if namedType.Kind == ast.Object {
+			for _, field := range namedType.Fields {
+				providesDirective := field.Directives.ForName("provides")
+				if providesDirective != nil && len(providesDirective.Arguments) != 0 && providesDirective.Arguments[0].Value.Kind == ast.StringValue {
+					provides, err := parseSelections(providesDirective.Arguments[0].Value.Raw)
+					if err != nil {
+						return err
+					}
+					federationField := federationFieldMap.Get(field)
+					federationField.ParentType = namedType
+					federationField.ServiceName = serviceName
+					federationField.Provides = provides
+					federationField.BelongsToValueType = isValue
+				}
+			}
+		}
+
+		// For extension fields, do 2 things:
+		// 1. Add serviceName metadata to all fields that belong to a type extension
+		// 2. add metadata from the @requires directive for each field extension
+		for fieldName, extendingServiceName := range extensionFieldsToOwningServiceMap {
+			// TODO: Why don't we need to check for non-object types here
+			if namedType.Kind == ast.Object {
+				field := namedType.Fields.ForName(fieldName)
+				if field == nil {
+					continue
+				}
+
+				fieldMeta := federationFieldMap.Get(field)
+				fieldMeta.ParentType = namedType
+				fieldMeta.ServiceName = extendingServiceName
+
+				requiresDirective := namedType.Directives.ForName("requires")
+				if requiresDirective != nil && len(requiresDirective.Arguments) != 0 && requiresDirective.Arguments[0].Value.Kind == ast.StringValue {
+					requires, err := parseSelections(requiresDirective.Arguments[0].Value.Raw)
+					if err != nil {
+						return err
+					}
+					fieldMeta.Requires = requires
+				}
+			}
+		}
+	}
+
+	// add externals metadata
+	for _, field := range externalFields {
+		namedType := schema.Types[field.ParentTypeName]
+		if namedType == nil {
+			continue
+		}
+
+		federationType := federationTypeMap.Get(namedType)
+		fields := federationType.Externals[field.ServiceName]
+		fields = append(fields, field)
+		federationType.Externals[field.ServiceName] = fields
+	}
+
+	// add all definitions of a specific directive for validation later
+	for directiveName := range directiveDefinitionsMap {
+		directive := schema.Directives[directiveName]
+		if directive == nil {
+			continue
+		}
+
+		federationDirective := federationDirectiveMap.Get(directive)
+		federationDirective.DirectiveDefinitions = directiveDefinitionsMap[directiveName]
+	}
+
+	// currently this is only used to capture @tag metadata but could be used
+	// for others directives in the future
+	directiveMetadata.applyMetadataToSupergraphSchema(schema)
+
+	// Apollo addition: print @join__owner and @join__type usages
+	// printTypeJoinDirectives
+	for namedType, federationType := range federationTypeMap {
+		ownerService := federationType.ServiceName
+		keys := federationType.Keys
+
+		if ownerService == "" && len(keys) == 0 {
+			continue
+		}
+
+		// Separate owner @keys from the rest of the @keys so we can print them
+		// adjacent to the @owner directive.
+		ownerKeys := keys[ownerService]
+		restKeys := make(map[string][]ast.SelectionSet)
+		for k, v := range keys {
+			if k == ownerService {
+				continue
+			}
+			restKeys[k] = v
+		}
+
+		// We don't want to print an owner for interface types
+		shouldPrintOwner := namedType.Kind == ast.Object
+
+		ownerGraphEnumValue := graphNameToEnumValueName[ownerService]
+		if ownerGraphEnumValue == "" {
+			return fmt.Errorf("unexpected enum value missing for subgraph %s", ownerService)
+		}
+
+		if shouldPrintOwner {
+			namedType.Directives = append(namedType.Directives, &ast.Directive{
+				Name: "join__owner",
+				Arguments: ast.ArgumentList{
+					{
+						Name: "graph",
+						Value: &ast.Value{
+							Raw:  ownerGraphEnumValue,
+							Kind: ast.EnumValue,
+						},
+					},
+				},
+			})
+		}
+
+		addJoinTypeDirective := func(service string, keys []ast.SelectionSet) error {
+			for _, selections := range keys {
+				typeGraphEnumValue := graphNameToEnumValueName[service]
+				if typeGraphEnumValue == "" {
+					return fmt.Errorf("unexpected enum value missing for subgraph %s", service)
+				}
+
+				namedType.Directives = append(namedType.Directives, &ast.Directive{
+					Name: "join__type",
+					Arguments: ast.ArgumentList{
+						{
+							Name: "graph",
+							Value: &ast.Value{
+								Raw:  typeGraphEnumValue,
+								Kind: ast.EnumValue,
+							},
+						},
+						{
+							Name: "keys",
+							Value: &ast.Value{
+								Raw:  printSelectionSet(selections),
+								Kind: ast.StringValue,
+							},
+						},
+					},
+				})
+			}
+			return nil
+		}
+		err := addJoinTypeDirective(ownerService, ownerKeys)
+		if err != nil {
+			return err
+		}
+		restNames := make([]string, 0, len(restKeys))
+		for service := range restKeys {
+			restNames = append(restNames, service)
+		}
+		sort.Strings(restNames)
+		for _, service := range restNames {
+			keys := restKeys[service]
+			err = addJoinTypeDirective(service, keys)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// Apollo addition: print @join__field directives
+	// printJoinFieldDirectives
+	for field, federationField := range federationFieldMap {
+		parentType := federationField.ParentType
+
+		joinFieldDirective := &ast.Directive{
+			Name: "join__field",
+		}
+
+		serviceName := federationField.ServiceName
+
+		// For entities (which we detect through the existence of `keys`),
+		// although the join spec doesn't currently require `@join__field(graph:)` when
+		// a field can be resolved from the owning service, the code we used
+		// previously did include it in those cases. And especially since we want to
+		// remove type ownership, I think it makes to keep the same behavior.
+		if federationType := federationTypeMap.Get(parentType); serviceName == "" && len(federationType.Keys) != 0 {
+			serviceName = federationType.ServiceName
+		}
+
+		if serviceName != "" {
+			enumValue := graphNameToEnumValueName[serviceName]
+			if enumValue == "" {
+				return fmt.Errorf("unexpected enum value missing for subgraph %s", serviceName)
+			}
+
+			joinFieldDirective.Arguments = append(joinFieldDirective.Arguments, &ast.Argument{
+				Name: "graph",
+				Value: &ast.Value{
+					Raw:  enumValue,
+					Kind: ast.EnumValue,
+				},
+			})
+		}
+
+		if len(federationField.Requires) > 0 {
+			joinFieldDirective.Arguments = append(joinFieldDirective.Arguments, &ast.Argument{
+				Name: "requires",
+				Value: &ast.Value{
+					Raw:  printSelectionSet(federationField.Requires),
+					Kind: ast.StringValue,
+				},
+			})
+		}
+
+		if len(federationField.Provides) > 0 {
+			joinFieldDirective.Arguments = append(joinFieldDirective.Arguments, &ast.Argument{
+				Name: "provides",
+				Value: &ast.Value{
+					Raw:  printSelectionSet(federationField.Provides),
+					Kind: ast.StringValue,
+				},
+			})
+		}
+
+		// A directive without arguments isn't valid (nor useful).
+		if len(joinFieldDirective.Arguments) < 1 {
+			continue
+		}
+
+		field.Directives = append(field.Directives, joinFieldDirective)
+	}
+
+	return nil
+}
+
 func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.Schema, string, []error) {
 	buildMapsResult, err := buildMapsFromServiceList(ctx, services)
 	if err != nil {
@@ -541,11 +820,13 @@ func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.S
 
 	// NOTE: addFederationMetadataToSchemaNodes では各nodeにextensionを追加していく
 	//       この実装ではsupergraphSDLがあればQueryPlanが作成できて用が足りるのでこの処理は一旦実装しない
-	// addFederationMetadataToSchemaNodes(schema, typeToServiceMap, externalFields, keyDirectivesMap, valueTypes, directiveDefinitionsMap, directiveMetadata)
-	_ = typeToServiceMap
-	_ = externalFields
-	_ = keyDirectivesMap
-	_ = valueTypes
+	// TODO ここで graphNameToEnumValueName ひねり出すのやめたほうがよさそう
+	graphNameToEnumValueName, _ := getJoinGraphEnum(services)
+	err = addFederationMetadataToSchemaNodes(schema, typeToServiceMap, externalFields, keyDirectivesMap, valueTypes, directiveDefinitionsMap, directiveMetadata, graphNameToEnumValueName)
+	if err != nil {
+		errors = append(errors, err)
+		return nil, "", errors
+	}
 
 	if len(errors) != 0 {
 		return nil, "", errors
