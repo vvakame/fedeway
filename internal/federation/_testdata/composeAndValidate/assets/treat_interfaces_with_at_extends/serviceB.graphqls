@@ -1,0 +1,6 @@
+# option:name: serviceB
+# treats interfaces with @extends as interface extensions
+interface Product @extends @key(fields: "sku") {
+    sku: String! @external
+    price: Int! @requires(fields: "sku")
+}

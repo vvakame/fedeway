@@ -1,0 +1,10 @@
+# option:name: serviceA
+# treats interfaces with @extends as interface extensions
+type Query {
+    products: [Product]!
+}
+
+interface Product @key(fields: "sku") {
+    sku: String!
+    upc: String!
+}

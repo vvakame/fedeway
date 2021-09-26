@@ -1,0 +1,10 @@
+# option:name: serviceA
+# treats types with @extends as type extensions
+type Query {
+    products: [Product]!
+}
+
+type Product @key(fields: "sku") {
+    sku: String!
+    upc: String!
+}

@@ -627,7 +627,7 @@ func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap Typ
 							},
 						},
 						{
-							Name: "keys",
+							Name: "key",
 							Value: &ast.Value{
 								Raw:  printSelectionSet(selections),
 								Kind: ast.StringValue,

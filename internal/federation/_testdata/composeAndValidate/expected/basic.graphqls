@@ -8,7 +8,7 @@ directive @join__type(graph: join__Graph!, key: join__FieldSet) on OBJECT | INTE
 directive @key(fields: String!) on OBJECT | INTERFACE
 directive @provides(fields: String!) on FIELD_DEFINITION
 directive @requires(fields: String!) on FIELD_DEFINITION
-type Product @key(fields: "upc") @join__owner(graph: PRODUCTS) @join__type(graph: PRODUCTS, keys: "upc") @join__type(graph: INVENTORY, keys: "upc") @join__type(graph: REVIEWS, keys: "upc") {
+type Product @key(fields: "upc") @join__owner(graph: PRODUCTS) @join__type(graph: PRODUCTS, key: "upc") @join__type(graph: INVENTORY, key: "upc") @join__type(graph: REVIEWS, key: "upc") {
 	upc: String!
 	sku: String!
 	name: String
@@ -20,13 +20,13 @@ type Query {
 	me: User @join__field(graph: ACCOUNTS)
 	topProducts(first: Int): [Product] @join__field(graph: PRODUCTS)
 }
-type Review @key(fields: "id") @join__owner(graph: REVIEWS) @join__type(graph: REVIEWS, keys: "id") {
+type Review @key(fields: "id") @join__owner(graph: REVIEWS) @join__type(graph: REVIEWS, key: "id") {
 	id: ID!
 	body: String
 	author: User
 	product: Product
 }
-type User @key(fields: "id") @join__owner(graph: ACCOUNTS) @join__type(graph: ACCOUNTS, keys: "id") @join__type(graph: REVIEWS, keys: "id") {
+type User @key(fields: "id") @join__owner(graph: ACCOUNTS) @join__type(graph: ACCOUNTS, key: "id") @join__type(graph: REVIEWS, key: "id") {
 	id: ID!
 	name: String
 	username: String
