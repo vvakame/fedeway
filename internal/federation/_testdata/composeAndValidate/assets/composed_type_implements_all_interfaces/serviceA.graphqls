@@ -1,0 +1,20 @@
+# option:name: serviceA
+# option:skip: true
+# composition of value types
+# composed type implements ALL interfaces that value types implement
+interface Node {
+    id: ID!
+}
+
+interface Named {
+    name: String
+}
+
+type Product implements Named & Node {
+    id: ID!
+    name: String
+}
+
+type Query {
+    node(id: ID!): Node
+}

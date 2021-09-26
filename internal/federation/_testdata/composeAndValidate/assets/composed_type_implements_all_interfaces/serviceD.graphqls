@@ -1,0 +1,7 @@
+# option:name: serviceD
+# composition of value types
+# composed type implements ALL interfaces that value types implement
+type Product {
+    id: ID!
+    name: String
+}

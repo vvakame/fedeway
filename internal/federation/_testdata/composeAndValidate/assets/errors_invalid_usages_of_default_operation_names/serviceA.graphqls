@@ -1,0 +1,20 @@
+# option:name: serviceA
+# option:skip: true
+# errors
+# on invalid usages of default operation names
+schema {
+    query: RootQuery
+}
+
+type RootQuery {
+    product: Product
+}
+
+type Product @key(fields: "id") {
+    id: ID!
+    query: Query
+}
+
+type Query {
+    invalidUseOfQuery: Boolean
+}

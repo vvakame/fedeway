@@ -1,0 +1,12 @@
+# option:name: serviceA
+# option:skip: true
+# errors
+# when used as an entity
+type Query {
+    product: Product
+}
+
+type Product {
+    sku: ID!
+    color: String!
+}

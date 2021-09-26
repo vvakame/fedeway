@@ -1,0 +1,12 @@
+# option:name: serviceB
+# composition of value types
+# errors
+# on kind mismatch
+type Query {
+    topProducts: [Product]
+}
+
+type Product {
+    sku: ID!
+    color: String!
+}

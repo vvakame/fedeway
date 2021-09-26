@@ -1,0 +1,7 @@
+# option:name: serviceB
+# composition of value types
+# errors
+# when a type extension has no base
+extend type Location {
+    id: ID
+}

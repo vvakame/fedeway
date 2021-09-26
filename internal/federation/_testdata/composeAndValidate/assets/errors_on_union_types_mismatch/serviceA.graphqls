@@ -1,0 +1,17 @@
+# option:name: serviceA
+# option:skip: true
+# errors
+# on union types mismatch
+type Query {
+    product: Product
+}
+
+type Couch {
+    sku: ID!
+}
+
+type Mattress {
+    sku: ID!
+}
+
+union Product = Couch | Mattress

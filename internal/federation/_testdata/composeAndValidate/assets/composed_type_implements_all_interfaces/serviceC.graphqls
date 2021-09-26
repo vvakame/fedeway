@@ -1,0 +1,11 @@
+# option:name: serviceC
+# composition of value types
+# composed type implements ALL interfaces that value types implement
+interface Named {
+    name: String
+}
+
+type Product implements Named {
+    id: ID!
+    name: String
+}

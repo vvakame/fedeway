@@ -1,0 +1,11 @@
+# option:name: serviceB
+# composition of value types
+# composed type implements ALL interfaces that value types implement
+interface Node {
+    id: ID!
+}
+
+type Product implements Node {
+    id: ID!
+    name: String
+}

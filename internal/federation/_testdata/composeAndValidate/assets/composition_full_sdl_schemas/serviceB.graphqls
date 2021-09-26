@@ -1,0 +1,51 @@
+# option:name: serviceB
+# composition of full-SDL schemas without any errors
+
+# Default directives
+directive @deprecated(
+    reason: String = "No longer supported"
+) on FIELD_DEFINITION | ENUM_VALUE
+directive @specifiedBy(url: String!) on SCALAR
+directive @include(
+    if: String = "Included when true."
+) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @skip(
+    if: String = "Skipped when true."
+) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+# Federation directives
+directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
+directive @external on FIELD_DEFINITION
+directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
+directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
+directive @extends on OBJECT | INTERFACE
+
+# Custom type system directive (disregarded by gateway, unconcerned with serviceA's implementation)
+directive @myDirective on FIELD_DEFINITION
+
+# Custom executable directive (must be implemented in all services, definition must be identical)
+directive @myExecutableDirective on FIELD
+
+scalar _Any
+scalar _FieldSet
+
+union _Entity
+
+type _Service {
+    sdl: String
+}
+
+type Query {
+    _service: _Service!
+    _entities(representations: [_Any!]!): [_Entity]!
+    review: Review
+}
+
+type Review @key(fields: "id") {
+    id: String!
+    content: String
+}
+
+type Mutation {
+    createReview: Review
+}

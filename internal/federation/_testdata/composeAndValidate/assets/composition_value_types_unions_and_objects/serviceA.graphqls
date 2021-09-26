@@ -1,0 +1,16 @@
+# option:name: serviceA
+# option:skip: true
+# composition of value types
+# success
+# unions and object types
+union CatalogItem = Couch | Mattress
+
+type Couch {
+    sku: ID!
+    material: String!
+}
+
+type Mattress {
+    sku: ID!
+    size: String!
+}

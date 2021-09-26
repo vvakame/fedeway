@@ -1,0 +1,19 @@
+# option:name: serviceB
+# composition of value types
+# success
+# unions and object types
+union CatalogItem = Couch | Mattress
+
+type Couch {
+    sku: ID!
+    material: String!
+}
+
+type Mattress {
+    sku: ID!
+    size: String!
+}
+
+type Query {
+    filler: String
+}

@@ -1,0 +1,18 @@
+# option:name: serviceA
+# option:skip: true
+# composition of schemas with directives
+# doesn't strip the special case @deprecated and @specifiedBy type-system directives
+
+# This directive needs to be conditionally added depending on the testing
+# environment's version of graphql (>= 15.1.0 includes this new directive)
+
+scalar MyScalar @specifiedBy(url: "http://my-spec-url.com")
+
+type EarthConcern {
+    environmental: String!
+}
+
+extend type Query {
+    importantDirectives: [EarthConcern!]!
+    @deprecated(reason: "Don't remove me please")
+}

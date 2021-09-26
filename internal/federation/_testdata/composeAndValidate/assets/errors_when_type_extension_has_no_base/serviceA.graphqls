@@ -1,0 +1,16 @@
+# option:name: serviceA
+# option:skip: true
+# errors
+# when a type extension has no base
+schema {
+    query: MyRoot
+}
+
+type MyRoot {
+    products: [Product]!
+}
+
+type Product @key(fields: "sku") {
+    sku: String!
+    upc: String!
+}

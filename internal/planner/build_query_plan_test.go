@@ -18,6 +18,8 @@ import (
 )
 
 func TestBuildQueryPlan(t *testing.T) {
+	// test case are ported from gateway-js/src/__tests__/buildQueryPlan.test.ts
+
 	const testFileDir = "./_testdata/buildQueryPlan/assets"
 	const expectFileDir = "./_testdata/buildQueryPlan/expected"
 

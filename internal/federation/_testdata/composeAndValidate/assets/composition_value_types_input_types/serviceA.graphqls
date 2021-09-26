@@ -1,0 +1,9 @@
+# option:name: serviceA
+# option:skip: true
+# composition of value types
+# success
+# input types
+input NewProductInput {
+    sku: ID!
+    type: String
+}

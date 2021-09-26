@@ -1,0 +1,12 @@
+# option:name: serviceB
+# composition of value types
+# errors
+# when used as an entity
+type Query {
+    topProducts: [Product]
+}
+
+type Product @key(fields: "sku") {
+    sku: ID!
+    color: String!
+}

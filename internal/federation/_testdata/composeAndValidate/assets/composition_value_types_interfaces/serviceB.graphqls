@@ -1,0 +1,11 @@
+# option:name: serviceB
+# composition of value types
+# success
+# interfaces
+interface Product {
+    sku: ID!
+}
+
+type Query {
+    filler: String
+}

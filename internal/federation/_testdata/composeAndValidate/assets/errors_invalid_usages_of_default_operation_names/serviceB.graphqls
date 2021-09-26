@@ -1,0 +1,12 @@
+# option:name: serviceB
+# composition of value types
+# errors
+# on invalid usages of default operation names
+type Query {
+    validUseOfQuery: Boolean
+}
+
+extend type Product @key(fields: "id") {
+    id: ID! @external
+    sku: String
+}

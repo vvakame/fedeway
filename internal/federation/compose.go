@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/vektah/gqlparser/v2/gqlerror"
+	"reflect"
 	"sort"
 
 	"github.com/vektah/gqlparser/v2/ast"
@@ -782,23 +784,27 @@ func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.S
 		schemaDoc.Extensions = transformObject(schemaDoc.Extensions)
 	}
 	{
-		// NOTE: 複数のserviceで同一のscalarが定義されていた場合、このあとの ValidateSchemaDocument でエラーになるのでケアしてやる必要がある
+		// NOTE: 複数のserviceで同一のscalar, unionが定義されていた場合、このあとの ValidateSchemaDocument でエラーになるのでケアしてやる必要がある
 		// JS版実装ではこれを特別にケアしている箇所がないように見えるが…？
 		// 現在の実装ではdirectiveのmergeなどは行っていないがこれはいいんだろうか？
 
 		newDefinitions := make(ast.DefinitionList, 0, len(schemaDoc.Definitions))
 		scalarNamesMap := make(map[string]*ast.Definition)
 		for _, typ := range schemaDoc.Definitions {
-			if typ.Kind != ast.Scalar {
+			if typ.Kind != ast.Scalar && typ.Kind != ast.Union {
 				newDefinitions = append(newDefinitions, typ)
 				continue
 			}
 
-			_, ok := scalarNamesMap[typ.Name]
+			known, ok := scalarNamesMap[typ.Name]
 			if !ok {
 				newDefinitions = append(newDefinitions, typ)
 				scalarNamesMap[typ.Name] = typ
 				continue
+			}
+
+			if !reflect.DeepEqual(known.Types, typ.Types) {
+				errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible same union type definition"))
 			}
 		}
 

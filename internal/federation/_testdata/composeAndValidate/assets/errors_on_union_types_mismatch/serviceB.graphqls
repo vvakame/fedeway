@@ -1,0 +1,17 @@
+# option:name: serviceB
+# composition of value types
+# errors
+# on union types mismatch
+type Query {
+    topProducts: [Product]
+}
+
+type Couch {
+    sku: ID!
+}
+
+type Cabinet {
+    sku: ID!
+}
+
+union Product = Couch | Cabinet

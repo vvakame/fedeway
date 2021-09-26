@@ -1,0 +1,12 @@
+# option:name: serviceA
+# option:skip: true
+# errors
+# on field type mismatch
+type Query {
+    product: Product
+}
+
+type Product {
+    sku: ID!
+    color: String!
+}

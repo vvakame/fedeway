@@ -1,0 +1,8 @@
+# option:name: inventory
+# option:skip: true
+# unknown types
+# doesn't throw errors when a type is unknown, and the type has directive usages which we've captured
+directive @tag(name: String!) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION
+extend type Product @key(fields: "id") {
+    id: ID! @external @tag(name: "from-inventory")
+}

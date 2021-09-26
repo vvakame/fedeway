@@ -1,0 +1,12 @@
+# option:name: serviceA
+# option:skip: true
+# errors
+# on kind mismatch
+type Query {
+    product: Product
+}
+
+interface Product {
+    sku: ID!
+    color: String!
+}
