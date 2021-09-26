@@ -1,0 +1,9 @@
+# option:name: serviceB
+# composition of value types
+# success
+# scalars
+scalar Date
+
+type Query {
+    filler: String
+}
