@@ -1,0 +1,26 @@
+{
+  "data": {
+    "me": {
+      "id": "abc",
+      "name": {
+        "first": "foo",
+        "last": "bar"
+      },
+      "username": "foo bar"
+    },
+    "me2": {
+      "id": "def",
+      "numberOfReviews": 3
+    },
+    "me3": {
+      "metadata": [
+        {
+          "name": "a"
+        },
+        {
+          "name": "b"
+        }
+      ]
+    }
+  }
+}

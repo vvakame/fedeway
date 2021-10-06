@@ -1,0 +1,31 @@
+# schema: supergraphSdl.graphqls
+# option:data: data.json
+
+query {
+    me {
+        id
+        name {
+            first
+            last
+        }
+        username
+    }
+    me2: me {
+        id
+        ... on User {
+            id
+            numberOfReviews
+        }
+    }
+    ... on Query {
+        me2: me {
+            id
+            goodAddress
+        }
+    }
+    me3: me {
+        metadata {
+            name
+        }
+    }
+}

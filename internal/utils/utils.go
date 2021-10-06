@@ -28,6 +28,24 @@ func IsTypeDefSubTypeOf(schema *ast.Schema, maybeSubType, superType *ast.Definit
 	return false
 }
 
+func IsObjectType(def *ast.Definition) bool {
+	switch def.Kind {
+	case ast.Object:
+		return true
+	default:
+		return false
+	}
+}
+
+func IsLeadType(def *ast.Definition) bool {
+	switch def.Kind {
+	case ast.Scalar, ast.Enum:
+		return true
+	default:
+		return false
+	}
+}
+
 func IsAbstractType(def *ast.Definition) bool {
 	switch def.Kind {
 	case ast.Interface, ast.Union:
@@ -35,4 +53,14 @@ func IsAbstractType(def *ast.Definition) bool {
 	default:
 		return false
 	}
+}
+
+func IsObjectLike(value interface{}) bool {
+	if value == nil {
+		return false
+	}
+	if _, ok := value.(map[string]interface{}); ok {
+		return true
+	}
+	return false
 }
