@@ -11,7 +11,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/parser"
 	"github.com/vektah/gqlparser/v2/validator"
@@ -108,31 +107,16 @@ func TestExecute(t *testing.T) {
 
 			t.Logf("schema: %s, operation: %s, operationName: %s, dataFile: %s, variableFile: %s", schemaFile, file.Name(), operationName, dataFile, variablesFile)
 
-			oc := &graphql.OperationContext{
-				RawQuery:           rawQuery,
-				Variables:          variables,
-				Doc:                document,
-				Operation:          document.Operations.ForName(operationName),
-				RecoverFunc:        nil,
-				ResolverMiddleware: nil,
-			}
-			ctx = graphql.WithOperationContext(ctx, oc)
-
-			ctx = graphql.WithResponseContext(ctx, graphql.DefaultErrorPresenter, oc.Recover)
-
-			response, gErr := Execute(ctx, &ExecutionArgs{
+			response := Execute(ctx, &ExecutionArgs{
 				Schema:         schema,
+				RawQuery:       rawQuery,
 				Document:       document,
 				RootValue:      data,
-				ContextValue:   make(map[string]interface{}),
 				VariableValues: variables,
 				OperationName:  operationName,
 				FieldResolver:  defaultFieldResolver,
 				TypeResolver:   defaultTypeResolver,
 			})
-			if gErr != nil {
-				t.Fatal(gErr)
-			}
 
 			responseBytes, err := json.MarshalIndent(response, "", "  ")
 			if err != nil {

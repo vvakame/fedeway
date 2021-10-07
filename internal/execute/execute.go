@@ -21,22 +21,17 @@ import (
 
 // TODO gqlgenのほうの executionContext と互換性取るか考える
 type ExecutionContext struct {
-	Schema         *ast.Schema
-	Fragments      ast.FragmentDefinitionList
-	RootValue      interface{}
-	ContextValue   map[string]interface{}
-	Operation      *ast.OperationDefinition
-	VariableValues map[string]interface{}
-	FieldResolver  FieldResolver
-	TypeResolver   TypeResolver
-	Errors         gqlerror.List
+	Schema        *ast.Schema
+	RootValue     interface{}
+	FieldResolver FieldResolver
+	TypeResolver  TypeResolver
 }
 
 type ExecutionArgs struct {
 	Schema         *ast.Schema
+	RawQuery       string
 	Document       *ast.QueryDocument
 	RootValue      interface{}            // optional
-	ContextValue   map[string]interface{} // optional
 	VariableValues map[string]interface{} // optional
 	OperationName  string                 // optional
 	FieldResolver  FieldResolver          // optional
@@ -44,14 +39,10 @@ type ExecutionArgs struct {
 }
 
 var _ FieldResolver = defaultFieldResolver
-
-// TODO この定義正しい？
-type FieldResolver func(ctx context.Context, source interface{}, args, contextValue map[string]interface{}) (interface{}, *gqlerror.Error)
-
 var _ TypeResolver = defaultTypeResolver
 
-// TODO この定義正しい？
-type TypeResolver func(ctx context.Context, value interface{}, contextValue map[string]interface{}, schema *ast.Schema, abstractType *ast.Type) string
+type FieldResolver func(ctx context.Context, source interface{}, args map[string]interface{}) (interface{}, *gqlerror.Error)
+type TypeResolver func(ctx context.Context, value interface{}, schema *ast.Schema, abstractType *ast.Type) string
 
 // Implements the "Executing requests" section of the GraphQL specification.
 //
@@ -61,41 +52,44 @@ type TypeResolver func(ctx context.Context, value interface{}, contextValue map[
 //
 // If the arguments to this function do not result in a legal execution context,
 // a GraphQLError will be thrown immediately explaining the invalid input.
-func Execute(ctx context.Context, args *ExecutionArgs) (*graphql.Response, *gqlerror.Error) {
+func Execute(ctx context.Context, args *ExecutionArgs) *graphql.Response {
 	schema := args.Schema
+	rawQuery := args.RawQuery
 	document := args.Document
 	rootValue := args.RootValue
-	contextValue := args.ContextValue
 	variableValues := args.VariableValues
 	operationName := args.OperationName
 	fieldResolver := args.FieldResolver
 	typeResolver := args.TypeResolver
 
-	// If arguments are missing or incorrect, throw an error.
-	gErr := assertValidExecutionArguments(schema, document, variableValues)
-	if gErr != nil {
-		return nil, gErr
+	oc := &graphql.OperationContext{
+		RawQuery:           rawQuery,
+		Variables:          variableValues,
+		Doc:                document,
+		Operation:          document.Operations.ForName(operationName),
+		RecoverFunc:        nil, // TODO
+		ResolverMiddleware: nil, // TODO
 	}
+	var gErr *gqlerror.Error
+	oc.Variables, gErr = validator.VariableValues(schema, oc.Operation, variableValues)
+	if gErr != nil {
+		return &graphql.Response{
+			Errors: gqlerror.List{gErr},
+		}
+	}
+	ctx = graphql.WithOperationContext(ctx, oc)
+
+	ctx = graphql.WithResponseContext(ctx, graphql.DefaultErrorPresenter, oc.Recover)
 
 	// If a valid execution context cannot be created due to incorrect arguments,
 	// a "Response" with only errors is returned.
-	exeContext, gErrs := buildExecutionContext(
-		schema,
-		document,
-		rootValue,
-		contextValue,
-		variableValues,
-		operationName,
-		fieldResolver,
-		typeResolver,
-	)
+	exeContext := buildExecutionContext(schema, rootValue, fieldResolver, typeResolver)
 
-	// Return early errors if execution context failed.
-	if len(gErrs) != 0 {
-		return &graphql.Response{
-			Errors: gErrs,
-		}, nil
-	}
+	return execute(ctx, exeContext)
+}
+
+func execute(ctx context.Context, exeContext *ExecutionContext) *graphql.Response {
+	oc := graphql.GetOperationContext(ctx)
 
 	// Return a Promise that will eventually resolve to the data described by
 	// The "Response" section of the GraphQL specification.
@@ -104,20 +98,16 @@ func Execute(ctx context.Context, args *ExecutionArgs) (*graphql.Response, *gqle
 	// field and its descendants will be omitted, and sibling fields will still
 	// be executed. An execution which encounters errors will still result in a
 	// resolved Promise.
-	data, gErr := executeOperation(ctx, exeContext, exeContext.Operation, rootValue)
-	if gErr != nil {
-		return nil, gErr
-	}
-	resp := buildResponse(ctx, exeContext, data)
-	return resp, nil
+	data := executeOperation(ctx, exeContext, oc.Operation, exeContext.RootValue)
+	return buildResponse(ctx, data)
 }
 
-func buildResponse(ctx context.Context, exeContext *ExecutionContext, data graphql.Marshaler) *graphql.Response {
+func buildResponse(ctx context.Context, data graphql.Marshaler) *graphql.Response {
 	var buf bytes.Buffer
 	data.MarshalGQL(&buf)
 
 	resp := &graphql.Response{
-		Errors:     exeContext.Errors,
+		Errors:     graphql.GetErrors(ctx),
 		Data:       buf.Bytes(),
 		Extensions: graphql.GetExtensions(ctx),
 	}
@@ -125,42 +115,7 @@ func buildResponse(ctx context.Context, exeContext *ExecutionContext, data graph
 	return resp
 }
 
-// Essential assertions before executing to provide developer feedback for
-// improper use of the GraphQL library.
-func assertValidExecutionArguments(schema *ast.Schema, document *ast.QueryDocument, rawVariableValues map[string]interface{}) *gqlerror.Error {
-	if document == nil {
-		return gqlerror.Errorf("must provide document")
-	}
-
-	// If the schema used for execution is invalid, throw an error.
-	// TODO
-	// assertValidSchema(schema)
-
-	// Variables, if provided, must be an object.
-	if rawVariableValues != nil && !utils.IsObjectLike(rawVariableValues) {
-		return gqlerror.Errorf("variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided")
-	}
-
-	return nil
-}
-
-func buildExecutionContext(schema *ast.Schema, document *ast.QueryDocument, rootValue interface{}, contextValue map[string]interface{}, rawVariableValues map[string]interface{}, operationName string, fieldResolver FieldResolver, typeResolver TypeResolver) (*ExecutionContext, gqlerror.List) {
-	// TODO ここ厳密じゃないけどいいかな？ operationNameがで見つかったものがダブったとき fragments の定義
-	operation := document.Operations.ForName(operationName)
-
-	if operation == nil {
-		if operationName != "" {
-			return nil, gqlerror.List{gqlerror.Errorf(`unknown operation named "%s"`, operationName)}
-		}
-		return nil, gqlerror.List{gqlerror.Errorf("must provide an operation")}
-	}
-
-	// TODO この置き換えが正しいかわからん getVariableValues 相当
-	coercedVariableValues, gErr := validator.VariableValues(schema, operation, rawVariableValues)
-	if gErr != nil {
-		return nil, gqlerror.List{gErr}
-	}
-
+func buildExecutionContext(schema *ast.Schema, rootValue interface{}, fieldResolver FieldResolver, typeResolver TypeResolver) *ExecutionContext {
 	if fieldResolver == nil {
 		fieldResolver = defaultFieldResolver
 	}
@@ -169,19 +124,15 @@ func buildExecutionContext(schema *ast.Schema, document *ast.QueryDocument, root
 	}
 
 	return &ExecutionContext{
-		Schema:         schema,
-		Fragments:      document.Fragments,
-		RootValue:      rootValue,
-		ContextValue:   contextValue,
-		Operation:      operation,
-		VariableValues: coercedVariableValues,
-		FieldResolver:  fieldResolver,
-		TypeResolver:   typeResolver,
-	}, nil
+		Schema:        schema,
+		RootValue:     rootValue,
+		FieldResolver: fieldResolver,
+		TypeResolver:  typeResolver,
+	}
 }
 
 // Implements the "Executing operations" section of the spec.
-func executeOperation(ctx context.Context, exeContext *ExecutionContext, operation *ast.OperationDefinition, rootValue interface{}) (graphql.Marshaler, *gqlerror.Error) {
+func executeOperation(ctx context.Context, exeContext *ExecutionContext, operation *ast.OperationDefinition, rootValue interface{}) graphql.Marshaler {
 	if !graphql.HasOperationContext(ctx) {
 		panic("ctx doesn't have OperationContext")
 	}
@@ -190,25 +141,29 @@ func executeOperation(ctx context.Context, exeContext *ExecutionContext, operati
 	switch operation.Operation {
 	case ast.Query:
 		if queryType := exeContext.Schema.Query; queryType == nil {
-			return nil, gqlerror.ErrorPosf(operation.Position, "schema does not define the required query root type")
+			graphql.AddError(ctx, gqlerror.ErrorPosf(operation.Position, "schema does not define the required query root type"))
+			return graphql.Null
 		} else {
 			typ = queryType
 		}
 	case ast.Mutation:
 		if mutationType := exeContext.Schema.Mutation; mutationType == nil {
-			return nil, gqlerror.ErrorPosf(operation.Position, "schema is not configured for mutations")
+			graphql.AddError(ctx, gqlerror.ErrorPosf(operation.Position, "schema is not configured for mutations"))
+			return graphql.Null
 		} else {
 			typ = mutationType
 		}
 	case ast.Subscription:
 		if subscriptionType := exeContext.Schema.Subscription; subscriptionType == nil {
-			return nil, gqlerror.ErrorPosf(operation.Position, "schema is not configured for subscriptions")
+			graphql.AddError(ctx, gqlerror.ErrorPosf(operation.Position, "schema is not configured for subscriptions"))
+			return graphql.Null
 		} else {
 			typ = subscriptionType
 		}
 		typ = exeContext.Schema.Subscription
 	default:
-		return nil, gqlerror.ErrorPosf(operation.Position, "can only have query, mutation and subscription operations")
+		graphql.AddError(ctx, gqlerror.ErrorPosf(operation.Position, "can only have query, mutation and subscription operations"))
+		return graphql.Null
 	}
 
 	fields := graphql.CollectFields(graphql.GetOperationContext(ctx), operation.SelectionSet, []string{typ.Name})
@@ -218,15 +173,6 @@ func executeOperation(ctx context.Context, exeContext *ExecutionContext, operati
 
 	// NOTE original では inline fragment と絡めた同名fieldのmergeについて後続の処理になげているので Map<string, ReadonlyArray<FieldNode>> 的な型になる
 	//      gqlgen では fragment の解決とmergeなどは適宜行われているため いわば Map<string, FieldNode> 相当の型になっている
-	//  fields := collectFields(
-	//	  exeContext.Schema,
-	//	  exeContext.Fragments,
-	//	  exeContext.VariableValues,
-	//	  typ,
-	//	  operation.SelectionSet,
-	//	  &Fields{},
-	//	  make(map[string]struct{}),
-	//  )
 
 	// Errors from sub-fields of a NonNull type may propagate to the top level,
 	// at which point we still log the error and null the parent field, which
@@ -238,12 +184,14 @@ func executeOperation(ctx context.Context, exeContext *ExecutionContext, operati
 		result = executeFields(ctx, exeContext, typ, rootValue, fields)
 	}
 
-	return result, nil
+	return result
 }
 
 // Implements the "Executing selection sets" section of the spec
 // for fields that must be executed serially.
 func executeFieldsSerially(ctx context.Context, exeContext *ExecutionContext, parentType *ast.Definition, sourceValue interface{}, fields []graphql.CollectedField) graphql.Marshaler {
+	oc := graphql.GetOperationContext(ctx)
+
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
@@ -252,7 +200,7 @@ func executeFieldsSerially(ctx context.Context, exeContext *ExecutionContext, pa
 			Field:  field,
 		}
 		ctx := graphql.WithFieldContext(ctx, fc)
-		rawArgs := field.ArgumentMap(exeContext.VariableValues)
+		rawArgs := field.ArgumentMap(oc.Variables)
 		// TODO rawArgs から args への変換処理必要？ Unmarshal しない前提ならいらないはずだが
 		fc.Args = rawArgs
 
@@ -285,6 +233,8 @@ func executeFieldsSerially(ctx context.Context, exeContext *ExecutionContext, pa
 // Implements the "Executing selection sets" section of the spec
 // for fields that may be executed in parallel.
 func executeFields(ctx context.Context, exeContext *ExecutionContext, parentType *ast.Definition, sourceValue interface{}, fields []graphql.CollectedField) graphql.Marshaler {
+	oc := graphql.GetOperationContext(ctx)
+
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
@@ -295,7 +245,7 @@ func executeFields(ctx context.Context, exeContext *ExecutionContext, parentType
 				Field:  field,
 			}
 			ctx := graphql.WithFieldContext(ctx, fc)
-			rawArgs := field.ArgumentMap(exeContext.VariableValues)
+			rawArgs := field.ArgumentMap(oc.Variables)
 			// TODO rawArgs から args への変換処理必要？ Unmarshal しない前提ならいらないはずだが
 			fc.Args = rawArgs
 
@@ -343,39 +293,25 @@ func executeField(ctx context.Context, exeContext *ExecutionContext, parentType 
 	fc := graphql.GetFieldContext(ctx)
 	// NOTE originalでは buildResolveInfo とかしてた
 
-	// Get the resolve function, regardless of if its result is normal or abrupt (error).
-
 	// Build a JS object of arguments from the field.arguments AST, using the
 	// variables scope to fulfill any variable references.
 	// TODO: find a way to memoize, in case this field is within a List type.
 	// oroginal: const args = getArgumentValues(...)
 	args := fc.Args
 
-	// The resolve function's optional third argument is a context value that
-	// is provided to every resolve function within an execution. It is commonly
-	// used to represent an authenticated user, or request-specific caches.
-	contextValue := exeContext.ContextValue
-
-	// TODO originalにあったinfoを引数から削りました
-	result, gErr := resolveFn(ctx, source, args, contextValue)
+	result, gErr := resolveFn(ctx, source, args)
 	if gErr != nil {
-		exeContext.Errors = append(exeContext.Errors, gErr)
+		graphql.AddError(ctx, gErr)
 		return graphql.Null
 	}
 
-	completed, gErr := completeValue(
+	return completeValue(
 		ctx,
 		exeContext,
 		returnType,
 		fieldNode,
 		result,
 	)
-	if gErr != nil {
-		exeContext.Errors = append(exeContext.Errors, gErr)
-		return graphql.Null
-	}
-
-	return completed
 }
 
 // Implements the instructions for completeValue as defined in the
@@ -397,12 +333,13 @@ func executeField(ctx context.Context, exeContext *ExecutionContext, parentType 
 //
 // Otherwise, the field type expects a sub-selection set, and will complete the
 // value by executing all sub-selections.
-func completeValue(ctx context.Context, exeContext *ExecutionContext, returnType *ast.Type, fieldNode graphql.CollectedField, result interface{}) (graphql.Marshaler, *gqlerror.Error) {
+func completeValue(ctx context.Context, exeContext *ExecutionContext, returnType *ast.Type, fieldNode graphql.CollectedField, result interface{}) graphql.Marshaler {
 	fc := graphql.GetFieldContext(ctx)
 
 	// If result is an Error, throw a located error.
 	if err, ok := result.(error); ok && err != nil {
-		return graphql.Null, gqlerror.WrapPath(fc.Path(), err)
+		graphql.AddError(ctx, err)
+		return graphql.Null
 	}
 
 	// If field type is NonNull, complete for inner type, and throw field error
@@ -410,25 +347,26 @@ func completeValue(ctx context.Context, exeContext *ExecutionContext, returnType
 	if returnType.NonNull {
 		copied := *returnType
 		copied.NonNull = false
-		completed, gErr := completeValue(
+		completed := completeValue(
 			ctx,
 			exeContext,
 			&copied,
 			fieldNode,
 			result,
 		)
-		if gErr != nil {
-			return graphql.Null, gErr
+		if len(graphql.GetFieldErrors(ctx, fc)) != 0 {
+			return graphql.Null
 		}
 		if completed == graphql.Null {
-			return graphql.Null, gqlerror.ErrorPathf(fc.Path(), "cannot return null for non-nullable field %s.%s", fc.Object, fc.Field.Name)
+			graphql.AddErrorf(ctx, "cannot return null for non-nullable field %s.%s", fc.Object, fc.Field.Name)
+			return graphql.Null
 		}
-		return completed, nil
+		return completed
 	}
 
 	// If result value is null or undefined then return null.
 	if result == nil {
-		return graphql.Null, nil
+		return graphql.Null
 	}
 
 	// If field type is List, complete each item in the list with the inner type
@@ -473,17 +411,19 @@ func completeValue(ctx context.Context, exeContext *ExecutionContext, returnType
 	}
 
 	// istanbul ignore next (Not reachable. All possible output types have been considered)
-	return graphql.Null, gqlerror.ErrorPathf(fc.Path(), "cannot complete value of unexpected output type: %s", returnType.String())
+	graphql.AddErrorf(ctx, "cannot complete value of unexpected output type: %s", returnType.String())
+	return graphql.Null
 }
 
 // Complete a list value by completing each item in the list with the
 // inner type
-func completeListValue(ctx context.Context, exeContext *ExecutionContext, returnType *ast.Type, fieldNode graphql.CollectedField, result interface{}) (graphql.Marshaler, *gqlerror.Error) {
+func completeListValue(ctx context.Context, exeContext *ExecutionContext, returnType *ast.Type, fieldNode graphql.CollectedField, result interface{}) graphql.Marshaler {
 	fc := graphql.GetFieldContext(ctx)
 
 	resultRV := reflect.ValueOf(result)
-	if resultRV.Kind() != reflect.Slice {
-		return graphql.Null, gqlerror.ErrorPathf(fc.Path(), `expected slice, but did not find one for field "%s.%s"`, fc.Object, fc.Field.Name)
+	if resultRV.Kind() != reflect.Slice && resultRV.Kind() != reflect.Array {
+		graphql.AddErrorf(ctx, `expected slice or array, but did not find one for field "%s.%s"`, fc.Object, fc.Field.Name)
+		return graphql.Null
 	}
 
 	// This is specified as a simple map, however we're optimizing the path
@@ -504,52 +444,49 @@ func completeListValue(ctx context.Context, exeContext *ExecutionContext, return
 			}
 			ctx := graphql.WithFieldContext(ctx, fc)
 
-			completedItem, gErr := completeValue(
+			ret[index] = completeValue(
 				ctx,
 				exeContext,
 				itemType,
 				fieldNode,
 				item,
 			)
-			if gErr != nil {
-				// TODO ctx 経由であれこれする形にここに限らず全体的に変えないといけない
-				panic(gErr)
-			}
 
-			ret[index] = completedItem
 			wg.Done()
 		}()
 	}
 
 	wg.Wait()
 
-	return ret, nil
+	return ret
 }
 
 // Complete a Scalar or Enum by serializing to a valid value, returning
 // null if serialization is not possible.
-func completeLeafValue(ctx context.Context, returnType *ast.Type, result interface{}) (graphql.Marshaler, *gqlerror.Error) {
+func completeLeafValue(ctx context.Context, returnType *ast.Type, result interface{}) graphql.Marshaler {
 	fc := graphql.GetFieldContext(ctx)
 
 	if result == nil {
-		return graphql.Null, nil
+		return graphql.Null
 	}
 
 	switch result := result.(type) {
 	case bool:
-		return graphql.MarshalBoolean(result), nil
+		return graphql.MarshalBoolean(result)
 	case float64:
-		return graphql.MarshalFloat(result), nil
+		return graphql.MarshalFloat(result)
 	case int:
-		return graphql.MarshalInt(result), nil
+		return graphql.MarshalInt(result)
 	case int64:
-		return graphql.MarshalInt64(result), nil
+		return graphql.MarshalInt64(result)
 	case int32:
-		return graphql.MarshalInt32(result), nil
+		return graphql.MarshalInt32(result)
 	case string:
-		return graphql.MarshalString(result), nil
+		return graphql.MarshalString(result)
 	case time.Time:
-		return graphql.MarshalTime(result), nil
+		return graphql.MarshalTime(result)
+	case graphql.Marshaler:
+		return result
 	default:
 		panic(gqlerror.ErrorPathf(fc.Path(), "unsupported leaf type: %T", result))
 	}
@@ -557,20 +494,20 @@ func completeLeafValue(ctx context.Context, returnType *ast.Type, result interfa
 
 // Complete a value of an abstract type by determining the runtime object type
 // of that value, then complete the value for that type.
-func completeAbstractValue(ctx context.Context, exeContext *ExecutionContext, returnType *ast.Type, fieldNode graphql.CollectedField, result interface{}) (graphql.Marshaler, *gqlerror.Error) {
+func completeAbstractValue(ctx context.Context, exeContext *ExecutionContext, returnType *ast.Type, fieldNode graphql.CollectedField, result interface{}) graphql.Marshaler {
 	resolveTypeFn := exeContext.TypeResolver
-	contextValue := exeContext.ContextValue
 
 	runtimeType, gErr := ensureValidRuntimeType(
 		ctx,
-		resolveTypeFn(ctx, result, contextValue, exeContext.Schema, returnType),
+		resolveTypeFn(ctx, result, exeContext.Schema, returnType),
 		exeContext,
 		returnType,
 		fieldNode,
 		result,
 	)
 	if gErr != nil {
-		return graphql.Null, gErr
+		graphql.AddError(ctx, gErr)
+		return graphql.Null
 	}
 
 	return completeObjectValue(
@@ -629,7 +566,7 @@ func ensureValidRuntimeType(ctx context.Context, runtimeTypeName string, exeCont
 }
 
 // Complete an Object value by executing all sub-selections.
-func completeObjectValue(ctx context.Context, exeContext *ExecutionContext, returnType *ast.Type, fieldNode graphql.CollectedField, result interface{}) (graphql.Marshaler, *gqlerror.Error) {
+func completeObjectValue(ctx context.Context, exeContext *ExecutionContext, returnType *ast.Type, fieldNode graphql.CollectedField, result interface{}) graphql.Marshaler {
 	// Collect sub-fields to execute to complete this value.
 	subFieldNodes := graphql.CollectFields(graphql.GetOperationContext(ctx), fieldNode.SelectionSet, []string{returnType.Name()})
 
@@ -639,7 +576,7 @@ func completeObjectValue(ctx context.Context, exeContext *ExecutionContext, retu
 	// NOTE: original では promise 周りの処理が色々あったけど多分省いてよいはず
 
 	// TODO returnType じゃなくて types から引いた definition を渡しているけど List とか NonNull の情報が落ちてるのでまずいのではないか…？ あとで確認する
-	return executeFields(ctx, exeContext, exeContext.Schema.Types[returnType.Name()], result, subFieldNodes), nil
+	return executeFields(ctx, exeContext, exeContext.Schema.Types[returnType.Name()], result, subFieldNodes)
 }
 
 // If a resolveType function is not given, then a default resolve behavior is
@@ -650,7 +587,7 @@ func completeObjectValue(ctx context.Context, exeContext *ExecutionContext, retu
 //
 // Otherwise, test each possible type for the abstract type by calling
 // isTypeOf for the object being coerced, returning the first type that matches.
-func defaultTypeResolver(ctx context.Context, value interface{}, contextValue map[string]interface{}, schema *ast.Schema, abstractType *ast.Type) string {
+func defaultTypeResolver(ctx context.Context, value interface{}, schema *ast.Schema, abstractType *ast.Type) string {
 	// First, look for `__typename`.
 	if utils.IsObjectLike(value) {
 		value := value.(map[string]interface{})
@@ -669,7 +606,7 @@ func defaultTypeResolver(ctx context.Context, value interface{}, contextValue ma
 // which takes the property of the source object of the same name as the field
 // and returns it as the result, or if it's a function, returns the result
 // of calling that function while passing along args and context value.
-func defaultFieldResolver(ctx context.Context, source interface{}, args, contextValue map[string]interface{}) (interface{}, *gqlerror.Error) {
+func defaultFieldResolver(ctx context.Context, source interface{}, args map[string]interface{}) (interface{}, *gqlerror.Error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
 		panic("ctx doesn't have FieldContext")

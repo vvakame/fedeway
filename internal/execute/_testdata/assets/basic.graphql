@@ -28,4 +28,18 @@ query {
             name
         }
     }
+    vehicle(id: "Car:123") {
+        ... on Car {
+            id
+            thing {
+                ... on Ikea {
+                    asile
+                }
+            }
+        }
+        ... on Vehicle {
+            id
+            retailPrice
+        }
+    }
 }

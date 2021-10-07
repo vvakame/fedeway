@@ -21,6 +21,12 @@
           "name": "b"
         }
       ]
+    },
+    "vehicle": {
+      "id": "Car:123",
+      "thing": {
+        "asile": 1
+      }
     }
   }
 }
