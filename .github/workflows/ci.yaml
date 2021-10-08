@@ -1,0 +1,38 @@
+name: Go CI
+
+on:
+  push:
+    branches:
+      - "**"
+
+env:
+  GO_VERSION: "~1.17"
+
+jobs:
+  tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Cache go dependencies
+        uses: actions/cache@v2
+        id: cache
+        with:
+          key: ${{ runner.os }}-go-cache-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
+          path: |-
+            ~/go/pkg/mod
+      - name: Run tests
+        run: |-
+          go test -coverprofile=./cover.out ./...
+          go tool cover -html=cover.out -o cover.html
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v2
+        with:
+          name: code-coverage-report
+          path: cover.html
+          retention-days: 7
