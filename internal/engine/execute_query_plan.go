@@ -17,40 +17,40 @@ import (
 
 type ServiceMap map[string]DataSource
 
-type ExecutionContext struct {
-	QueryPlan        *plan.QueryPlan
-	OperationContext *OperationContext
-	ServiceMap       ServiceMap
-	RequestContext   *graphql.OperationContext
-	Errors           gqlerror.List
+type executionContext struct {
+	QueryPlan      *plan.QueryPlan
+	Schema         *ast.Schema
+	ServiceMap     ServiceMap
+	RequestContext *graphql.OperationContext
+	Errors         gqlerror.List
 }
 
-type ResultMap map[string]interface{}
+type resultMap map[string]interface{}
 
-func ExecuteQueryPlan(ctx context.Context, queryPlan *plan.QueryPlan, serviceMap ServiceMap, requestContext *graphql.OperationContext, operationContext *OperationContext) *graphql.Response {
-	ec := &ExecutionContext{
-		QueryPlan:        queryPlan,
-		OperationContext: operationContext,
-		ServiceMap:       serviceMap,
-		RequestContext:   requestContext,
+func ExecuteQueryPlan(ctx context.Context, queryPlan *plan.QueryPlan, serviceMap ServiceMap, schema *ast.Schema, requestContext *graphql.OperationContext) *graphql.Response {
+	ec := &executionContext{
+		QueryPlan:      queryPlan,
+		Schema:         schema,
+		ServiceMap:     serviceMap,
+		RequestContext: requestContext,
 	}
 
-	// TODO ResultMap みたいな独自の型にしてLockをちゃんとやらないといけない
-	data := make(ResultMap)
+	// TODO resultMap みたいな独自の型にしてLockをちゃんとやらないといけない
+	data := make(resultMap)
 
 	if queryPlan.Node != nil {
 		executeNode(ctx, ec, queryPlan.Node, data, nil)
 	}
 
 	return execute.Execute(ctx, &execute.ExecutionArgs{
-		Schema:         operationContext.Schema,
+		Schema:         schema,
 		RawQuery:       requestContext.RawQuery,
 		Document:       requestContext.Doc,
 		RootValue:      data,
 		VariableValues: requestContext.Variables,
 		OperationName:  requestContext.OperationName,
-		FieldResolver:  nil, // TODO
-		TypeResolver:   nil, // TODO
+		FieldResolver:  nil, // TODO 独自の実装にする…？ デフォルトで利用されるものがfederation用っぽいやつなのでこのままでもいいんだけど
+		TypeResolver:   nil, // TODO 同上
 	})
 }
 
@@ -59,8 +59,8 @@ func ExecuteQueryPlan(ctx context.Context, queryPlan *plan.QueryPlan, serviceMap
 // typesafe. However, it doesn't actually ask for traces from the backend
 // service unless we are capturing traces for Studio.
 // ... original comment said.
-func executeNode(ctx context.Context, ec *ExecutionContext, node plan.PlanNode, results ResultMap, path ast.Path) {
-	// TODO 明日用のメモ results の型が ResultMap だとまずい
+func executeNode(ctx context.Context, ec *executionContext, node plan.PlanNode, results resultMap, path ast.Path) {
+	// TODO 明日用のメモ results の型が resultMap だとまずい
 	// JSの実装を読むとResultMapでよさそうに見えるけど、実際は flattenResultsAtPath の処理結果が array になることがある
 	// さらに面倒なことに、arrayの型がわからないのだよなぁ…
 
@@ -108,14 +108,14 @@ func executeNode(ctx context.Context, ec *ExecutionContext, node plan.PlanNode, 
 	}
 }
 
-func executeFetch(ctx context.Context, ec *ExecutionContext, fetch *plan.FetchNode, results interface{}, path ast.Path) *gqlerror.Error {
+func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNode, results interface{}, path ast.Path) *gqlerror.Error {
 	service := ec.ServiceMap[fetch.ServiceName]
 
 	if service == nil {
 		return gqlerror.Errorf(`couldn't find service with name "%s"`, fetch.ServiceName)
 	}
 
-	sendOperation := func(context *ExecutionContext, source string, variables map[string]interface{}) (ResultMap, *gqlerror.Error) {
+	sendOperation := func(context *executionContext, source string, variables map[string]interface{}) (resultMap, *gqlerror.Error) {
 		doc, gErr := parser.ParseQuery(&ast.Source{Input: source})
 		if gErr != nil {
 			return nil, gErr
@@ -139,7 +139,7 @@ func executeFetch(ctx context.Context, ec *ExecutionContext, fetch *plan.FetchNo
 			}
 		}
 
-		result := ResultMap{}
+		result := resultMap{}
 		err := json.Unmarshal(response.Data, &result)
 		if err != nil {
 			return nil, gqlerror.Errorf("json unmarshal error: %w", err)
@@ -191,7 +191,7 @@ func executeFetch(ctx context.Context, ec *ExecutionContext, fetch *plan.FetchNo
 			if !ok {
 				return gqlerror.Errorf("unexpected entity type: %T", originalEntity)
 			}
-			representation, gErr := executeSelectionSet(ctx, ec.OperationContext, entity, requires)
+			representation, gErr := executeSelectionSet(ctx, ec, entity, requires)
 			if gErr != nil {
 				return gErr
 			}
@@ -246,7 +246,7 @@ func executeFetch(ctx context.Context, ec *ExecutionContext, fetch *plan.FetchNo
 	return nil
 }
 
-func executeSelectionSet(ctx context.Context, operationContext *OperationContext, source map[string]interface{}, selections []plan.QueryPlanSelectionNode) (map[string]interface{}, *gqlerror.Error) {
+func executeSelectionSet(ctx context.Context, ec *executionContext, source map[string]interface{}, selections []plan.QueryPlanSelectionNode) (map[string]interface{}, *gqlerror.Error) {
 	// If the underlying service has returned null for the parent (source)
 	// then there is no need to iterate through the parent's selection set
 	if source == nil {
@@ -296,7 +296,7 @@ func executeSelectionSet(ctx context.Context, operationContext *OperationContext
 						if !ok {
 							return nil, gqlerror.Errorf("unexpected type: %T", value)
 						}
-						ss, gErr := executeSelectionSet(ctx, operationContext, nextValue, baseSelections)
+						ss, gErr := executeSelectionSet(ctx, ec, nextValue, baseSelections)
 						if gErr != nil {
 							return nil, gErr
 						}
@@ -320,8 +320,8 @@ func executeSelectionSet(ctx context.Context, operationContext *OperationContext
 				return nil, gqlerror.Errorf("unexpected type: %T", source["__typename"])
 			}
 
-			if doesTypeConditionMatch(operationContext.Schema, selection.TypeCondition, typename) {
-				value, gErr := executeSelectionSet(ctx, operationContext, source, selection.Selections)
+			if doesTypeConditionMatch(ec.Schema, selection.TypeCondition, typename) {
+				value, gErr := executeSelectionSet(ctx, ec, source, selection.Selections)
 				if gErr != nil {
 					return nil, gErr
 				}
