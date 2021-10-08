@@ -1,0 +1,33 @@
+{
+  "me": {
+    "id": "abc",
+    "name": {
+      "first": "foo",
+      "last": "bar"
+    },
+    "username": "foo bar"
+  },
+  "me2": {
+    "id": "def",
+    "numberOfReviews": 3,
+    "goodAddress": true
+  },
+  "me3": {
+    "metadata": [
+      {
+        "name": "a"
+      },
+      {
+        "name": "b"
+      }
+    ]
+  },
+  "vehicle": {
+    "__typename": "Car",
+    "id": "Car:123",
+    "thing": {
+      "__typename": "Ikea",
+      "asile": 1
+    }
+  }
+}
