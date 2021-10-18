@@ -15,7 +15,7 @@ func (r *libraryResolver) UserAccount(ctx context.Context, obj *model.Library, i
 	libraryUserIDs := r.libraryUsers[*obj.Name]
 	for _, libraryUserID := range libraryUserIDs {
 		if libraryUserID == id {
-			return r.RootQuery().User(ctx, id)
+			return r.Query().User(ctx, id)
 		}
 	}
 
@@ -32,7 +32,7 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	return nil, nil
 }
 
-func (r *rootQueryResolver) User(ctx context.Context, id string) (*model.User, error) {
+func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
 	for _, user := range r.users {
 		if user.ID == id {
 			return user, nil
@@ -42,7 +42,7 @@ func (r *rootQueryResolver) User(ctx context.Context, id string) (*model.User, e
 	return nil, nil
 }
 
-func (r *rootQueryResolver) Me(ctx context.Context) (*model.User, error) {
+func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	return r.users[0], nil
 }
 
@@ -75,13 +75,13 @@ func (r *Resolver) Library() generated.LibraryResolver { return &libraryResolver
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
-// RootQuery returns generated.RootQueryResolver implementation.
-func (r *Resolver) RootQuery() generated.RootQueryResolver { return &rootQueryResolver{r} }
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 // User returns generated.UserResolver implementation.
 func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
 
 type libraryResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
-type rootQueryResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }

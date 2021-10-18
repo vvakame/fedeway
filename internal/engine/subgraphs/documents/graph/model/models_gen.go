@@ -22,6 +22,12 @@ type ImageAttributes struct {
 	URL string `json:"url"`
 }
 
+type Noop struct {
+	Noop *string `json:"noop"`
+}
+
+func (Noop) IsEntity() {}
+
 type Text struct {
 	Name       string          `json:"name"`
 	Attributes *TextAttributes `json:"attributes"`

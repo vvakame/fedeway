@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-
-	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
 )
 
 type AccountType interface {
@@ -33,11 +31,6 @@ type PasswordAccount struct {
 
 func (PasswordAccount) IsAccountType() {}
 func (PasswordAccount) IsEntity()      {}
-
-type Query struct {
-	Entities []fedruntime.Entity `json:"_entities"`
-	Service  *fedruntime.Service `json:"_service"`
-}
 
 type SMSAccount struct {
 	Number *string `json:"number"`

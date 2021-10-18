@@ -22,11 +22,11 @@ directive @cacheControl(
 scalar JSON # @specifiedBy(url: "https://json-spec.dev")
 
 schema {
-    query: RootQuery
+    query: Query # TODO gqlgen not supported renamed root type.
     mutation: Mutation
 }
 
-extend type RootQuery {
+extend type Query {
     user(id: ID!): User
     me: User @cacheControl(maxAge: 1000, scope: PRIVATE)
 }
