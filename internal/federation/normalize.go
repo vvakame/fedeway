@@ -112,6 +112,8 @@ func defaultRootOperationTypes(typeDefs *ast.SchemaDocument) *ast.SchemaDocument
 						node = &copied
 					}
 					if _, ok := rootOperationTypeMap[node.Name]; includesDefaultRootOperationNames(node.Name) && !ok {
+						// to ignore
+					} else {
 						if isExtension {
 							typeDefs.Extensions = append(typeDefs.Extensions, node)
 						} else {

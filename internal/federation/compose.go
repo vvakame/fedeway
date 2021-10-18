@@ -784,27 +784,83 @@ func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.S
 		schemaDoc.Extensions = transformObject(schemaDoc.Extensions)
 	}
 	{
-		// NOTE: 複数のserviceで同一のscalar, unionが定義されていた場合、このあとの ValidateSchemaDocument でエラーになるのでケアしてやる必要がある
+		// NOTE: 複数のserviceで同一のscalar, object, union, enumが定義されていた場合、このあとの ValidateSchemaDocument でエラーになるのでケアしてやる必要がある
 		// JS版実装ではこれを特別にケアしている箇所がないように見えるが…？
 		// 現在の実装ではdirectiveのmergeなどは行っていないがこれはいいんだろうか？
 
 		newDefinitions := make(ast.DefinitionList, 0, len(schemaDoc.Definitions))
-		scalarNamesMap := make(map[string]*ast.Definition)
+		knownDefMap := make(map[string]*ast.Definition)
 		for _, typ := range schemaDoc.Definitions {
-			if typ.Kind != ast.Scalar && typ.Kind != ast.Union {
-				newDefinitions = append(newDefinitions, typ)
-				continue
-			}
+			switch typ.Kind {
+			case ast.Scalar:
+				_, ok := knownDefMap[typ.Name]
+				if !ok {
+					newDefinitions = append(newDefinitions, typ)
+					knownDefMap[typ.Name] = typ
+					continue
+				}
 
-			known, ok := scalarNamesMap[typ.Name]
-			if !ok {
-				newDefinitions = append(newDefinitions, typ)
-				scalarNamesMap[typ.Name] = typ
-				continue
-			}
+			case ast.Object:
+				known, ok := knownDefMap[typ.Name]
+				if !ok {
+					// NOTE direcitve location が OBJECT, FIELD_DEFINITION とかは non-executable なので除去する
+					// type system 系は全部剥がしたほうがいい説はある…
+					for _, fieldDef := range typ.Fields {
+						fieldDef.Directives = nil
+					}
 
-			if !reflect.DeepEqual(known.Types, typ.Types) {
-				errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible same union type definition"))
+					newDefinitions = append(newDefinitions, typ)
+					knownDefMap[typ.Name] = typ
+					continue
+				}
+
+				if !reflect.DeepEqual(known.Interfaces, typ.Interfaces) {
+					errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible duplicated union type definition"))
+				} else if len(known.Fields) != len(typ.Fields) {
+					errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible duplicated object type definition"))
+				} else {
+					// TODO fieldの名前しか比較してないのは若干雑
+					for i := 0; i < len(known.Fields); i++ {
+						if known.Fields[i].Name != typ.Fields[i].Name {
+							errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible duplicated object type definition"))
+							break
+						}
+					}
+				}
+
+			case ast.Union:
+				known, ok := knownDefMap[typ.Name]
+				if !ok {
+					newDefinitions = append(newDefinitions, typ)
+					knownDefMap[typ.Name] = typ
+					continue
+				}
+
+				if !reflect.DeepEqual(known.Types, typ.Types) {
+					errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible duplicated union type definition"))
+				}
+
+			case ast.Enum:
+				known, ok := knownDefMap[typ.Name]
+				if !ok {
+					newDefinitions = append(newDefinitions, typ)
+					knownDefMap[typ.Name] = typ
+					continue
+				}
+
+				if len(known.EnumValues) != len(typ.EnumValues) {
+					errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible duplicated enum type definition"))
+				} else {
+					for i := 0; i < len(known.EnumValues); i++ {
+						if known.EnumValues[i].Name != typ.EnumValues[i].Name {
+							errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible duplicated enum type definition"))
+							break
+						}
+					}
+				}
+
+			default:
+				newDefinitions = append(newDefinitions, typ)
 			}
 		}
 

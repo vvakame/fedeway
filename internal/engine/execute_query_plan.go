@@ -142,7 +142,7 @@ func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNo
 		result := resultMap{}
 		err := json.Unmarshal(response.Data, &result)
 		if err != nil {
-			return nil, gqlerror.Errorf("json unmarshal error: %w", err)
+			return nil, gqlerror.Errorf("json unmarshal error: %s", err)
 		}
 
 		return result, nil
