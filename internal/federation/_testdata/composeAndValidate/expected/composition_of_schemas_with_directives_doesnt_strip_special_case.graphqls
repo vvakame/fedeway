@@ -1,0 +1,31 @@
+directive @core(feature: String!, as: String, for: core__Purpose) on SCHEMA
+directive @extends on OBJECT | INTERFACE
+directive @external on OBJECT | FIELD
+directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
+directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+directive @join__owner(graph: join__Graph!) on OBJECT | INTERFACE
+directive @join__type(graph: join__Graph!, key: join__FieldSet) on OBJECT | INTERFACE
+directive @key(fields: String!) on OBJECT | INTERFACE
+directive @provides(fields: String!) on FIELD_DEFINITION
+directive @requires(fields: String!) on FIELD_DEFINITION
+type EarthConcern @join__owner(graph: SERVICEA) {
+	environmental: String!
+}
+scalar MyScalar @specifiedBy(url: "http://my-spec-url.com")
+type Query {
+	importantDirectives: [EarthConcern!]! @deprecated(reason: "Don't remove me please") @join__field(graph: SERVICEA)
+}
+enum core__Purpose {
+	"""
+	`EXECUTION` features provide metadata necessary to for operation execution.
+	"""
+	EXECUTION
+	"""
+	`SECURITY` features provide metadata necessary to securely resolve fields.
+	"""
+	SECURITY
+}
+scalar join__FieldSet
+enum join__Graph {
+	SERVICEA @join__graph(name: "serviceA", url: "")
+}
