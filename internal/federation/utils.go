@@ -183,26 +183,79 @@ func findDirectivesOnNode(node *ast.Definition, directiveName string) ast.Direct
 func typeNodesAreEquivalent(firstNode *ast.Definition, secondNode *ast.Definition) bool {
 	// NOTE オリジナルの実装をだいぶ簡素化しているがベタ移植は難しいので一旦目的に合致してそうな実装を書く
 
+	isDirectiveEqual := func(first, second *ast.Directive) bool {
+		if first.Name != secondNode.Name {
+			return false
+		}
+		if len(first.Arguments) != len(second.Arguments) {
+			return false
+		}
+		for i := 0; i < len(first.Arguments); i++ {
+			firstArg := first.Arguments[i]
+			secondArg := second.Arguments[i]
+			if firstArg.Name != secondArg.Name {
+				return false
+			}
+			// TODO Value?
+		}
+		return true
+	}
+	isDirectiveListEqual := func(first, second ast.DirectiveList) bool {
+		if len(first) != len(second) {
+			return false
+		}
+		for i := 0; i < len(first); i++ {
+			if !isDirectiveEqual(first[i], second[i]) {
+				return false
+			}
+		}
+		return true
+	}
+
 	if firstNode.Name != secondNode.Name {
 		return false
 	}
 	if firstNode.Kind != secondNode.Kind {
 		return false
 	}
-	if !reflect.DeepEqual(firstNode.Directives, secondNode.Directives) {
+	if !isDirectiveListEqual(firstNode.Directives, secondNode.Directives) {
 		return false
 	}
 	if !reflect.DeepEqual(firstNode.Interfaces, secondNode.Interfaces) {
 		return false
 	}
-	if !reflect.DeepEqual(firstNode.Fields, secondNode.Fields) {
-		return false
+	{
+		if len(firstNode.Fields) != len(secondNode.Fields) {
+			return false
+		}
+		for i := 0; i < len(firstNode.Fields); i++ {
+			firstField := firstNode.Fields[i]
+			secondField := secondNode.Fields[i]
+			if firstField.Name != secondField.Name {
+				return true
+			}
+			if firstField.Type.String() != secondField.Type.String() {
+				return false
+			}
+		}
 	}
 	if !reflect.DeepEqual(firstNode.Types, secondNode.Types) {
 		return false
 	}
-	if !reflect.DeepEqual(firstNode.EnumValues, secondNode.EnumValues) {
-		return false
+	{
+		if len(firstNode.EnumValues) != len(secondNode.EnumValues) {
+			return false
+		}
+		for i := 0; i < len(firstNode.EnumValues); i++ {
+			firstValue := firstNode.EnumValues[i]
+			secondValue := secondNode.EnumValues[i]
+			if firstValue.Name != secondValue.Name {
+				return false
+			}
+			if !isDirectiveListEqual(firstValue.Directives, secondNode.Directives) {
+				return false
+			}
+		}
 	}
 
 	return true
