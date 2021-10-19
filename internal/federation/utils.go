@@ -64,27 +64,61 @@ func stripExternalFieldsFromTypeDefs(typeDefs *ast.SchemaDocument, serviceName s
 }
 
 func stripTypeSystemDirectivesFromTypeDefs(typeDefs *ast.SchemaDocument) *ast.SchemaDocument {
+	isKeep := func(node *ast.Directive) bool {
+		switch node.Name {
+		case "deprecated", "specifiedBy":
+			// The `deprecated` directive is an exceptional case that we want to leave in
+			return true
+		case "key", "extends", "external", "requires", "provides", "tag":
+			// apolloTypeSystemDirectives
+			return true
+		default:
+			return false
+		}
+	}
+	filterDirectives := func(directives ast.DirectiveList) ast.DirectiveList {
+		newDirectives := make(ast.DirectiveList, 0, len(directives))
+		for _, directive := range directives {
+			if isKeep(directive) {
+				newDirectives = append(newDirectives, directive)
+			}
+		}
+		return newDirectives
+	}
+
 	var typeDefsWithoutTypeSystemDirectives *ast.SchemaDocument
 	{
 		copied := *typeDefs
 		typeDefsWithoutTypeSystemDirectives = &copied
 	}
-	directives := typeDefsWithoutTypeSystemDirectives.Directives
-	typeDefsWithoutTypeSystemDirectives.Directives = nil
-	for _, node := range directives {
-		// The `deprecated` directive is an exceptional case that we want to leave in
-		if node.Name == "deprecated" || node.Name == "specifiedBy" {
-			typeDefsWithoutTypeSystemDirectives.Directives = append(typeDefsWithoutTypeSystemDirectives.Directives, node)
-			continue
+	for _, schemaDef := range typeDefsWithoutTypeSystemDirectives.Schema {
+		schemaDef.Directives = filterDirectives(schemaDef.Directives)
+	}
+	for _, schemaDef := range typeDefsWithoutTypeSystemDirectives.SchemaExtension {
+		schemaDef.Directives = filterDirectives(schemaDef.Directives)
+	}
+	for _, def := range typeDefsWithoutTypeSystemDirectives.Definitions {
+		def.Directives = filterDirectives(def.Directives)
+		for _, fieldDef := range def.Fields {
+			fieldDef.Directives = filterDirectives(fieldDef.Directives)
+			for _, argDef := range fieldDef.Arguments {
+				argDef.Directives = filterDirectives(argDef.Directives)
+			}
 		}
-
-		// TODO originalだと定義が外だしされてる
-		switch node.Name {
-		case "key", "extends", "external", "requires", "provides",
-			"tag":
-			continue
-		default:
-			typeDefsWithoutTypeSystemDirectives.Directives = append(typeDefsWithoutTypeSystemDirectives.Directives, node)
+		for _, enumValue := range def.EnumValues {
+			enumValue.Directives = filterDirectives(enumValue.Directives)
+		}
+	}
+	for _, def := range typeDefsWithoutTypeSystemDirectives.Extensions {
+		def.Directives = filterDirectives(def.Directives)
+		for _, fieldDef := range def.Fields {
+			fieldDef.Directives = filterDirectives(fieldDef.Directives)
+			for _, argDef := range fieldDef.Arguments {
+				argDef.Directives = filterDirectives(argDef.Directives)
+			}
+		}
+		for _, enumValue := range def.EnumValues {
+			enumValue.Directives = filterDirectives(enumValue.Directives)
 		}
 	}
 

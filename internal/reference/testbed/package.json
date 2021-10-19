@@ -1,0 +1,16 @@
+{
+  "name": "testbed",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "graphql": "^15.6.1",
+    "graphql-tag": "^2.12.5",
+    "typescript": "^4.4.4"
+  }
+}

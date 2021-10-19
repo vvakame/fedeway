@@ -1,5 +1,4 @@
 # option:name: serviceA
-# option:skip: true
 # composition of schemas with directives
 # preserves executable and purges type-system directives
 
