@@ -20,7 +20,9 @@ var GraphQLIncludeDirective = &ast.DirectiveDefinition{
 			Type: &ast.Type{
 				NamedType: "Boolean",
 				NonNull:   true,
+				Position:  blankBuiltInPos,
 			},
+			Position: blankBuiltInPos,
 		},
 	},
 	Locations: []ast.DirectiveLocation{
@@ -42,7 +44,9 @@ var GraphQLSkipDirective = &ast.DirectiveDefinition{
 			Type: &ast.Type{
 				NamedType: "Boolean",
 				NonNull:   true,
+				Position:  blankBuiltInPos,
 			},
+			Position: blankBuiltInPos,
 		},
 	},
 	Locations: []ast.DirectiveLocation{
@@ -62,12 +66,15 @@ var GraphQLDeprecatedDirective = &ast.DirectiveDefinition{
 			Description: "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).",
 			Name:        "reason",
 			DefaultValue: &ast.Value{
-				Raw:  "No longer supported",
-				Kind: ast.StringValue,
+				Raw:      "No longer supported",
+				Kind:     ast.StringValue,
+				Position: blankBuiltInPos,
 			},
 			Type: &ast.Type{
 				NamedType: "String",
+				Position:  blankBuiltInPos,
 			},
+			Position: blankBuiltInPos,
 		},
 	},
 	Locations: []ast.DirectiveLocation{
@@ -90,7 +97,9 @@ var GraphQLSpecifiedByDirective = &ast.DirectiveDefinition{
 			Type: &ast.Type{
 				NamedType: "String",
 				NonNull:   true,
+				Position:  blankBuiltInPos,
 			},
+			Position: blankBuiltInPos,
 		},
 	},
 	Locations: []ast.DirectiveLocation{

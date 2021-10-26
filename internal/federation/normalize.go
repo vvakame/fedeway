@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/vektah/gqlparser/v2/ast"
-	"github.com/vvakame/fedeway/internal/log"
+	"github.com/vvakame/fedeway/internal/graphql"
 )
 
 func normalizeTypeDefs(ctx context.Context, typeDefs *ast.SchemaDocument) *ast.SchemaDocument {
@@ -89,13 +89,6 @@ func defaultRootOperationTypes(typeDefs *ast.SchemaDocument) *ast.SchemaDocument
 		// type Query { <--- this type definition is invalid (as well as Mutation or Subscription)
 		//   ...
 		// }
-		{
-			copied := *typeDefs
-			typeDefs = &copied
-			typeDefs.Definitions = append(ast.DefinitionList{}, typeDefs.Definitions...)
-			typeDefs.Extensions = append(ast.DefinitionList{}, typeDefs.Extensions...)
-		}
-
 		definitions := typeDefs.Definitions
 		typeDefs.Definitions = nil
 		extensions := typeDefs.Extensions
@@ -164,11 +157,7 @@ func defaultRootOperationTypes(typeDefs *ast.SchemaDocument) *ast.SchemaDocument
 		schemaWithoutConflictingDefaultDefinitions = typeDefs
 	}
 
-	var schemaWithDefaultRootTypes *ast.SchemaDocument
-	{
-		copied := *schemaWithoutConflictingDefaultDefinitions
-		schemaWithDefaultRootTypes = &copied
-	}
+	schemaWithDefaultRootTypes := schemaWithoutConflictingDefaultDefinitions
 	// Schema definitions and extensions are extraneous since we're transforming
 	// the root operation types to their defaults.
 	{
@@ -268,13 +257,6 @@ func defaultRootOperationTypes(typeDefs *ast.SchemaDocument) *ast.SchemaDocument
 }
 
 func replaceExtendedDefinitionsWithExtensions(typeDefs *ast.SchemaDocument) *ast.SchemaDocument {
-	{
-		copied := *typeDefs
-		typeDefs = &copied
-		typeDefs.Definitions = append(ast.DefinitionList{}, typeDefs.Definitions...)
-		typeDefs.Extensions = append(ast.DefinitionList{}, typeDefs.Extensions...)
-	}
-
 	definitions := typeDefs.Definitions
 	typeDefs.Definitions = nil
 	extensions := typeDefs.Extensions
@@ -338,12 +320,111 @@ func replaceExtendedDefinitionsWithExtensions(typeDefs *ast.SchemaDocument) *ast
 // object type: _Service
 // Query fields: _service, _entities
 func stripCommonPrimitives(ctx context.Context, document *ast.SchemaDocument) *ast.SchemaDocument {
-	// TODO コピーするのマジでだるいので諦めてもいいんじゃなかろうか
+	// Remove all common directive definitions from the document
+	{
+		newDirectives := make(ast.DirectiveDefinitionList, 0, len(document.Directives))
+	OUTER:
+		for _, node := range document.Directives {
+			for _, ignore := range federationDirectives {
+				if ignore.Name == node.Name {
+					continue OUTER
+				}
+			}
+			for _, ignore := range otherKnownDirectiveDefinitions {
+				if ignore.Name == node.Name {
+					continue OUTER
+				}
+			}
+			for _, ignore := range graphql.SpecifiedDirectives {
+				if ignore.Name == node.Name {
+					continue OUTER
+				}
+			}
+			newDirectives = append(newDirectives, node)
+		}
+		document.Directives = newDirectives
+	}
 
-	logger := log.FromContext(ctx)
-	logger.Info("caution! this method is not implemented!")
+	// Remove the `_entities` and `_service` fields from the `Query` type
+	// Remove the _Service type from the document
+	// Remove all federation scalar definitions from the document
+	// Remove all federation union definitions from the document
+	{
+		definitions := document.Definitions
+		document.Definitions = nil
+		extensions := document.Extensions
+		document.Extensions = nil
 
-	// TODO あとで実装する
+		processDef := func(defs ast.DefinitionList, isExtension bool) {
+			for _, node := range defs {
+				switch node.Kind {
+				case ast.Object:
+					if node.Name == "Query" {
+						newFieldDefs := make(ast.FieldList, 0, len(node.Fields))
+						for _, fieldDefinition := range node.Fields {
+							switch fieldDefinition.Name {
+							case "_service", "_entities":
+							// ignore
+							default:
+								newFieldDefs = append(newFieldDefs, fieldDefinition)
+							}
+						}
+						node.Fields = newFieldDefs
+
+						// If the 'Query' type is now empty just remove it
+						if len(node.Fields) == 0 {
+							continue
+						}
+					}
+
+					switch node.Name {
+					case "_Service":
+					// ignore
+					default:
+						if isExtension {
+							document.Extensions = append(document.Extensions, node)
+						} else {
+							document.Definitions = append(document.Definitions, node)
+						}
+					}
+
+				case ast.Scalar:
+					switch node.Name {
+					case "_Any", "_FieldSet":
+					// ignore
+					default:
+						if isExtension {
+							document.Extensions = append(document.Extensions, node)
+						} else {
+							document.Definitions = append(document.Definitions, node)
+						}
+					}
+
+				case ast.Union:
+					switch node.Name {
+					case "_Entity":
+					// ignore
+					default:
+						if isExtension {
+							document.Extensions = append(document.Extensions, node)
+						} else {
+							document.Definitions = append(document.Definitions, node)
+						}
+					}
+
+				default:
+					if isExtension {
+						document.Extensions = append(document.Extensions, node)
+					} else {
+						document.Definitions = append(document.Definitions, node)
+					}
+				}
+			}
+		}
+
+		processDef(definitions, false)
+		processDef(extensions, true)
+	}
 
 	return document
 }

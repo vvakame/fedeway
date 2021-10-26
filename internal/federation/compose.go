@@ -4,30 +4,33 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"reflect"
 	"sort"
 
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/formatter"
 	"github.com/vektah/gqlparser/v2/gqlerror"
-	"github.com/vektah/gqlparser/v2/parser"
 	"github.com/vektah/gqlparser/v2/validator"
 	"github.com/vvakame/fedeway/internal/graphql"
 )
 
-var emptyQueryDefinition = &TypeDefinitionEntity{
-	ServiceName: "",
-	Definition: &ast.Definition{
-		Kind: ast.Object,
-		Name: "Query",
-	},
+func emptyQueryDefinition() *TypeDefinitionEntity {
+	return &TypeDefinitionEntity{
+		ServiceName: "",
+		Definition: &ast.Definition{
+			Kind: ast.Object,
+			Name: "Query",
+		},
+	}
 }
-var emptyMutationDefinition = &TypeDefinitionEntity{
-	ServiceName: "",
-	Definition: &ast.Definition{
-		Kind: ast.Object,
-		Name: "Mutation",
-	},
+
+func emptyMutationDefinition() *TypeDefinitionEntity {
+	return &TypeDefinitionEntity{
+		ServiceName: "",
+		Definition: &ast.Definition{
+			Kind: ast.Object,
+			Name: "Mutation",
+		},
+	}
 }
 
 // Map of all type definitions to eventually be passed to extendSchema
@@ -289,13 +292,19 @@ func buildMapsFromServiceList(ctx context.Context, serviceList []*ServiceDefinit
 	// extendSchema will complain about this. We can't add an empty
 	// GraphQLObjectType to the schema constructor, so we add an empty definition
 	// here. We only add mutation if there is a mutation extension though.
-	// …とオリジナルではなっているが、 extendSchema を使わないこと & SchemaDocument をvalidateするときエラーになるためここではこれを行わない
-	//if _, ok := typeDefinitionsMap["Query"]; !ok {
-	//	typeDefinitionsMap["Query"] = []*TypeDefinitionEntity{emptyQueryDefinition}
-	//}
-	//if _, ok := typeDefinitionsMap["Mutation"]; !ok {
-	//	typeDefinitionsMap["Mutation"] = []*TypeDefinitionEntity{emptyMutationDefinition}
-	//}
+	{
+		_, ok := typeDefinitionsMap["Query"]
+		if !ok {
+			typeDefinitionsMap["Query"] = []*TypeDefinitionEntity{emptyQueryDefinition()}
+		}
+	}
+	{
+		_, extOK := typeExtensionsMap["Mutation"]
+		_, defOK := typeDefinitionsMap["Mutation"]
+		if extOK && !defOK {
+			typeDefinitionsMap["Mutation"] = []*TypeDefinitionEntity{emptyMutationDefinition()}
+		}
+	}
 
 	return &buildMaps{
 		typeToServiceMap:        typeToServiceMap,
@@ -309,7 +318,7 @@ func buildMapsFromServiceList(ctx context.Context, serviceList []*ServiceDefinit
 	}, nil
 }
 
-func buildSchemaFromDefinitionsAndExtensions(typeDefinitionsMap TypeDefinitionsMap, typeExtensionsMap TypeDefinitionsMap, directiveDefinitionsMap DirectiveDefinitionsMap, directiveMetadata *DirectiveMetadata, serviceList []*ServiceDefinition) (*ast.SchemaDocument, []error) {
+func buildSchemaFromDefinitionsAndExtensions(ctx context.Context, typeDefinitionsMap TypeDefinitionsMap, typeExtensionsMap TypeDefinitionsMap, directiveDefinitionsMap DirectiveDefinitionsMap, directiveMetadata *DirectiveMetadata, serviceList []*ServiceDefinition) (*ast.Schema, []error) {
 	// TODO errors の型が gqlerror のやつかもしれない
 	var errors []error
 
@@ -324,30 +333,33 @@ func buildSchemaFromDefinitionsAndExtensions(typeDefinitionsMap TypeDefinitionsM
 
 	_, fieldSetScalar, joinTypeDirective, joinFieldDirective, joinOwnerDirective, joinGraphEnum, joinGraphDirective := getJoinDefinitions(serviceList)
 
-	// original では ast.Schema を組み立てているが、validatorの詳細が公開されていなかったりするので ast.SchemaDocument を組み立てる
-	schemaDoc := &ast.SchemaDocument{}
-	// prelude をベースにしないと String とか各種scalarがなくてめんどくさいことになる
-	schemaDoc, gErr := parser.ParseSchema(validator.Prelude)
-	if gErr != nil {
-		errors = append(errors, gErr)
-		return nil, errors
+	var schema *ast.Schema
+	{
+		schemaDoc := &ast.SchemaDocument{}
+		schemaDoc.Directives = append(schemaDoc.Directives, CoreDirective)
+		schemaDoc.Directives = append(schemaDoc.Directives, joinFieldDirective)
+		schemaDoc.Directives = append(schemaDoc.Directives, joinTypeDirective)
+		schemaDoc.Directives = append(schemaDoc.Directives, joinOwnerDirective)
+		schemaDoc.Directives = append(schemaDoc.Directives, joinGraphDirective)
+		schemaDoc.Directives = append(schemaDoc.Directives, graphql.SpecifiedDirectives...)
+		schemaDoc.Directives = append(schemaDoc.Directives, federationDirectives...)
+		schemaDoc.Directives = append(schemaDoc.Directives, otherKnownDirectiveDefinitionsToInclude...)
+		schemaDoc.Definitions = append(schemaDoc.Definitions, fieldSetScalar, joinGraphEnum)
+		// original では SpecifiedScalarTypes, IntrospectionTypes, CorePurpose は追加していないがここでは必要
+		schemaDoc.Definitions = append(schemaDoc.Definitions, graphql.SpecifiedScalarTypes...)
+		schemaDoc.Definitions = append(schemaDoc.Definitions, graphql.IntrospectionTypes...)
+		schemaDoc.Definitions = append(schemaDoc.Definitions, CorePurpose)
+
+		var gErr *gqlerror.Error
+		schema, gErr = validator.ValidateSchemaDocument(schemaDoc)
+		if gErr != nil {
+			errors = append(errors, gErr)
+			return nil, errors
+		}
 	}
 
-	schemaDoc.Directives = append(schemaDoc.Directives, CoreDirective)
-	schemaDoc.Directives = append(schemaDoc.Directives, joinFieldDirective)
-	schemaDoc.Directives = append(schemaDoc.Directives, joinTypeDirective)
-	schemaDoc.Directives = append(schemaDoc.Directives, joinOwnerDirective)
-	schemaDoc.Directives = append(schemaDoc.Directives, joinGraphDirective)
-	// @include, @skip, @deprecated は Prelude に含まれるので扱わない
-	// schemaDoc.Directives = append(schemaDoc.Directives, graphql.SpecifiedDirectives...)
-	schemaDoc.Directives = append(schemaDoc.Directives, graphql.GraphQLSpecifiedByDirective)
-	schemaDoc.Directives = append(schemaDoc.Directives, federationDirectives...)
-	schemaDoc.Directives = append(schemaDoc.Directives, otherKnownDirectiveDefinitionsToInclude...)
-	// original では CorePurpose は追加していないがここでは必要
-	schemaDoc.Definitions = append(schemaDoc.Definitions, CorePurpose, fieldSetScalar, joinGraphEnum)
-
 	// Extend the blank schema with the base type definitions (as an AST node)
-	// originalではschemaとdefinitionsDocumentを別個に扱っているがこの実装では最初からschema documentを増築していく
+	definitionsDocument := &ast.SchemaDocument{}
 	typeDefinitionNames := make([]string, 0, len(typeDefinitionsMap))
 	for k := range typeDefinitionsMap {
 		typeDefinitionNames = append(typeDefinitionNames, k)
@@ -368,7 +380,7 @@ func buildSchemaFromDefinitionsAndExtensions(typeDefinitionsMap TypeDefinitionsM
 		}
 		if !foundInterfaceLike {
 			// TODO ここで ServiceName の情報が失われている気がするが…？
-			schemaDoc.Definitions = append(schemaDoc.Definitions, definitions...)
+			definitionsDocument.Definitions = append(definitionsDocument.Definitions, definitions...)
 			continue
 		}
 
@@ -388,7 +400,7 @@ func buildSchemaFromDefinitionsAndExtensions(typeDefinitionsMap TypeDefinitionsM
 		// No interfaces, no aggregation - just return what we got.
 		if len(uniqueInterfaces) == 0 {
 			// TODO ここで ServiceName の情報が失われている気がするが…？
-			schemaDoc.Definitions = append(schemaDoc.Definitions, definitions...)
+			definitionsDocument.Definitions = append(definitionsDocument.Definitions, definitions...)
 			continue
 		}
 
@@ -397,7 +409,7 @@ func buildSchemaFromDefinitionsAndExtensions(typeDefinitionsMap TypeDefinitionsM
 
 		for _, typeDefinition := range rest {
 			// TODO ここで ServiceName の情報が失われている気がするが…？
-			schemaDoc.Definitions = append(schemaDoc.Definitions, typeDefinition.Definition)
+			definitionsDocument.Definitions = append(definitionsDocument.Definitions, typeDefinition.Definition)
 		}
 
 		// TODO ここで ServiceName の情報が失われている気がするが…？
@@ -406,7 +418,7 @@ func buildSchemaFromDefinitionsAndExtensions(typeDefinitionsMap TypeDefinitionsM
 			first.Definition = &copied
 		}
 		first.Definition.Interfaces = uniqueInterfaces
-		schemaDoc.Definitions = append(schemaDoc.Definitions, first.Definition)
+		definitionsDocument.Definitions = append(definitionsDocument.Definitions, first.Definition)
 	}
 	directiveDefinitionNames := make([]string, 0, len(directiveDefinitionsMap))
 	for k := range directiveDefinitionsMap {
@@ -416,14 +428,22 @@ func buildSchemaFromDefinitionsAndExtensions(typeDefinitionsMap TypeDefinitionsM
 	for _, directiveDefinitionName := range directiveDefinitionNames {
 		definitions := directiveDefinitionsMap[directiveDefinitionName]
 		for _, definition := range definitions {
-			schemaDoc.Directives = append(schemaDoc.Directives, definition)
+			definitionsDocument.Directives = append(definitionsDocument.Directives, definition)
 			break // 先頭を処理したら後続は全部内容同じ… のはず
 		}
 	}
 
 	// TODO errors = validateSDL(definitionsDocument, schema, compositionRules);
 
+	schema, gErr := graphql.ExtendSchemaAssumeValidDSL(ctx, schema, definitionsDocument)
+	if gErr != nil {
+		// TODO original だと catch してスルーしてるけど？
+		errors = append(errors, gErr)
+		return nil, errors
+	}
+
 	// Extend the schema with the extension definitions (as an AST node)
+	extensionsDocument := &ast.SchemaDocument{}
 	typeExtensionNames := make([]string, 0, len(typeExtensionsMap))
 	for k := range typeExtensionsMap {
 		typeExtensionNames = append(typeExtensionNames, k)
@@ -433,26 +453,55 @@ func buildSchemaFromDefinitionsAndExtensions(typeDefinitionsMap TypeDefinitionsM
 		typeExtensions := typeExtensionsMap[typeExtensionName]
 		for _, typeExtension := range typeExtensions {
 			// TODO ここで ServiceName の情報が失われている気がするが…？
-			schemaDoc.Extensions = append(schemaDoc.Extensions, typeExtension.Definition)
+			extensionsDocument.Extensions = append(extensionsDocument.Extensions, typeExtension.Definition)
 		}
+	}
+
+	// TODO errors.push(...validateSDL(extensionsDocument, schema, compositionRules));
+
+	schema, gErr = graphql.ExtendSchemaAssumeValidDSL(ctx, schema, extensionsDocument)
+	if gErr != nil {
+		errors = append(errors, gErr)
+		return nil, errors
 	}
 
 	// TODO   errors.push(...validateSDL(extensionsDocument, schema, compositionRules));
 
 	// Remove apollo type system directives from the final schema
-	// NOTE: …とoriginalではなっているが、これをやっちゃうとvalidatorが通らなくなる @key とかが普通に利用されているので
-	//       もしやる場合、 *ast.Schema に対してこの操作をしたほうがよい
-	//newDirectives := make(ast.DirectiveDefinitionList, 0, len(schemaDoc.Directives))
-	//for _, directive := range schemaDoc.Directives {
-	//	if isFederationDirective(directive) {
-	//		continue
-	//	}
-	//	newDirectives = append(newDirectives, directive)
-	//}
-	//schemaDoc.Directives = newDirectives
+	newDirectiveMap := make(map[string]*ast.DirectiveDefinition)
+	for name, directive := range schema.Directives {
+		if isFederationDirective(directive.Name) {
+			continue
+		}
+		newDirectiveMap[name] = directive
+	}
+	schema.Directives = newDirectiveMap
+	// TODO originalではこの時点で @key とかの FederationDirective をどこにも保持しなくなっている
+	// ここで除去するのは正しくない気がするが一旦そうする
+	excludeFederationDirective := func(directives ast.DirectiveList) ast.DirectiveList {
+		newDirectives := make(ast.DirectiveList, 0, len(directives))
+		for _, directive := range directives {
+			if isFederationDirective(directive.Name) {
+				continue
+			}
+			newDirectives = append(newDirectives, directive)
+		}
+		return newDirectives
+	}
+	for _, typ := range schema.Types {
+		typ.Directives = excludeFederationDirective(typ.Directives)
+		for _, def := range typ.Fields {
+			def.Directives = excludeFederationDirective(def.Directives)
+			for _, def := range def.Arguments {
+				def.Directives = excludeFederationDirective(def.Directives)
+			}
+		}
+		for _, def := range typ.EnumValues {
+			def.Directives = excludeFederationDirective(def.Directives)
+		}
+	}
 
-	// TODO ここvalidateしてschemaにしてから返すか悩ましい
-	return schemaDoc, errors
+	return schema, errors
 }
 
 // Using the various information we've collected about the schema, augment the
@@ -739,7 +788,7 @@ func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.S
 	valueTypes := buildMapsResult.valueTypes
 	directiveMetadata := buildMapsResult.directiveMetadata
 
-	schemaDoc, errors := buildSchemaFromDefinitionsAndExtensions(typeDefinitionsMap, typeExtensionsMap, directiveDefinitionsMap, directiveMetadata, services)
+	schema, errors := buildSchemaFromDefinitionsAndExtensions(ctx, typeDefinitionsMap, typeExtensionsMap, directiveDefinitionsMap, directiveMetadata, services)
 
 	// TODO: We should fix this to take non-default operation root types in
 	// implementing services into account.
@@ -750,154 +799,23 @@ func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.S
 	// same interface, it will get added to the constructed object multiple times,
 	// resulting in a schema validation error. We therefore need to remove
 	// duplicate interfaces from object types manually.
-	{
-		transformObject := func(definitions ast.DefinitionList) ast.DefinitionList {
-			newDefinitions := make(ast.DefinitionList, 0, len(definitions))
-
-			for _, typ := range definitions {
-				if typ.Kind != ast.Object {
-					newDefinitions = append(newDefinitions, typ)
-					continue
-				}
-
-				newInterfaces := make([]string, 0, len(typ.Interfaces))
-			OUTER:
-				for _, interfaceName := range typ.Interfaces {
-					for _, knownName := range newInterfaces {
-						if interfaceName == knownName {
-							continue OUTER
-						}
-					}
-					newInterfaces = append(newInterfaces, interfaceName)
-				}
-				if len(typ.Interfaces) != len(newInterfaces) {
-					typ.Interfaces = newInterfaces
-				}
-
-				newDefinitions = append(newDefinitions, typ)
-			}
-
-			return newDefinitions
+	for _, typ := range schema.Types {
+		if typ.Kind != ast.Object {
+			continue
 		}
 
-		schemaDoc.Definitions = transformObject(schemaDoc.Definitions)
-		schemaDoc.Extensions = transformObject(schemaDoc.Extensions)
-	}
-	{
-		// NOTE: 複数のserviceで同一のscalar, object, union, enumが定義されていた場合、このあとの ValidateSchemaDocument でエラーになるのでケアしてやる必要がある
-		// JS版実装ではこれを特別にケアしている箇所がないように見えるが…？
-		// 現在の実装ではdirectiveのmergeなどは行っていないがこれはいいんだろうか？
-
-		newDefinitions := make(ast.DefinitionList, 0, len(schemaDoc.Definitions))
-		knownDefMap := make(map[string]*ast.Definition)
-		for _, typ := range schemaDoc.Definitions {
-			switch typ.Kind {
-			case ast.Scalar:
-				_, ok := knownDefMap[typ.Name]
-				if !ok {
-					newDefinitions = append(newDefinitions, typ)
-					knownDefMap[typ.Name] = typ
-					continue
+		newInterfaces := make([]string, 0, len(typ.Interfaces))
+	OUTER:
+		for _, interfaceName := range typ.Interfaces {
+			for _, knownName := range newInterfaces {
+				if interfaceName == knownName {
+					continue OUTER
 				}
-
-			case ast.Object:
-				known, ok := knownDefMap[typ.Name]
-				if !ok {
-					// NOTE direcitve location が OBJECT, FIELD_DEFINITION とかは non-executable なので除去する
-					// type system 系は全部剥がしたほうがいい説はある…
-					for _, fieldDef := range typ.Fields {
-						fieldDef.Directives = nil
-					}
-
-					newDefinitions = append(newDefinitions, typ)
-					knownDefMap[typ.Name] = typ
-					continue
-				}
-
-				if !reflect.DeepEqual(known.Interfaces, typ.Interfaces) {
-					errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible duplicated union type definition"))
-				} else if len(known.Fields) != len(typ.Fields) {
-					errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible duplicated object type definition"))
-				} else {
-					// TODO fieldの名前しか比較してないのは若干雑
-					for i := 0; i < len(known.Fields); i++ {
-						if known.Fields[i].Name != typ.Fields[i].Name {
-							errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible duplicated object type definition"))
-							break
-						}
-					}
-				}
-
-			case ast.Union:
-				known, ok := knownDefMap[typ.Name]
-				if !ok {
-					newDefinitions = append(newDefinitions, typ)
-					knownDefMap[typ.Name] = typ
-					continue
-				}
-
-				if !reflect.DeepEqual(known.Types, typ.Types) {
-					errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible duplicated union type definition"))
-				}
-
-			case ast.Enum:
-				known, ok := knownDefMap[typ.Name]
-				if !ok {
-					newDefinitions = append(newDefinitions, typ)
-					knownDefMap[typ.Name] = typ
-					continue
-				}
-
-				if len(known.EnumValues) != len(typ.EnumValues) {
-					errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible duplicated enum type definition"))
-				} else {
-					for i := 0; i < len(known.EnumValues); i++ {
-						if known.EnumValues[i].Name != typ.EnumValues[i].Name {
-							errors = append(errors, gqlerror.ErrorPosf(typ.Position, "incompatible duplicated enum type definition"))
-							break
-						}
-					}
-				}
-
-			default:
-				newDefinitions = append(newDefinitions, typ)
 			}
+			newInterfaces = append(newInterfaces, interfaceName)
 		}
-
-		schemaDoc.Definitions = newDefinitions
-	}
-
-	// addFederationMetadataToSchemaNodes で schema になってないと処理が厳しい箇所があるのでここでvalidateすることにしてみる
-	schema, gErr := validator.ValidateSchemaDocument(schemaDoc)
-	if gErr != nil {
-		errors = append(errors, gErr)
-		return nil, "", errors
-	}
-	{
-		// @key(fields: "upc") @key(fields: "upc") みたいな感じで定義が重複する場合があるので除去してやる
-		for _, def := range schema.Types {
-			newDirectives := make(ast.DirectiveList, 0, len(def.Directives))
-		OUTER:
-			for _, directive := range def.Directives {
-				for _, knownDirective := range newDirectives {
-					if directive.Name == knownDirective.Name {
-						if len(directive.Arguments) == len(knownDirective.Arguments) {
-							for idx := range directive.Arguments {
-								argA := directive.Arguments[idx]
-								argB := knownDirective.Arguments[idx]
-
-								if argA.Name == argB.Name && argA.Value.Kind == argB.Value.Kind && argA.Value.Raw == argB.Value.Raw {
-									continue OUTER
-								}
-							}
-						}
-					}
-				}
-
-				newDirectives = append(newDirectives, directive)
-			}
-
-			def.Directives = newDirectives
+		if len(typ.Interfaces) != len(newInterfaces) {
+			typ.Interfaces = newInterfaces
 		}
 	}
 
@@ -907,6 +825,7 @@ func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.S
 	//       この実装ではsupergraphSDLがあればQueryPlanが作成できて用が足りるのでこの処理は一旦実装しない
 	// TODO ここで graphNameToEnumValueName ひねり出すのやめたほうがよさそう
 	graphNameToEnumValueName, _ := getJoinGraphEnum(services)
+	// NOTE: original では schema に変更を加えていない (@join__type とかが付随していない)
 	err = addFederationMetadataToSchemaNodes(schema, typeToServiceMap, externalFields, keyDirectivesMap, valueTypes, directiveDefinitionsMap, directiveMetadata, graphNameToEnumValueName)
 	if err != nil {
 		errors = append(errors, err)

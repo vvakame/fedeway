@@ -7,42 +7,20 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vektah/gqlparser/v2/parser"
+	"github.com/vvakame/fedeway/internal/graphql"
 )
 
-var schemaMetaFieldDef = &ast.FieldDefinition{
-	Name:        "__schema",
-	Description: "Access the current type schema of this server.",
-	Type:        ast.NamedType("__Schema", nil),
-}
-
-var typeMetaFieldDef = &ast.FieldDefinition{
-	Name:        "__type",
-	Description: "Request the type information of a single type.",
-	Type:        ast.NamedType("__Type", nil),
-	Arguments: []*ast.ArgumentDefinition{
-		{
-			Name: "name",
-			Type: ast.NonNullNamedType("String", nil),
-		},
-	},
-}
-
-var typeNameMetaFieldDef = &ast.FieldDefinition{
-	Name: "__typename",
-	Type: ast.NamedType("String", nil),
-}
-
 func getFieldDef(schema *ast.Schema, parentType *ast.Definition, fieldName string) *ast.FieldDefinition {
-	if fieldName == schemaMetaFieldDef.Name && schema.Query == parentType {
-		return schemaMetaFieldDef
+	if fieldName == graphql.SchemaMetaFieldDef.Name && schema.Query == parentType {
+		return graphql.SchemaMetaFieldDef
 	}
-	if fieldName == typeMetaFieldDef.Name && schema.Query == parentType {
-		return typeMetaFieldDef
+	if fieldName == graphql.TypeMetaFieldDef.Name && schema.Query == parentType {
+		return graphql.TypeMetaFieldDef
 	}
-	if fieldName == typeNameMetaFieldDef.Name && (parentType.Kind == ast.Object ||
+	if fieldName == graphql.TypeNameMetaFieldDef.Name && (parentType.Kind == ast.Object ||
 		parentType.Kind == ast.Interface ||
 		parentType.Kind == ast.Union) {
-		return typeNameMetaFieldDef
+		return graphql.TypeNameMetaFieldDef
 	}
 	if parentType.Kind == ast.Object ||
 		parentType.Kind == ast.Interface {
@@ -206,19 +184,6 @@ func getArgumentValues(def *ast.DirectiveDefinition, node *ast.Directive, variab
 	}
 
 	return coercedValues, nil
-}
-
-func isIntrospectionType(typeName string) bool {
-	switch typeName {
-	case "__Schema",
-		"__Directive", "__DirectiveLocation",
-		"__Type", "__Field",
-		"__InputValue", "__EnumValue",
-		"__TypeKind":
-		return true
-	default:
-		return false
-	}
 }
 
 func isCompositeType(def *ast.Definition) bool {
