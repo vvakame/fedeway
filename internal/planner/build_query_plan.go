@@ -11,6 +11,7 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/formatter"
 	"github.com/vektah/gqlparser/v2/gqlerror"
+	"github.com/vvakame/fedeway/internal/graphql"
 	"github.com/vvakame/fedeway/internal/log"
 	"github.com/vvakame/fedeway/internal/plan"
 	"github.com/vvakame/fedeway/internal/utils"
@@ -660,7 +661,7 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 			fieldDef := field.FieldDef
 			parentType := scope.parentType
 
-			if fieldDef.Name == typeNameMetaFieldDef.Name {
+			if fieldDef.Name == graphql.TypeNameMetaFieldDef.Name {
 				schema := qpctx.schema
 				var rootTypes []*ast.Definition
 				if schema.Query != nil {
@@ -681,7 +682,7 @@ func splitFields(ctx context.Context, qpctx *queryPlanningContext, path ast.Path
 			}
 
 			// We skip introspection fields like `__schema` and `__type`.
-			if isIntrospectionType(fieldDef.Type.Name()) {
+			if graphql.IsIntrospectionType(fieldDef.Type.Name()) {
 				logger.Info("skipping introspection type", "type", fieldDef.Type.Name())
 				continue
 			}
@@ -858,7 +859,7 @@ func completeField(ctx context.Context, qpctx *queryPlanningContext, scope *Scop
 		subGroup.Fields = append(subGroup.Fields, &Field{
 			Scope:     newScope,
 			FieldNode: typenameField,
-			FieldDef:  typeNameMetaFieldDef,
+			FieldDef:  graphql.TypeNameMetaFieldDef,
 		})
 	}
 

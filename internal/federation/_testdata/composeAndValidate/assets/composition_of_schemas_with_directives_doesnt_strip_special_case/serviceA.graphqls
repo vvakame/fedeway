@@ -1,5 +1,4 @@
 # option:name: serviceA
-# option:skip: true
 # composition of schemas with directives
 # doesn't strip the special case @deprecated and @specifiedBy type-system directives
 

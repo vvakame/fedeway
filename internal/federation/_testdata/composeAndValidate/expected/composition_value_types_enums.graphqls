@@ -3,13 +3,12 @@ directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: j
 directive @join__graph(name: String!, url: String!) on ENUM_VALUE
 directive @join__owner(graph: join__Graph!) on OBJECT | INTERFACE
 directive @join__type(graph: join__Graph!, key: join__FieldSet) on OBJECT | INTERFACE
-type Product @join__owner(graph: SERVICEA) @join__type(graph: SERVICEA, key: "sku") @join__type(graph: SERVICEB, key: "sku") {
-	sku: String!
-	upc: String!
-	price: Int! @join__field(graph: SERVICEB)
+enum CatalogItemEnum {
+	COUCH
+	MATTRESS
 }
 type Query {
-	products: [Product]! @join__field(graph: SERVICEA)
+	filler: String @join__field(graph: SERVICEB)
 }
 enum core__Purpose {
 	"""

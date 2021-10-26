@@ -63,7 +63,9 @@ var providesDirective = &ast.DirectiveDefinition{
 			Type: &ast.Type{
 				NamedType: "String",
 				NonNull:   true,
+				Position:  blankPos,
 			},
+			Position: blankPos,
 		},
 	},
 	Locations: []ast.DirectiveLocation{

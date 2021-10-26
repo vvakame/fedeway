@@ -1,5 +1,4 @@
 # option:name: serviceA
-# option:skip: true
 # composition of value types
 # composed type implements ALL interfaces that value types implement
 interface Node {

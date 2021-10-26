@@ -64,27 +64,61 @@ func stripExternalFieldsFromTypeDefs(typeDefs *ast.SchemaDocument, serviceName s
 }
 
 func stripTypeSystemDirectivesFromTypeDefs(typeDefs *ast.SchemaDocument) *ast.SchemaDocument {
+	isKeep := func(node *ast.Directive) bool {
+		switch node.Name {
+		case "deprecated", "specifiedBy":
+			// The `deprecated` directive is an exceptional case that we want to leave in
+			return true
+		case "key", "extends", "external", "requires", "provides", "tag":
+			// apolloTypeSystemDirectives
+			return true
+		default:
+			return false
+		}
+	}
+	filterDirectives := func(directives ast.DirectiveList) ast.DirectiveList {
+		newDirectives := make(ast.DirectiveList, 0, len(directives))
+		for _, directive := range directives {
+			if isKeep(directive) {
+				newDirectives = append(newDirectives, directive)
+			}
+		}
+		return newDirectives
+	}
+
 	var typeDefsWithoutTypeSystemDirectives *ast.SchemaDocument
 	{
 		copied := *typeDefs
 		typeDefsWithoutTypeSystemDirectives = &copied
 	}
-	directives := typeDefsWithoutTypeSystemDirectives.Directives
-	typeDefsWithoutTypeSystemDirectives.Directives = nil
-	for _, node := range directives {
-		// The `deprecated` directive is an exceptional case that we want to leave in
-		if node.Name == "deprecated" || node.Name == "specifiedBy" {
-			typeDefsWithoutTypeSystemDirectives.Directives = append(typeDefsWithoutTypeSystemDirectives.Directives, node)
-			continue
+	for _, schemaDef := range typeDefsWithoutTypeSystemDirectives.Schema {
+		schemaDef.Directives = filterDirectives(schemaDef.Directives)
+	}
+	for _, schemaDef := range typeDefsWithoutTypeSystemDirectives.SchemaExtension {
+		schemaDef.Directives = filterDirectives(schemaDef.Directives)
+	}
+	for _, def := range typeDefsWithoutTypeSystemDirectives.Definitions {
+		def.Directives = filterDirectives(def.Directives)
+		for _, fieldDef := range def.Fields {
+			fieldDef.Directives = filterDirectives(fieldDef.Directives)
+			for _, argDef := range fieldDef.Arguments {
+				argDef.Directives = filterDirectives(argDef.Directives)
+			}
 		}
-
-		// TODO originalだと定義が外だしされてる
-		switch node.Name {
-		case "key", "extends", "external", "requires", "provides",
-			"tag":
-			continue
-		default:
-			typeDefsWithoutTypeSystemDirectives.Directives = append(typeDefsWithoutTypeSystemDirectives.Directives, node)
+		for _, enumValue := range def.EnumValues {
+			enumValue.Directives = filterDirectives(enumValue.Directives)
+		}
+	}
+	for _, def := range typeDefsWithoutTypeSystemDirectives.Extensions {
+		def.Directives = filterDirectives(def.Directives)
+		for _, fieldDef := range def.Fields {
+			fieldDef.Directives = filterDirectives(fieldDef.Directives)
+			for _, argDef := range fieldDef.Arguments {
+				argDef.Directives = filterDirectives(argDef.Directives)
+			}
+		}
+		for _, enumValue := range def.EnumValues {
+			enumValue.Directives = filterDirectives(enumValue.Directives)
 		}
 	}
 
@@ -149,34 +183,87 @@ func findDirectivesOnNode(node *ast.Definition, directiveName string) ast.Direct
 func typeNodesAreEquivalent(firstNode *ast.Definition, secondNode *ast.Definition) bool {
 	// NOTE オリジナルの実装をだいぶ簡素化しているがベタ移植は難しいので一旦目的に合致してそうな実装を書く
 
+	isDirectiveEqual := func(first, second *ast.Directive) bool {
+		if first.Name != secondNode.Name {
+			return false
+		}
+		if len(first.Arguments) != len(second.Arguments) {
+			return false
+		}
+		for i := 0; i < len(first.Arguments); i++ {
+			firstArg := first.Arguments[i]
+			secondArg := second.Arguments[i]
+			if firstArg.Name != secondArg.Name {
+				return false
+			}
+			// TODO Value?
+		}
+		return true
+	}
+	isDirectiveListEqual := func(first, second ast.DirectiveList) bool {
+		if len(first) != len(second) {
+			return false
+		}
+		for i := 0; i < len(first); i++ {
+			if !isDirectiveEqual(first[i], second[i]) {
+				return false
+			}
+		}
+		return true
+	}
+
 	if firstNode.Name != secondNode.Name {
 		return false
 	}
 	if firstNode.Kind != secondNode.Kind {
 		return false
 	}
-	if !reflect.DeepEqual(firstNode.Directives, secondNode.Directives) {
+	if !isDirectiveListEqual(firstNode.Directives, secondNode.Directives) {
 		return false
 	}
 	if !reflect.DeepEqual(firstNode.Interfaces, secondNode.Interfaces) {
 		return false
 	}
-	if !reflect.DeepEqual(firstNode.Fields, secondNode.Fields) {
-		return false
+	{
+		if len(firstNode.Fields) != len(secondNode.Fields) {
+			return false
+		}
+		for i := 0; i < len(firstNode.Fields); i++ {
+			firstField := firstNode.Fields[i]
+			secondField := secondNode.Fields[i]
+			if firstField.Name != secondField.Name {
+				return true
+			}
+			if firstField.Type.String() != secondField.Type.String() {
+				return false
+			}
+		}
 	}
 	if !reflect.DeepEqual(firstNode.Types, secondNode.Types) {
 		return false
 	}
-	if !reflect.DeepEqual(firstNode.EnumValues, secondNode.EnumValues) {
-		return false
+	{
+		if len(firstNode.EnumValues) != len(secondNode.EnumValues) {
+			return false
+		}
+		for i := 0; i < len(firstNode.EnumValues); i++ {
+			firstValue := firstNode.EnumValues[i]
+			secondValue := secondNode.EnumValues[i]
+			if firstValue.Name != secondValue.Name {
+				return false
+			}
+			if !isDirectiveListEqual(firstValue.Directives, secondNode.Directives) {
+				return false
+			}
+		}
 	}
 
 	return true
 }
 
-func isFederationDirective(directive *ast.DirectiveDefinition) bool {
+func isFederationDirective(directiveName string) bool {
 	for _, node := range federationDirectives {
-		if node.Name == directive.Name {
+		if node.Name == directiveName {
 			return true
 		}
 	}

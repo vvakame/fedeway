@@ -9,6 +9,7 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vektah/gqlparser/v2/validator"
+	"github.com/vvakame/fedeway/internal/graphql"
 )
 
 func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*ast.Schema, *metadataHolder, error) {
@@ -111,7 +112,7 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 	for _, typeName := range typeNames {
 		typ := schema.Types[typeName]
 
-		if isIntrospectionType(typ.Name) {
+		if graphql.IsIntrospectionType(typ.Name) {
 			continue
 		}
 		if typ.Kind != ast.Object {
