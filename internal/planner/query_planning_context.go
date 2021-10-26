@@ -7,6 +7,7 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vektah/gqlparser/v2/validator"
+	"github.com/vvakame/fedeway/internal/graphql"
 )
 
 var typenameField = &ast.Field{
@@ -197,7 +198,7 @@ func (qpctx *queryPlanningContext) getKeyFields(ctx context.Context, scope *Scop
 	keyFields = append(keyFields, &Field{
 		Scope:     scope,
 		FieldNode: typenameField,
-		FieldDef:  typeNameMetaFieldDef,
+		FieldDef:  graphql.TypeNameMetaFieldDef,
 	})
 
 	for _, possibleType := range scope.possibleRuntimeTypes() {

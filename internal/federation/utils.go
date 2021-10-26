@@ -261,9 +261,9 @@ func typeNodesAreEquivalent(firstNode *ast.Definition, secondNode *ast.Definitio
 	return true
 }
 
-func isFederationDirective(directive *ast.DirectiveDefinition) bool {
+func isFederationDirective(directiveName string) bool {
 	for _, node := range federationDirectives {
-		if node.Name == directive.Name {
+		if node.Name == directiveName {
 			return true
 		}
 	}

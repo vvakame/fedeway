@@ -1,18 +1,14 @@
-"""
-directives at FIELDs are executable
-"""
-directive @audit(risk: Int!) on FIELD
 directive @core(feature: String!, as: String, for: core__Purpose) on SCHEMA
 directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
 directive @join__graph(name: String!, url: String!) on ENUM_VALUE
 directive @join__owner(graph: join__Graph!) on OBJECT | INTERFACE
 directive @join__type(graph: join__Graph!, key: join__FieldSet) on OBJECT | INTERFACE
-type EarthConcern @join__owner(graph: SERVICEA) {
-	environmental: String!
-	societal: String! @join__field(graph: SERVICEB)
+input NewProductInput {
+	sku: ID!
+	type: String
 }
 type Query {
-	importantDirectives: [EarthConcern!]! @join__field(graph: SERVICEA)
+	filler: String @join__field(graph: SERVICEB)
 }
 enum core__Purpose {
 	"""
