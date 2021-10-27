@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"errors"
+
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/documents/graph/generated"
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/documents/graph/model"
 )

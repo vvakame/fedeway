@@ -56,7 +56,7 @@ func TestBuildComposedSchema(t *testing.T) {
 				t.Fatal(gErr)
 			}
 
-			schema, mh, err := buildComposedSchema(ctx, schemaDoc)
+			composedSchema, err := BuildComposedSchema(ctx, schemaDoc)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -64,16 +64,16 @@ func TestBuildComposedSchema(t *testing.T) {
 			fileName := file.Name()[:len(file.Name())-len(".graphqls")]
 
 			var buf bytes.Buffer
-			formatter.NewFormatter(&buf).FormatSchema(schema)
+			formatter.NewFormatter(&buf).FormatSchema(composedSchema.Schema)
 			testutils.CheckGoldenFile(t, buf.Bytes(), path.Join(expectFileDir, fileName+".composed.graphqls"))
 
-			b, err = yaml.Marshal(mh)
+			b, err = yaml.Marshal(composedSchema)
 			if err != nil {
 				t.Fatal(err)
 			}
 			testutils.CheckGoldenFile(t, b, path.Join(expectFileDir, fileName+".metadata.yaml"))
 
-			b, err = json.MarshalIndent(mh, "", "  ")
+			b, err = json.MarshalIndent(composedSchema, "", "  ")
 			if err != nil {
 				t.Fatal(err)
 			}

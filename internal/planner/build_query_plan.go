@@ -22,7 +22,7 @@ type OperationContext struct {
 	OperationName string
 	Schema        *ast.Schema
 	Fragments     ast.FragmentDefinitionList
-	metadata      *metadataHolder
+	metadata      *ComposedSchema
 }
 
 type queryPlanConfig struct {
@@ -557,7 +557,7 @@ func (fg *FetchGroup) mergeDependentGroups(that *FetchGroup) {
 	}
 }
 
-func buildOperationContext(ctx context.Context, schema *ast.Schema, mh *metadataHolder, document *ast.QueryDocument, operationName string) (*OperationContext, error) {
+func BuildOperationContext(ctx context.Context, cs *ComposedSchema, document *ast.QueryDocument, operationName string) (*OperationContext, error) {
 	var operation *ast.OperationDefinition
 	if operationName != "" {
 		operation = document.Operations.ForName(operationName)
@@ -577,9 +577,9 @@ func buildOperationContext(ctx context.Context, schema *ast.Schema, mh *metadata
 	opctx := &OperationContext{
 		QueryDocument: document,
 		OperationName: operationName,
-		Schema:        schema,
+		Schema:        cs.Schema,
 		Fragments:     document.Fragments,
-		metadata:      mh,
+		metadata:      cs,
 	}
 
 	return opctx, nil

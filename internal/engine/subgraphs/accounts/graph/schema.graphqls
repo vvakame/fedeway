@@ -47,6 +47,7 @@ type UserMetadata {
     description: String
 }
 
+# TODO gqlgen doesn't support multiple @key. simply ignored 2nd & later.
 type User @key(fields: "id") @key(fields: "username name { first last }") @tag(name: "from-accounts") {
     id: ID! @tag(name: "accounts")
     name: Name @cacheControl(inheritMaxAge: true)

@@ -40,7 +40,7 @@ type queryPlanningContext struct {
 	operation         *ast.OperationDefinition
 	operationName     string
 	schema            *ast.Schema
-	metadata          *metadataHolder
+	metadata          *ComposedSchema
 	fragments         ast.FragmentDefinitionList
 	autoFragmentation bool
 

@@ -36,17 +36,17 @@ type FederationFieldMetadata struct {
 	Provides  ast.SelectionSet // readonly (FieldNode | InlineFragmentNode)[];
 }
 
-var _ json.Marshaler = (*metadataHolder)(nil)
-var _ yaml.InterfaceMarshaler = (*metadataHolder)(nil)
+var _ json.Marshaler = (*ComposedSchema)(nil)
+var _ yaml.InterfaceMarshaler = (*ComposedSchema)(nil)
 
-type metadataHolder struct {
-	schema         *ast.Schema
+type ComposedSchema struct {
+	Schema         *ast.Schema `yaml:"-"`
 	SchemaMetadata *FederationSchemaMetadata
 	TypeMetadata   map[*ast.Definition]FederationTypeMetadata
 	FieldMetadata  map[*ast.FieldDefinition]*FederationFieldMetadata
 }
 
-func (mh *metadataHolder) marshalObject() (interface{}, error) {
+func (cs *ComposedSchema) marshalObject() (interface{}, error) {
 	type metadataHolderYAML struct {
 		Schema *FederationSchemaMetadata
 		Type   map[string]FederationTypeMetadata
@@ -54,11 +54,11 @@ func (mh *metadataHolder) marshalObject() (interface{}, error) {
 	}
 
 	result := &metadataHolderYAML{
-		Schema: mh.SchemaMetadata,
+		Schema: cs.SchemaMetadata,
 	}
 
 	result.Type = make(map[string]FederationTypeMetadata)
-	for def, meta := range mh.TypeMetadata {
+	for def, meta := range cs.TypeMetadata {
 		result.Type[def.Name] = meta
 	}
 
@@ -66,7 +66,7 @@ func (mh *metadataHolder) marshalObject() (interface{}, error) {
 		lookupBaseType := func(fieldDef *ast.FieldDefinition) (*ast.Definition, error) {
 			var baseType *ast.Definition
 		OUTER:
-			for _, typ := range mh.schema.Types {
+			for _, typ := range cs.Schema.Types {
 				for _, field := range typ.Fields {
 					if field == fieldDef {
 						baseType = typ
@@ -82,7 +82,7 @@ func (mh *metadataHolder) marshalObject() (interface{}, error) {
 		}
 
 		result.Field = make(map[string]*FederationFieldMetadata)
-		for def, meta := range mh.FieldMetadata {
+		for def, meta := range cs.FieldMetadata {
 			baseType, err := lookupBaseType(def)
 			if err != nil {
 				return nil, err
@@ -95,12 +95,12 @@ func (mh *metadataHolder) marshalObject() (interface{}, error) {
 	return result, nil
 }
 
-func (mh *metadataHolder) MarshalYAML() (interface{}, error) {
-	return mh.marshalObject()
+func (cs *ComposedSchema) MarshalYAML() (interface{}, error) {
+	return cs.marshalObject()
 }
 
-func (mh *metadataHolder) MarshalJSON() ([]byte, error) {
-	obj, err := mh.marshalObject()
+func (cs *ComposedSchema) MarshalJSON() ([]byte, error) {
+	obj, err := cs.marshalObject()
 	if err != nil {
 		return nil, err
 	}
@@ -108,9 +108,9 @@ func (mh *metadataHolder) MarshalJSON() ([]byte, error) {
 	return json.Marshal(obj)
 }
 
-func newMetadataHolder(schema *ast.Schema) *metadataHolder {
-	metadataHolder := &metadataHolder{
-		schema:         schema,
+func newComposedSchema(schema *ast.Schema) *ComposedSchema {
+	metadataHolder := &ComposedSchema{
+		Schema:         schema,
 		SchemaMetadata: nil,
 		TypeMetadata:   make(map[*ast.Definition]FederationTypeMetadata),
 		FieldMetadata:  make(map[*ast.FieldDefinition]*FederationFieldMetadata),
@@ -118,22 +118,22 @@ func newMetadataHolder(schema *ast.Schema) *metadataHolder {
 	return metadataHolder
 }
 
-func (mh *metadataHolder) setSchemaMetadata(value *FederationSchemaMetadata) {
-	mh.SchemaMetadata = value
+func (cs *ComposedSchema) setSchemaMetadata(value *FederationSchemaMetadata) {
+	cs.SchemaMetadata = value
 }
 
-func (mh *metadataHolder) setTypeMetadata(typ *ast.Definition, value FederationTypeMetadata) {
-	if mh.TypeMetadata == nil {
-		mh.TypeMetadata = make(map[*ast.Definition]FederationTypeMetadata)
+func (cs *ComposedSchema) setTypeMetadata(typ *ast.Definition, value FederationTypeMetadata) {
+	if cs.TypeMetadata == nil {
+		cs.TypeMetadata = make(map[*ast.Definition]FederationTypeMetadata)
 	}
-	mh.TypeMetadata[typ] = value
+	cs.TypeMetadata[typ] = value
 }
 
-func (mh *metadataHolder) setFieldMetadata(fieldDef *ast.FieldDefinition, value *FederationFieldMetadata) {
-	if mh.FieldMetadata == nil {
-		mh.FieldMetadata = make(map[*ast.FieldDefinition]*FederationFieldMetadata)
+func (cs *ComposedSchema) setFieldMetadata(fieldDef *ast.FieldDefinition, value *FederationFieldMetadata) {
+	if cs.FieldMetadata == nil {
+		cs.FieldMetadata = make(map[*ast.FieldDefinition]*FederationFieldMetadata)
 	}
-	mh.FieldMetadata[fieldDef] = value
+	cs.FieldMetadata[fieldDef] = value
 }
 
 func toEntityTypeMetadata(meta FederationTypeMetadata) *FederationEntityTypeMetadata {

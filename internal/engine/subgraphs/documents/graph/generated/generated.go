@@ -294,6 +294,7 @@ type TextAttributes {
     text: String
 }
 
+# TODO gqlgen is not generate _service on Query when any directives not exists
 type Noop @key(fields: "noop") {
     noop: String
 }

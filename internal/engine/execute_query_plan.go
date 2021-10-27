@@ -25,7 +25,7 @@ type executionContext struct {
 	Errors         gqlerror.List
 }
 
-type resultMap map[string]interface{}
+type resultMap = map[string]interface{}
 
 func ExecuteQueryPlan(ctx context.Context, queryPlan *plan.QueryPlan, serviceMap ServiceMap, schema *ast.Schema, requestContext *graphql.OperationContext) *graphql.Response {
 	ec := &executionContext{
@@ -115,7 +115,7 @@ func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNo
 		return gqlerror.Errorf(`couldn't find service with name "%s"`, fetch.ServiceName)
 	}
 
-	sendOperation := func(context *executionContext, source string, variables map[string]interface{}) (resultMap, *gqlerror.Error) {
+	sendOperation := func(ec *executionContext, source string, variables map[string]interface{}) (resultMap, *gqlerror.Error) {
 		doc, gErr := parser.ParseQuery(&ast.Source{Input: source})
 		if gErr != nil {
 			return nil, gErr
@@ -127,7 +127,10 @@ func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNo
 			Operation:            doc.Operations.ForName(""),
 			DisableIntrospection: true,
 			RecoverFunc:          graphql.DefaultRecover, // TODO configurable
-			Stats:                graphql.Stats{},        // TODO
+			ResolverMiddleware: func(ctx context.Context, next graphql.Resolver) (res interface{}, err error) {
+				return next(ctx)
+			},
+			Stats: graphql.Stats{}, // TODO
 		}
 		ctx = graphql.WithOperationContext(ctx, oc)
 		response := service.Process(ctx, oc)
@@ -135,7 +138,7 @@ func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNo
 		if len(response.Errors) != 0 {
 			for _, gErr := range response.Errors {
 				gErr := downstreamServiceError(gErr, fetch.ServiceName)
-				context.Errors = append(context.Errors, gErr)
+				ec.Errors = append(ec.Errors, gErr)
 			}
 		}
 

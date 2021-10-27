@@ -7,6 +7,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/parser"
+	"github.com/vektah/gqlparser/v2/validator"
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/accounts"
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/books"
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/documents"
@@ -14,6 +15,7 @@ import (
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/product"
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/reviews"
 	"github.com/vvakame/fedeway/internal/federation"
+	"github.com/vvakame/fedeway/internal/planner"
 )
 
 type ServiceDefinitionModule interface {
@@ -22,7 +24,7 @@ type ServiceDefinitionModule interface {
 	ExecutableSchema() graphql.ExecutableSchema
 }
 
-func getFederatedTestingSchema(ctx context.Context, t *testing.T) *ast.Schema {
+func getFederatedTestingSchema(ctx context.Context, t *testing.T) (*planner.ComposedSchema, ServiceMap) {
 	fixtures := []ServiceDefinitionModule{
 		accounts.NewExecutableSchema(),
 		books.NewExecutableSchema(),
@@ -32,6 +34,7 @@ func getFederatedTestingSchema(ctx context.Context, t *testing.T) *ast.Schema {
 		reviews.NewExecutableSchema(),
 	}
 
+	serviceMap := make(ServiceMap)
 	services := make([]*federation.ServiceDefinition, 0, len(fixtures))
 	for _, fixture := range fixtures {
 		lds := &LocalDataSource{ExecutableSchema: fixture.ExecutableSchema()}
@@ -52,16 +55,31 @@ func getFederatedTestingSchema(ctx context.Context, t *testing.T) *ast.Schema {
 			Name:     fixture.Name(),
 			URL:      fixture.URL(),
 		})
+		serviceMap[fixture.Name()] = lds
 	}
 
-	schema, sdl, err := federation.ComposeAndValidate(ctx, services)
+	_, sdl, err := federation.ComposeAndValidate(ctx, services)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	t.Log(sdl)
+	schemaDoc, gErr := parser.ParseSchemas(
+		validator.Prelude,
+		&ast.Source{
+			Input:   sdl,
+			BuiltIn: false,
+		},
+	)
+	if gErr != nil {
+		t.Fatal(gErr)
+	}
+
+	cs, err := planner.BuildComposedSchema(ctx, schemaDoc)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// TODO js版だとQueryPlannerを返している
 
-	return schema
+	return cs, serviceMap
 }
