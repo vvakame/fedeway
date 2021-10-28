@@ -66,11 +66,7 @@ func ExecuteQueryPlan(ctx context.Context, queryPlan *plan.QueryPlan, serviceMap
 // typesafe. However, it doesn't actually ask for traces from the backend
 // service unless we are capturing traces for Studio.
 // ... original comment said.
-func executeNode(ctx context.Context, ec *executionContext, node plan.PlanNode, resultLock *sync.Mutex, results map[string]interface{}, path ast.Path) {
-	// TODO 明日用のメモ results の型が resultMap だとまずい
-	// JSの実装を読むとResultMapでよさそうに見えるけど、実際は flattenResultsAtPath の処理結果が array になることがある
-	// さらに面倒なことに、arrayの型がわからないのだよなぁ…
-
+func executeNode(ctx context.Context, ec *executionContext, node plan.PlanNode, resultLock *sync.Mutex, results interface{}, path ast.Path) {
 	// TODO goroutine内でのpanicをrecoverする必要がある
 	// 以下はgqlgenでの対応パターン
 	//defer func() {
@@ -105,7 +101,7 @@ func executeNode(ctx context.Context, ec *executionContext, node plan.PlanNode, 
 			ec,
 			node.Node,
 			resultLock,
-			flattenResultsAtPath(resultLock, true, results, node.Path).(map[string]interface{}),
+			flattenResultsAtPath(resultLock, true, results, node.Path),
 			newPath,
 		)
 	case *plan.FetchNode:
@@ -209,8 +205,8 @@ func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNo
 	} else {
 		requires := fetch.Requires
 
-		var representations []interface{}
-		var representationToEntity []int
+		representations := make([]interface{}, 0, len(entities))
+		representationToEntity := make([]int, 0, len(entities))
 
 		for index, entity := range entities {
 			originalEntity := entity
@@ -381,6 +377,11 @@ func doesTypeConditionMatch(schema *ast.Schema, typeCondition string, typename s
 }
 
 func flattenResultsAtPath(resultLock *sync.Mutex, shouldLock bool, value interface{}, path ast.Path) interface{} {
+	// NOTE この関数の挙動についてメモしておく
+	// subgraphにクエリを投げて、得られる結果は _entities 経由なので必ずarrayである
+	// 得られた結果を deepMerge するとき、targetのarrayが手に入るとiterateしてdeepMergeするだけで済むので楽
+	// この関数は executeNode に対して、targetのarrayを提供し、操作を簡単にするために存在している
+
 	if len(path) == 0 {
 		return value
 	}
@@ -396,16 +397,14 @@ func flattenResultsAtPath(resultLock *sync.Mutex, shouldLock bool, value interfa
 	rest := path[1:]
 	if current == ast.PathName("@") {
 		values := value.([]interface{})
-		var newValues []interface{}
+		newValues := make([]interface{}, 0, len(values))
 		for _, element := range values {
 			newValues = append(newValues, flattenResultsAtPath(resultLock, false, element, rest))
 		}
 		return newValues
 	} else {
 		value := value.(map[string]interface{})
-		newElement := flattenResultsAtPath(resultLock, false, value[string(current.(ast.PathName))], rest)
-		value[string(current.(ast.PathName))] = newElement
-		return newElement
+		return flattenResultsAtPath(resultLock, false, value[string(current.(ast.PathName))], rest)
 	}
 }
 

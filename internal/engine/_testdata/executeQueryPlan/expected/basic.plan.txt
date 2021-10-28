@@ -1,0 +1,48 @@
+QueryPlan {
+	Sequence {
+		Fetch(service: "accounts") {
+			query {
+				me {
+					id
+					__typename
+				}
+			}
+		},
+		Parallel {
+			Flatten(path: "me") {
+				Fetch(service: "product") {
+					{
+						... on User {
+							__typename
+							id
+						}
+					} =>
+					{
+						... on User {
+							vehicle {
+								__typename
+								id
+								price
+							}
+						}
+					}
+				},
+			},
+			Flatten(path: "me") {
+				Fetch(service: "reviews") {
+					{
+						... on User {
+							__typename
+							id
+						}
+					} =>
+					{
+						... on User {
+							numberOfReviews
+						}
+					}
+				},
+			},
+		},
+	},
+}

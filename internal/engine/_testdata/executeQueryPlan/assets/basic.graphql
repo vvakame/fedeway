@@ -1,0 +1,10 @@
+query {
+    me {
+        id
+        numberOfReviews
+        vehicle {
+            id
+            price
+        }
+    }
+}

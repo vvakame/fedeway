@@ -1,0 +1,51 @@
+{
+  "data": {
+    "topReviews": [
+      {
+        "body": "Love it!",
+        "author": {
+          "name": {
+            "first": "Ada",
+            "last": "Lovelace"
+          }
+        }
+      },
+      {
+        "body": "Too expensive.",
+        "author": {
+          "name": {
+            "first": "Ada",
+            "last": "Lovelace"
+          }
+        }
+      },
+      {
+        "body": "Could be better.",
+        "author": {
+          "name": {
+            "first": "Alan",
+            "last": "Turing"
+          }
+        }
+      },
+      {
+        "body": "Prefer something else.",
+        "author": {
+          "name": {
+            "first": "Alan",
+            "last": "Turing"
+          }
+        }
+      },
+      {
+        "body": "Wish I had read this before.",
+        "author": {
+          "name": {
+            "first": "Alan",
+            "last": "Turing"
+          }
+        }
+      }
+    ]
+  }
+}
