@@ -1,0 +1,22 @@
+# option:variable: should_not_duplicate_variable_definitions.variables.yaml
+# should not duplicate variable definitions
+query Test($first: Int!) {
+    first: topReviews(first: $first) {
+        body
+        author {
+            name {
+                first
+                last
+            }
+        }
+    }
+    second: topReviews(first: $first) {
+        body
+        author {
+            name {
+                first
+                last
+            }
+        }
+    }
+}

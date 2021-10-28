@@ -1,0 +1,60 @@
+QueryPlan {
+	Sequence {
+		Fetch(service: "reviews") {
+			query ($first: Int!) {
+				first: topReviews(first: $first) {
+					body
+					author {
+						__typename
+						id
+					}
+				}
+				second: topReviews(first: $first) {
+					body
+					author {
+						__typename
+						id
+					}
+				}
+			}
+		},
+		Parallel {
+			Flatten(path: "first.@.author") {
+				Fetch(service: "accounts") {
+					{
+						... on User {
+							__typename
+							id
+						}
+					} =>
+					{
+						... on User {
+							name {
+								first
+								last
+							}
+						}
+					}
+				},
+			},
+			Flatten(path: "second.@.author") {
+				Fetch(service: "accounts") {
+					{
+						... on User {
+							__typename
+							id
+						}
+					} =>
+					{
+						... on User {
+							name {
+								first
+								last
+							}
+						}
+					}
+				},
+			},
+		},
+	},
+}

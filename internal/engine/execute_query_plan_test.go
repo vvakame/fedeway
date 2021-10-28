@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/vektah/gqlparser/v2/formatter"
 	"io/ioutil"
 	"path"
 	"strings"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	testlogr "github.com/go-logr/logr/testing"
+	"github.com/goccy/go-yaml"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/parser"
 	"github.com/vektah/gqlparser/v2/validator"
@@ -43,9 +45,36 @@ func TestExecuteQueryPlan(t *testing.T) {
 
 			composedSchema, serviceMap := getFederatedTestingSchema(ctx, t)
 
-			b, err := ioutil.ReadFile(path.Join(testFileDir, file.Name()))
+			{
+				var buf bytes.Buffer
+				formatter.NewFormatter(&buf).FormatSchema(composedSchema.Schema)
+				testutils.CheckGoldenFile(t, buf.Bytes(), path.Join(expectFileDir, "composedSchema.graphqls"))
+			}
+
+			filePath := path.Join(testFileDir, file.Name())
+			b, err := ioutil.ReadFile(filePath)
 			if err != nil {
 				t.Fatal(err)
+			}
+
+			if testutils.FindOptionBool(t, "skip", string(b)) {
+				t.Logf("test case skip by %s", filePath)
+				t.SkipNow()
+			}
+
+			variables := make(map[string]interface{})
+			variablesFile := testutils.FindOptionString(t, "variable", string(b))
+			if variablesFile != "" {
+				b2, err := ioutil.ReadFile(path.Join(testFileDir, variablesFile))
+				if err != nil {
+					t.Fatal(err)
+				}
+				err = yaml.Unmarshal(b2, &variables)
+				if err != nil {
+					t.Fatal(err)
+				}
+			} else {
+				t.Logf("option:variables is not speficied")
 			}
 
 			queryDoc, gErr := parser.ParseQuery(&ast.Source{
@@ -75,7 +104,7 @@ func TestExecuteQueryPlan(t *testing.T) {
 
 			oc := &graphql.OperationContext{
 				RawQuery:             string(b),
-				Variables:            make(map[string]interface{}),
+				Variables:            variables,
 				Doc:                  queryDoc,
 				Operation:            queryDoc.Operations.ForName(""),
 				DisableIntrospection: true,

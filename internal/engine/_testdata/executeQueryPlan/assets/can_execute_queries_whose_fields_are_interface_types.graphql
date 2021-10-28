@@ -1,0 +1,15 @@
+# option:skip: true
+# can execute queries whose fields are interface types
+query {
+    user(id: "1") {
+        name {
+            first
+            last
+        }
+        vehicle {
+            description
+            price
+            retailPrice
+        }
+    }
+}

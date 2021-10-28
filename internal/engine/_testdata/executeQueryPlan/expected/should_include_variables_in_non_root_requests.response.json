@@ -1,0 +1,56 @@
+{
+  "data": {
+    "topReviews": [
+      {
+        "body": "Love it!",
+        "author": {
+          "name": {
+            "first": "Ada",
+            "last": "Lovelace"
+          },
+          "birthDate": "12/10/1815"
+        }
+      },
+      {
+        "body": "Too expensive.",
+        "author": {
+          "name": {
+            "first": "Ada",
+            "last": "Lovelace"
+          },
+          "birthDate": "12/10/1815"
+        }
+      },
+      {
+        "body": "Could be better.",
+        "author": {
+          "name": {
+            "first": "Alan",
+            "last": "Turing"
+          },
+          "birthDate": "6/23/1912"
+        }
+      },
+      {
+        "body": "Prefer something else.",
+        "author": {
+          "name": {
+            "first": "Alan",
+            "last": "Turing"
+          },
+          "birthDate": "6/23/1912"
+        }
+      },
+      {
+        "body": "Wish I had read this before.",
+        "author": {
+          "name": {
+            "first": "Alan",
+            "last": "Turing"
+          },
+          "birthDate": "6/23/1912"
+        }
+      }
+    ]
+  }
+}

@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/accounts/graph/generated"
@@ -47,22 +48,26 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 }
 
 func (r *userResolver) BirthDate(ctx context.Context, obj *model.User, locale *string) (*string, error) {
-	if locale != nil && *locale != "" {
-		loc, err := time.LoadLocation("Asia/Samarkand") // UTC + 5
-		if err != nil {
-			return nil, err
-		}
-		t, err := time.ParseInLocation("2006-01-02", *obj.BirthDate, loc)
-		if err != nil {
-			return nil, err
-		}
-		// TODO format with locale
-		s := t.Format("2006-01-02")
-
-		return &s, nil
+	if locale == nil || *locale == "" {
+		return obj.BirthDate, nil
 	}
 
-	return obj.BirthDate, nil
+	loc, err := time.LoadLocation("Asia/Samarkand") // UTC + 5
+	if err != nil {
+		return nil, err
+	}
+	t, err := time.ParseInLocation("2006-01-02", *obj.BirthDate, loc)
+	if err != nil {
+		return nil, err
+	}
+
+	switch *locale {
+	case "en-US":
+		s := t.Format("1/2/2006")
+		return &s, nil
+	default:
+		return nil, fmt.Errorf("unknown locale: %s", *locale)
+	}
 }
 
 func (r *userResolver) Metadata(ctx context.Context, obj *model.User) ([]*model.UserMetadata, error) {

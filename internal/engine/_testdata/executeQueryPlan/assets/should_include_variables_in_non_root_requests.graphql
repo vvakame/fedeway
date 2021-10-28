@@ -1,0 +1,14 @@
+# option:variable: should_include_variables_in_non_root_requests.variables.yaml
+# should include variables in non-root requests
+query Test($locale: String) {
+    topReviews {
+        body
+        author {
+            name {
+                first
+                last
+            }
+            birthDate(locale: $locale)
+        }
+    }
+}
