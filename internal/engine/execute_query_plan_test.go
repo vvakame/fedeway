@@ -11,6 +11,7 @@ import (
 	"github.com/vektah/gqlparser/v2/formatter"
 	"github.com/vektah/gqlparser/v2/parser"
 	"github.com/vektah/gqlparser/v2/validator"
+	planpkg "github.com/vvakame/fedeway/internal/plan"
 	"github.com/vvakame/fedeway/internal/planner"
 )
 
@@ -21,7 +22,7 @@ func TestExecuteQueryPlan(t *testing.T) {
 	formatter.NewFormatter(&buf).FormatSchema(composedSchema.Schema)
 	t.Log(buf.String())
 
-	query := `query { me { id vehicle { id } } }`
+	query := `query { me { id numberOfReviews vehicle { id price } } }`
 	queryDoc, gErr := parser.ParseQuery(&ast.Source{
 		Input: query,
 	})
@@ -42,6 +43,10 @@ func TestExecuteQueryPlan(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	buf.Reset()
+	planpkg.NewFormatter(&buf).FormatQueryPlan(plan)
+	t.Log(buf.String())
 
 	oc := &graphql.OperationContext{
 		RawQuery:             query,

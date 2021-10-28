@@ -34,7 +34,13 @@ func (r *entityResolver) FindReviewByID(ctx context.Context, id string) (*model.
 }
 
 func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.User, error) {
-	return nil, errors.New("FindUserByID is not implemented")
+	for _, user := range r.usernames {
+		if user.ID == id {
+			return user, nil
+		}
+	}
+
+	return nil, nil
 }
 
 func (r *entityResolver) FindVanByID(ctx context.Context, id string) (*model.Van, error) {

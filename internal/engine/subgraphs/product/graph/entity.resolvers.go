@@ -5,8 +5,6 @@ package graph
 
 import (
 	"context"
-	"errors"
-
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/product/graph/generated"
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/product/graph/model"
 )
@@ -51,7 +49,9 @@ func (r *entityResolver) FindFurnitureByUpc(ctx context.Context, upc string) (*m
 }
 
 func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.User, error) {
-	return nil, errors.New("FindUserByID is not implemented")
+	return &model.User{
+		ID: id,
+	}, nil
 }
 
 func (r *entityResolver) FindVanByID(ctx context.Context, id string) (*model.Van, error) {

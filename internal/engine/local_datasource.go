@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/vektah/gqlparser/v2/gqlerror"
+	"github.com/vektah/gqlparser/v2/validator"
 	"github.com/vvakame/fedeway/internal/gqlfun"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -16,9 +17,9 @@ type LocalDataSource struct {
 }
 
 func (lds *LocalDataSource) SDL(ctx context.Context) (string, gqlerror.List) {
-	resp, gErrs := gqlfun.Execute(ctx, lds.ExecutableSchema, `{ _service { sdl }}`, nil)
-	if len(gErrs) != 0 {
-		return "", gErrs
+	resp := gqlfun.Execute(ctx, lds.ExecutableSchema, `{ _service { sdl }}`, nil)
+	if len(resp.Errors) != 0 {
+		return "", resp.Errors
 	}
 
 	type Resp struct {
@@ -42,6 +43,20 @@ func (lds *LocalDataSource) SDL(ctx context.Context) (string, gqlerror.List) {
 
 func (ds *LocalDataSource) Process(ctx context.Context, oc *graphql.OperationContext) *graphql.Response {
 	ctx = graphql.WithOperationContext(ctx, oc)
+	// TODO default 使うのをやめる
+	ctx = graphql.WithResponseContext(ctx, graphql.DefaultErrorPresenter, graphql.DefaultRecover)
+
+	gErrs := validator.Validate(ds.ExecutableSchema.Schema(), oc.Doc)
+	if len(gErrs) != 0 {
+		return &graphql.Response{Errors: gErrs}
+	}
+
 	rh := ds.ExecutableSchema.Exec(ctx)
-	return rh(ctx)
+	resp := rh(ctx)
+	gErrs = graphql.GetErrors(ctx)
+	if len(gErrs) != 0 {
+		return &graphql.Response{Errors: gErrs}
+	}
+
+	return resp
 }

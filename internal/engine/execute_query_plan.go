@@ -25,8 +25,6 @@ type executionContext struct {
 	Errors         gqlerror.List
 }
 
-type resultMap = map[string]interface{}
-
 func ExecuteQueryPlan(ctx context.Context, queryPlan *plan.QueryPlan, serviceMap ServiceMap, schema *ast.Schema, requestContext *graphql.OperationContext) *graphql.Response {
 	ec := &executionContext{
 		QueryPlan:      queryPlan,
@@ -35,14 +33,14 @@ func ExecuteQueryPlan(ctx context.Context, queryPlan *plan.QueryPlan, serviceMap
 		RequestContext: requestContext,
 	}
 
-	// TODO resultMap みたいな独自の型にしてLockをちゃんとやらないといけない
-	data := make(resultMap)
+	var resultLock sync.Mutex
+	data := make(map[string]interface{})
 
 	if queryPlan.Node != nil {
-		executeNode(ctx, ec, queryPlan.Node, data, nil)
+		executeNode(ctx, ec, queryPlan.Node, &resultLock, data, nil)
 	}
 
-	return execute.Execute(ctx, &execute.ExecutionArgs{
+	resp := execute.Execute(ctx, &execute.ExecutionArgs{
 		Schema:         schema,
 		RawQuery:       requestContext.RawQuery,
 		Document:       requestContext.Doc,
@@ -52,6 +50,15 @@ func ExecuteQueryPlan(ctx context.Context, queryPlan *plan.QueryPlan, serviceMap
 		FieldResolver:  nil, // TODO 独自の実装にする…？ デフォルトで利用されるものがfederation用っぽいやつなのでこのままでもいいんだけど
 		TypeResolver:   nil, // TODO 同上
 	})
+	if len(resp.Errors) != 0 {
+		// ここではエラーが発生しないはず
+		return &graphql.Response{Errors: resp.Errors}
+	}
+	if len(ec.Errors) != 0 {
+		resp.Errors = ec.Errors
+	}
+
+	return resp
 }
 
 // Note: this function always returns a protobuf QueryPlanNode tree, even if
@@ -59,15 +66,24 @@ func ExecuteQueryPlan(ctx context.Context, queryPlan *plan.QueryPlan, serviceMap
 // typesafe. However, it doesn't actually ask for traces from the backend
 // service unless we are capturing traces for Studio.
 // ... original comment said.
-func executeNode(ctx context.Context, ec *executionContext, node plan.PlanNode, results resultMap, path ast.Path) {
+func executeNode(ctx context.Context, ec *executionContext, node plan.PlanNode, resultLock *sync.Mutex, results map[string]interface{}, path ast.Path) {
 	// TODO 明日用のメモ results の型が resultMap だとまずい
 	// JSの実装を読むとResultMapでよさそうに見えるけど、実際は flattenResultsAtPath の処理結果が array になることがある
 	// さらに面倒なことに、arrayの型がわからないのだよなぁ…
 
+	// TODO goroutine内でのpanicをrecoverする必要がある
+	// 以下はgqlgenでの対応パターン
+	//defer func() {
+	//	if r := recover(); r != nil {
+	//		ec.Error(ctx, ec.Recover(ctx, r))
+	//		ret = graphql.Null
+	//	}
+	//}()
+
 	switch node := node.(type) {
 	case *plan.SequenceNode:
 		for _, childNode := range node.Nodes {
-			executeNode(ctx, ec, childNode, results, path)
+			executeNode(ctx, ec, childNode, resultLock, results, path)
 		}
 	case *plan.ParallelNode:
 		var wg sync.WaitGroup
@@ -75,7 +91,7 @@ func executeNode(ctx context.Context, ec *executionContext, node plan.PlanNode, 
 			wg.Add(1)
 			childNode := childNode
 			go func() {
-				executeNode(ctx, ec, childNode, results, path)
+				executeNode(ctx, ec, childNode, resultLock, results, path)
 				wg.Done()
 			}()
 		}
@@ -88,7 +104,8 @@ func executeNode(ctx context.Context, ec *executionContext, node plan.PlanNode, 
 			ctx,
 			ec,
 			node.Node,
-			flattenResultsAtPath(results, node.Path).(map[string]interface{}),
+			resultLock,
+			flattenResultsAtPath(resultLock, true, results, node.Path).(map[string]interface{}),
 			newPath,
 		)
 	case *plan.FetchNode:
@@ -96,6 +113,7 @@ func executeNode(ctx context.Context, ec *executionContext, node plan.PlanNode, 
 			ctx,
 			ec,
 			node,
+			resultLock,
 			results,
 			path,
 		)
@@ -108,14 +126,14 @@ func executeNode(ctx context.Context, ec *executionContext, node plan.PlanNode, 
 	}
 }
 
-func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNode, results interface{}, path ast.Path) *gqlerror.Error {
+func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNode, resultLock *sync.Mutex, results interface{}, path ast.Path) *gqlerror.Error {
 	service := ec.ServiceMap[fetch.ServiceName]
 
 	if service == nil {
 		return gqlerror.Errorf(`couldn't find service with name "%s"`, fetch.ServiceName)
 	}
 
-	sendOperation := func(ec *executionContext, source string, variables map[string]interface{}) (resultMap, *gqlerror.Error) {
+	sendOperation := func(ec *executionContext, source string, variables map[string]interface{}) (map[string]interface{}, *gqlerror.Error) {
 		doc, gErr := parser.ParseQuery(&ast.Source{Input: source})
 		if gErr != nil {
 			return nil, gErr
@@ -132,17 +150,21 @@ func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNo
 			},
 			Stats: graphql.Stats{}, // TODO
 		}
-		ctx = graphql.WithOperationContext(ctx, oc)
+
 		response := service.Process(ctx, oc)
 
 		if len(response.Errors) != 0 {
 			for _, gErr := range response.Errors {
-				gErr := downstreamServiceError(gErr, fetch.ServiceName)
+				gErr := downstreamServiceError(gErr, fetch.ServiceName, path)
 				ec.Errors = append(ec.Errors, gErr)
 			}
 		}
 
-		result := resultMap{}
+		if len(response.Data) == 0 {
+			return nil, nil
+		}
+
+		result := make(map[string]interface{})
 		err := json.Unmarshal(response.Data, &result)
 		if err != nil {
 			return nil, gqlerror.Errorf("json unmarshal error: %s", err)
@@ -151,6 +173,8 @@ func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNo
 		return result, nil
 	}
 
+	resultLock.Lock()
+	defer resultLock.Unlock()
 	entities := make([]interface{}, 0)
 	if v, ok := results.([]interface{}); ok {
 		if v != nil {
@@ -256,28 +280,6 @@ func executeSelectionSet(ctx context.Context, ec *executionContext, source map[s
 		return nil, nil
 	}
 
-	var queryPlanSelectionNodesToSelectionSet func(baseSelections []plan.QueryPlanSelectionNode) ast.SelectionSet
-	queryPlanSelectionNodesToSelectionSet = func(baseSelections []plan.QueryPlanSelectionNode) ast.SelectionSet {
-		selections := make(ast.SelectionSet, 0, len(baseSelections))
-		for _, baseSelection := range baseSelections {
-			switch baseSelection := baseSelection.(type) {
-			case *plan.QueryPlanFieldNode:
-				selections = append(selections, &ast.Field{
-					Alias: baseSelection.Alias,
-					Name:  baseSelection.Name,
-				})
-			case *plan.QueryPlanInlineFragmentNode:
-				selections = append(selections, &ast.InlineFragment{
-					TypeCondition: baseSelection.TypeCondition,
-					SelectionSet:  queryPlanSelectionNodesToSelectionSet(baseSelection.Selections),
-				})
-			default:
-				panic("nil selection found")
-			}
-		}
-		return selections
-	}
-
 	result := make(map[string]interface{})
 
 	for _, selection := range selections {
@@ -287,27 +289,43 @@ func executeSelectionSet(ctx context.Context, ec *executionContext, source map[s
 			if selection.Alias != "" {
 				responseName = selection.Alias
 			}
-			baseSelections := selection.Selections
-			selections := queryPlanSelectionNodesToSelectionSet(baseSelections)
+			selections := selection.Selections
 
 			if source, ok := source[responseName]; !ok {
 				return nil, gqlerror.Errorf(`field "%s" was not found in response`, responseName)
-			} else if source, ok := source.([]interface{}); ok {
-				for _, value := range source {
+			} else if sourceArray, ok := source.([]interface{}); ok {
+				var resultArray []interface{}
+				for _, source := range sourceArray {
 					if len(selections) != 0 {
-						nextValue, ok := value.(map[string]interface{})
+						nextValue, ok := source.(map[string]interface{})
 						if !ok {
-							return nil, gqlerror.Errorf("unexpected type: %T", value)
+							return nil, gqlerror.Errorf("unexpected type: %T", source)
 						}
-						ss, gErr := executeSelectionSet(ctx, ec, nextValue, baseSelections)
+						ss, gErr := executeSelectionSet(ctx, ec, nextValue, selections)
 						if gErr != nil {
 							return nil, gErr
 						}
-						result[responseName] = ss
+						resultArray = append(resultArray, ss)
 					} else {
-						result[responseName] = value
+						resultArray = append(resultArray, source)
 					}
 				}
+				result[responseName] = resultArray
+
+			} else if sourceObject, ok := source.(map[string]interface{}); ok {
+				subResult, gErr := executeSelectionSet(
+					ctx,
+					ec,
+					sourceObject,
+					selections,
+				)
+				if gErr != nil {
+					return nil, gErr
+				}
+				result[responseName] = subResult
+
+			} else {
+				result[responseName] = source
 			}
 
 		case *plan.QueryPlanInlineFragmentNode:
@@ -362,12 +380,16 @@ func doesTypeConditionMatch(schema *ast.Schema, typeCondition string, typename s
 	return false
 }
 
-func flattenResultsAtPath(value interface{}, path ast.Path) interface{} {
+func flattenResultsAtPath(resultLock *sync.Mutex, shouldLock bool, value interface{}, path ast.Path) interface{} {
 	if len(path) == 0 {
 		return value
 	}
 	if value == nil {
 		return nil
+	}
+	if shouldLock {
+		resultLock.Lock()
+		defer resultLock.Unlock()
 	}
 
 	current := path[0]
@@ -376,18 +398,18 @@ func flattenResultsAtPath(value interface{}, path ast.Path) interface{} {
 		values := value.([]interface{})
 		var newValues []interface{}
 		for _, element := range values {
-			newValues = append(newValues, flattenResultsAtPath(element, rest))
+			newValues = append(newValues, flattenResultsAtPath(resultLock, false, element, rest))
 		}
 		return newValues
 	} else {
 		value := value.(map[string]interface{})
-		newElement := flattenResultsAtPath(value[string(current.(ast.PathName))], rest)
+		newElement := flattenResultsAtPath(resultLock, false, value[string(current.(ast.PathName))], rest)
 		value[string(current.(ast.PathName))] = newElement
 		return newElement
 	}
 }
 
-func downstreamServiceError(originalError *gqlerror.Error, serviceName string) *gqlerror.Error {
+func downstreamServiceError(originalError *gqlerror.Error, serviceName string, path ast.Path) *gqlerror.Error {
 	message := originalError.Message
 	extensions := originalError.Extensions
 
@@ -406,7 +428,8 @@ func downstreamServiceError(originalError *gqlerror.Error, serviceName string) *
 	}
 	extensions = newExtensions
 
-	newErr := gqlerror.WrapPath(nil, originalError)
+	// TODO pathの値が正しくない気がする
+	newErr := gqlerror.WrapPath(path, originalError)
 	newErr.Message = message
 	newErr.Extensions = extensions
 	return newErr

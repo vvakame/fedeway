@@ -196,7 +196,7 @@ func buildMapsFromServiceList(ctx context.Context, serviceList []*ServiceDefinit
 			if definition.Kind == ast.Object || definition.Kind == ast.InputObject {
 				if len(definition.Fields) == 0 {
 					// TODO this break is not exactly same as original.
-					break
+					continue
 				}
 
 				fields := mapFieldNamesToServiceName(definition.Fields, serviceName)
@@ -218,7 +218,7 @@ func buildMapsFromServiceList(ctx context.Context, serviceList []*ServiceDefinit
 			if definition.Kind == ast.Enum {
 				if len(definition.EnumValues) == 0 {
 					// TODO this break is not exactly same as original.
-					break
+					continue
 				}
 
 				values := mapEnumNamesToServiceName(

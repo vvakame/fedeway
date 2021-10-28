@@ -40,18 +40,19 @@ func CreateOperationContext(ctx context.Context, schema *ast.Schema, query strin
 	return oc, nil
 }
 
-func Execute(ctx context.Context, es graphql.ExecutableSchema, query string, vairables map[string]interface{}) (*graphql.Response, gqlerror.List) {
+func Execute(ctx context.Context, es graphql.ExecutableSchema, query string, vairables map[string]interface{}) *graphql.Response {
 	oc, gErrs := CreateOperationContext(ctx, es.Schema(), query, vairables)
 	if len(gErrs) != 0 {
-		return nil, gErrs
+		return &graphql.Response{Errors: gErrs}
 	}
 	ctx = graphql.WithOperationContext(ctx, oc)
+	// TODO default 使うのをやめる
+	ctx = graphql.WithResponseContext(ctx, graphql.DefaultErrorPresenter, graphql.DefaultRecover)
 
 	rh := es.Exec(ctx)
 	resp := rh(ctx)
-	if len(resp.Errors) != 0 {
-		return resp, gErrs
+	if gErrs := graphql.GetErrors(ctx); gErrs != nil {
+		return &graphql.Response{Errors: gErrs}
 	}
-
-	return resp, nil
+	return resp
 }

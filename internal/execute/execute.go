@@ -78,8 +78,8 @@ func Execute(ctx context.Context, args *ExecutionArgs) *graphql.Response {
 		}
 	}
 	ctx = graphql.WithOperationContext(ctx, oc)
-
-	ctx = graphql.WithResponseContext(ctx, graphql.DefaultErrorPresenter, oc.Recover)
+	// TODO default 使うのをやめる
+	ctx = graphql.WithResponseContext(ctx, graphql.DefaultErrorPresenter, graphql.DefaultRecover)
 
 	// If a valid execution context cannot be created due to incorrect arguments,
 	// a "Response" with only errors is returned.
@@ -425,6 +425,15 @@ func completeListValue(ctx context.Context, exeContext *ExecutionContext, return
 		graphql.AddErrorf(ctx, `expected slice or array, but did not find one for field "%s.%s"`, fc.Object, fc.Field.Name)
 		return graphql.Null
 	}
+
+	// TODO goroutine内でのpanicをrecoverする必要がある
+	// 以下はgqlgenでの対応パターン
+	//defer func() {
+	//	if r := recover(); r != nil {
+	//		ec.Error(ctx, ec.Recover(ctx, r))
+	//		ret = graphql.Null
+	//	}
+	//}()
 
 	// This is specified as a simple map, however we're optimizing the path
 	// where the list contains no Promises by avoiding creating another Promise.
