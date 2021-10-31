@@ -10,4 +10,3 @@ Apollo Federation Gateway implementations by Go.
 * `_service` is not present when SDL doesn't have subgraph-like syntax.
 * doesn't support renamed root type likes `schema { query: RootQuery }`.
 * multiple `@key` is not supported [#1031](https://github.com/99designs/gqlgen/issues/1031)
-* multiple `@external` is not supported??
