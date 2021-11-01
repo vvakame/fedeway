@@ -15,6 +15,7 @@ import (
 	"github.com/vektah/gqlparser/v2/formatter"
 	"github.com/vektah/gqlparser/v2/parser"
 	"github.com/vektah/gqlparser/v2/validator"
+	"github.com/vvakame/fedeway/internal/federation"
 	"github.com/vvakame/fedeway/internal/log"
 	"github.com/vvakame/fedeway/internal/testutils"
 )
@@ -56,7 +57,7 @@ func TestBuildComposedSchema(t *testing.T) {
 				t.Fatal(gErr)
 			}
 
-			composedSchema, err := BuildComposedSchema(ctx, schemaDoc)
+			composedSchema, err := BuildComposedSchema(ctx, schemaDoc, &federation.FederationMetadata{})
 			if err != nil {
 				t.Fatal(err)
 			}

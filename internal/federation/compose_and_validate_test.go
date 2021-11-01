@@ -91,7 +91,7 @@ func TestComposeAndValidate(t *testing.T) {
 			ctx := context.Background()
 			ctx = log.WithLogger(ctx, testlogr.NewTestLogger(t))
 
-			schema, supergraphSDL, err := ComposeAndValidate(ctx, serviceDefs)
+			schema, supergraphSDL, _, err := ComposeAndValidate(ctx, serviceDefs)
 			if err != nil {
 				t.Fatal(err)
 			}

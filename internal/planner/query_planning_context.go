@@ -173,14 +173,10 @@ func (qpctx *queryPlanningContext) scopeForInlineFragment(ctx context.Context, c
 
 func (qpctx *queryPlanningContext) getBaseService(ctx context.Context, parentType *ast.Definition) string {
 	metadata := qpctx.getFederationMetadataForType(parentType)
-	if metadata == nil {
+	if metadata == nil || metadata.IsValueType {
 		return ""
 	}
-	if metadata, ok := metadata.(*FederationEntityTypeMetadata); ok {
-		return metadata.GraphName
-	}
-
-	return ""
+	return metadata.GraphName
 }
 
 func (qpctx *queryPlanningContext) getOwningService(ctx context.Context, parentType *ast.Definition, fieldDef *ast.FieldDefinition) string {
@@ -204,8 +200,8 @@ func (qpctx *queryPlanningContext) getKeyFields(ctx context.Context, scope *Scop
 	for _, possibleType := range scope.possibleRuntimeTypes() {
 		typ := qpctx.getFederationMetadataForType(possibleType)
 		var keys ast.SelectionSet
-		if meta, ok := typ.(*FederationEntityTypeMetadata); ok && meta != nil {
-			keys = meta.Keys[serviceName]
+		if typ != nil && !typ.IsValueType {
+			keys = typ.Keys[serviceName]
 		}
 
 		if len(keys) == 0 {
@@ -331,17 +327,10 @@ func (qpctx *queryPlanningContext) getVariableUsages(selectionSet ast.SelectionS
 }
 
 func (qpctx *queryPlanningContext) getBaseType(ctx context.Context, parentType *ast.Definition) string {
-	meta := qpctx.getFederationMetadataForType(parentType)
-	if meta != nil {
-		if meta := toEntityTypeMetadata(meta); meta != nil {
-			return meta.GraphName
-		}
-	}
-
-	return ""
+	return qpctx.getFederationMetadataForType(parentType).GraphName
 }
 
-func (qpctx *queryPlanningContext) getFederationMetadataForType(typeDef *ast.Definition) FederationTypeMetadata {
+func (qpctx *queryPlanningContext) getFederationMetadataForType(typeDef *ast.Definition) *FederationTypeMetadata {
 	return qpctx.metadata.TypeMetadata[typeDef]
 }
 

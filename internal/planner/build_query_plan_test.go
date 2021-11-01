@@ -12,6 +12,7 @@ import (
 	"github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/parser"
+	"github.com/vvakame/fedeway/internal/federation"
 	"github.com/vvakame/fedeway/internal/log"
 	"github.com/vvakame/fedeway/internal/plan"
 	"github.com/vvakame/fedeway/internal/testutils"
@@ -85,7 +86,7 @@ func TestBuildQueryPlan(t *testing.T) {
 				t.Fatal(gErr)
 			}
 
-			composedSchema, err := BuildComposedSchema(ctx, schemaDoc)
+			composedSchema, err := BuildComposedSchema(ctx, schemaDoc, &federation.FederationMetadata{})
 			if err != nil {
 				t.Fatal(err)
 			}

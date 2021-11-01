@@ -4,6 +4,12 @@ import "github.com/vektah/gqlparser/v2/ast"
 
 type ServiceName = string
 
+type FederationMetadata struct {
+	FederationTypeMap      FederationTypeMap
+	FederationFieldMap     FederationFieldMap
+	FederationDirectiveMap FederationDirectiveMap
+}
+
 type ExternalFieldDefinition struct {
 	Field          *ast.FieldDefinition
 	ParentTypeName string

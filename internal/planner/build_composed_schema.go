@@ -9,10 +9,11 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vektah/gqlparser/v2/validator"
+	"github.com/vvakame/fedeway/internal/federation"
 	"github.com/vvakame/fedeway/internal/graphql"
 )
 
-func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*ComposedSchema, error) {
+func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument, metadata *federation.FederationMetadata) (*ComposedSchema, error) {
 	schema, gErr := validator.ValidateSchemaDocument(document)
 	if gErr != nil {
 		return nil, gErr
@@ -57,10 +58,10 @@ func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*Co
 		return nil, fmt.Errorf("%s__Graph should be an enum", joinName)
 	}
 
-	cs := newComposedSchema(schema)
+	cs := newComposedSchema(schema, metadata)
 
 	graphMap := make(map[string]*Graph)
-	cs.setSchemaMetadata(&FederationSchemaMetadata{Graphs: graphMap})
+	cs.getSchemaMetadata().Graphs = graphMap
 
 	for _, graphValue := range graphEnumType.EnumValues {
 		name := graphValue.Name
@@ -127,7 +128,7 @@ func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*Co
 			return nil, err
 		}
 
-		var typeMetadata FederationTypeMetadata
+		typeMetadata := cs.getTypeMetadata(typ)
 		if len(ownerDirectiveArgs) != 0 {
 			var graphName string
 			{
@@ -146,22 +147,19 @@ func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*Co
 					graphName, ownerDirective.Name,
 				)
 			}
-			typeMetadata = &FederationEntityTypeMetadata{
-				GraphName: graph.Name,
-				Keys:      make(map[string]ast.SelectionSet),
-			}
+			typeMetadata.IsValueType = false
+			typeMetadata.GraphName = graph.Name
+			typeMetadata.Keys = make(map[string]ast.SelectionSet)
 		} else {
-			typeMetadata = &FederationValueTypeMetadata{}
+			typeMetadata.IsValueType = true
 		}
-
-		cs.setTypeMetadata(typ, typeMetadata)
 
 		typeDirectivesArgs, err := getArgumentValuesForRepeatableDirective(typeDirective, typ.Directives)
 		if err != nil {
 			return nil, err
 		}
 
-		if _, ok := typeMetadata.(*FederationEntityTypeMetadata); !ok && len(typeDirectivesArgs) != 0 {
+		if typeMetadata.IsValueType && len(typeDirectivesArgs) != 0 {
 			// TODO 条件式これであってるか怪しい…
 			return nil, fmt.Errorf(
 				`GraphQL type "%s" cannot have a @%s directive without an @%s directive`,
@@ -210,12 +208,7 @@ func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*Co
 				return nil, err
 			}
 
-			entityTypeMetadata, ok := typeMetadata.(*FederationEntityTypeMetadata)
-			if !ok {
-				return nil, fmt.Errorf("unexpected type %T", typeMetadata)
-			}
-
-			entityTypeMetadata.Keys[graph.Name] = keyFields
+			typeMetadata.Keys[graph.Name] = keyFields
 		}
 
 		for _, fieldDef := range typ.Fields {
@@ -237,7 +230,7 @@ func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*Co
 				continue
 			}
 
-			var fieldMetadata *FederationFieldMetadata
+			fieldMetadata := cs.getFieldMetadata(fieldDef)
 			var graphName string
 			{
 				v, ok := fieldDirectiveArgs["graph"]
@@ -256,14 +249,8 @@ func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*Co
 						graphName, fieldDirective.Name,
 					)
 				}
-				fieldMetadata = &FederationFieldMetadata{
-					GraphName: graph.Name,
-				}
-			} else {
-				fieldMetadata = &FederationFieldMetadata{}
+				fieldMetadata.GraphName = graph.Name
 			}
-
-			cs.setFieldMetadata(fieldDef, fieldMetadata)
 
 			var requires ast.SelectionSet
 			{

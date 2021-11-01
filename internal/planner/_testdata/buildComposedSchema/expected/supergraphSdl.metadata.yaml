@@ -19,9 +19,16 @@ schema:
       name: reviews
       url: undefined
 type:
-  Account: {}
-  Amazon: {}
+  Account:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
+  Amazon:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
   Book:
+    isvaluetype: false
     graphname: books
     keys:
       books:
@@ -61,6 +68,7 @@ type:
         definition: null
         objectdefinition: null
   Car:
+    isvaluetype: false
     graphname: product
     keys:
       product:
@@ -81,8 +89,12 @@ type:
         position: null
         definition: null
         objectdefinition: null
-  Error: {}
+  Error:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
   Furniture:
+    isvaluetype: false
     graphname: product
     keys:
       inventory:
@@ -112,11 +124,24 @@ type:
         position: null
         definition: null
         objectdefinition: null
-  Ikea: {}
-  Image: {}
-  ImageAttributes: {}
-  KeyValue: {}
+  Ikea:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
+  Image:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
+  ImageAttributes:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
+  KeyValue:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
   Library:
+    isvaluetype: false
     graphname: books
     keys:
       accounts:
@@ -137,9 +162,16 @@ type:
         position: null
         definition: null
         objectdefinition: null
-  Mutation: {}
-  Name: {}
+  Mutation:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
+  Name:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
   PasswordAccount:
+    isvaluetype: false
     graphname: accounts
     keys:
       accounts:
@@ -151,10 +183,20 @@ type:
         position: null
         definition: null
         objectdefinition: null
-  ProductDetailsBook: {}
-  ProductDetailsFurniture: {}
-  Query: {}
+  ProductDetailsBook:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
+  ProductDetailsFurniture:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
+  Query:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
   Review:
+    isvaluetype: false
     graphname: reviews
     keys:
       reviews:
@@ -167,6 +209,7 @@ type:
         definition: null
         objectdefinition: null
   SMSAccount:
+    isvaluetype: false
     graphname: accounts
     keys:
       accounts:
@@ -178,9 +221,16 @@ type:
         position: null
         definition: null
         objectdefinition: null
-  Text: {}
-  TextAttributes: {}
+  Text:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
+  TextAttributes:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
   User:
+    isvaluetype: false
     graphname: accounts
     keys:
       accounts:
@@ -243,8 +293,12 @@ type:
         position: null
         definition: null
         objectdefinition: null
-  UserMetadata: {}
+  UserMetadata:
+    isvaluetype: true
+    graphname: ""
+    keys: {}
   Van:
+    isvaluetype: false
     graphname: product
     keys:
       product:

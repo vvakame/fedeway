@@ -234,7 +234,9 @@ func splitSubfields(ctx context.Context, qpctx *queryPlanningContext, path ast.P
 		var isValueType bool
 		{
 			metadata := qpctx.getFederationMetadataForType(parentType)
-			_, isValueType = metadata.(*FederationValueTypeMetadata)
+			if metadata != nil {
+				isValueType = metadata.IsValueType
+			}
 		}
 		if parentType.Kind != ast.Object || isValueType {
 			baseService = parentGroup.ServiceName

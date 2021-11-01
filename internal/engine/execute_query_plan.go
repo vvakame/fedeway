@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -160,8 +161,12 @@ func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNo
 			return nil, nil
 		}
 
+		dec := json.NewDecoder(bytes.NewBuffer(response.Data))
+		// UseNumber しないと 1 とかが float64 になってしまい UnmarshalInt とかがコケる
+		dec.UseNumber()
+
 		result := make(map[string]interface{})
-		err := json.Unmarshal(response.Data, &result)
+		err := dec.Decode(&result)
 		if err != nil {
 			return nil, gqlerror.Errorf("json unmarshal error: %s", err)
 		}

@@ -476,37 +476,13 @@ func buildSchemaFromDefinitionsAndExtensions(ctx context.Context, typeDefinition
 		newDirectiveMap[name] = directive
 	}
 	schema.Directives = newDirectiveMap
-	// TODO originalではこの時点で @key とかの FederationDirective をどこにも保持しなくなっている
-	// ここで除去するのは正しくない気がするが一旦そうする
-	excludeFederationDirective := func(directives ast.DirectiveList) ast.DirectiveList {
-		newDirectives := make(ast.DirectiveList, 0, len(directives))
-		for _, directive := range directives {
-			if isFederationDirective(directive.Name) {
-				continue
-			}
-			newDirectives = append(newDirectives, directive)
-		}
-		return newDirectives
-	}
-	for _, typ := range schema.Types {
-		typ.Directives = excludeFederationDirective(typ.Directives)
-		for _, def := range typ.Fields {
-			def.Directives = excludeFederationDirective(def.Directives)
-			for _, def := range def.Arguments {
-				def.Directives = excludeFederationDirective(def.Directives)
-			}
-		}
-		for _, def := range typ.EnumValues {
-			def.Directives = excludeFederationDirective(def.Directives)
-		}
-	}
 
 	return schema, errors
 }
 
 // Using the various information we've collected about the schema, augment the
 // `schema` itself with `federation` metadata to the types and fields
-func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap TypeToServiceMap, externalFields []*ExternalFieldDefinition, keyDirectivesMap KeyDirectivesMap, valueTypes ValueTypes, directiveDefinitionsMap DirectiveDefinitionsMap, directiveMetadata *DirectiveMetadata, graphNameToEnumValueName map[string]string) error {
+func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap TypeToServiceMap, externalFields []*ExternalFieldDefinition, keyDirectivesMap KeyDirectivesMap, valueTypes ValueTypes, directiveDefinitionsMap DirectiveDefinitionsMap, directiveMetadata *DirectiveMetadata, graphNameToEnumValueName map[string]string) (*FederationMetadata, error) {
 	// original では addFederationMetadataToSchemaNodes という名前
 	// もともとの動作原理をざっくり解説しておく
 	//   @join__owner, @join__type, @join__field, @join__graph あたりをschemaに追加するのが最終目的
@@ -516,6 +492,7 @@ func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap Typ
 	// なので、ここでは metadata の生成と print での出力という構成を改め、 schema に直接各種データを盛り付けていくことにする
 
 	// TODO ↑を鑑みてrenameしたほうがよくない？
+	// TODO ↑metadata引き継ぎしないといけないことがわかって構造変えたから上の説明と実装も直したほうがいいかも
 
 	federationTypeMap := FederationTypeMap{}
 	federationFieldMap := FederationFieldMap{}
@@ -550,7 +527,7 @@ func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap Typ
 				if providesDirective != nil && len(providesDirective.Arguments) != 0 && providesDirective.Arguments[0].Value.Kind == ast.StringValue {
 					provides, err := parseSelections(providesDirective.Arguments[0].Value.Raw)
 					if err != nil {
-						return err
+						return nil, err
 					}
 					federationField := federationFieldMap.Get(field)
 					federationField.ParentType = namedType
@@ -576,11 +553,11 @@ func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap Typ
 				fieldMeta.ParentType = namedType
 				fieldMeta.ServiceName = extendingServiceName
 
-				requiresDirective := namedType.Directives.ForName("requires")
+				requiresDirective := field.Directives.ForName("requires")
 				if requiresDirective != nil && len(requiresDirective.Arguments) != 0 && requiresDirective.Arguments[0].Value.Kind == ast.StringValue {
 					requires, err := parseSelections(requiresDirective.Arguments[0].Value.Raw)
 					if err != nil {
-						return err
+						return nil, err
 					}
 					fieldMeta.Requires = requires
 				}
@@ -642,7 +619,7 @@ func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap Typ
 
 		ownerGraphEnumValue := graphNameToEnumValueName[ownerService]
 		if ownerGraphEnumValue == "" {
-			return fmt.Errorf("unexpected enum value missing for subgraph %s", ownerService)
+			return nil, fmt.Errorf("unexpected enum value missing for subgraph %s", ownerService)
 		}
 
 		if shouldPrintOwner {
@@ -691,7 +668,7 @@ func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap Typ
 		}
 		err := addJoinTypeDirective(ownerService, ownerKeys)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		restNames := make([]string, 0, len(restKeys))
 		for service := range restKeys {
@@ -702,7 +679,7 @@ func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap Typ
 			keys := restKeys[service]
 			err = addJoinTypeDirective(service, keys)
 			if err != nil {
-				return err
+				return nil, err
 			}
 		}
 	}
@@ -730,7 +707,7 @@ func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap Typ
 		if serviceName != "" {
 			enumValue := graphNameToEnumValueName[serviceName]
 			if enumValue == "" {
-				return fmt.Errorf("unexpected enum value missing for subgraph %s", serviceName)
+				return nil, fmt.Errorf("unexpected enum value missing for subgraph %s", serviceName)
 			}
 
 			joinFieldDirective.Arguments = append(joinFieldDirective.Arguments, &ast.Argument{
@@ -770,13 +747,17 @@ func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap Typ
 		field.Directives = append(field.Directives, joinFieldDirective)
 	}
 
-	return nil
+	return &FederationMetadata{
+		FederationTypeMap:      federationTypeMap,
+		FederationFieldMap:     federationFieldMap,
+		FederationDirectiveMap: federationDirectiveMap,
+	}, nil
 }
 
-func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.Schema, string, []error) {
+func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.Schema, string, *FederationMetadata, []error) {
 	buildMapsResult, err := buildMapsFromServiceList(ctx, services)
 	if err != nil {
-		return nil, "", []error{err}
+		return nil, "", nil, []error{err}
 	}
 
 	typeToServiceMap := buildMapsResult.typeToServiceMap
@@ -826,21 +807,46 @@ func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.S
 	// TODO ここで graphNameToEnumValueName ひねり出すのやめたほうがよさそう
 	graphNameToEnumValueName, _ := getJoinGraphEnum(services)
 	// NOTE: original では schema に変更を加えていない (@join__type とかが付随していない)
-	err = addFederationMetadataToSchemaNodes(schema, typeToServiceMap, externalFields, keyDirectivesMap, valueTypes, directiveDefinitionsMap, directiveMetadata, graphNameToEnumValueName)
+	metadata, err := addFederationMetadataToSchemaNodes(schema, typeToServiceMap, externalFields, keyDirectivesMap, valueTypes, directiveDefinitionsMap, directiveMetadata, graphNameToEnumValueName)
 	if err != nil {
 		errors = append(errors, err)
-		return nil, "", errors
+		return nil, "", nil, errors
 	}
 
 	if len(errors) != 0 {
-		return nil, "", errors
+		return nil, "", nil, errors
 	}
 
 	// NOTE: original は printSupergraphSdl で各種directiveを出力している schema には盛り込まれていないものが結構ある
 	//       buildComposedSchema への入力として考えると schema に色々盛っていいし SDL に出す時に処理する必要もない(Goの実装だとprintのカスタマイズ性がかなり低いし
 
+	// TODO originalではこの時点で @key とかの FederationDirective をどこにも保持しなくなっている
+	// ここで除去するのは正しくない気がするが一旦そうする
+	excludeFederationDirective := func(directives ast.DirectiveList) ast.DirectiveList {
+		newDirectives := make(ast.DirectiveList, 0, len(directives))
+		for _, directive := range directives {
+			if isFederationDirective(directive.Name) {
+				continue
+			}
+			newDirectives = append(newDirectives, directive)
+		}
+		return newDirectives
+	}
+	for _, typ := range schema.Types {
+		typ.Directives = excludeFederationDirective(typ.Directives)
+		for _, def := range typ.Fields {
+			def.Directives = excludeFederationDirective(def.Directives)
+			for _, def := range def.Arguments {
+				def.Directives = excludeFederationDirective(def.Directives)
+			}
+		}
+		for _, def := range typ.EnumValues {
+			def.Directives = excludeFederationDirective(def.Directives)
+		}
+	}
+
 	var buf bytes.Buffer
 	formatter.NewFormatter(&buf).FormatSchema(schema)
 
-	return schema, buf.String(), nil
+	return schema, buf.String(), metadata, nil
 }

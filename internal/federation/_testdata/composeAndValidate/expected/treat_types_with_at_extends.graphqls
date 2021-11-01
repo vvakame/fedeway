@@ -6,7 +6,7 @@ directive @join__type(graph: join__Graph!, key: join__FieldSet) on OBJECT | INTE
 type Product @join__owner(graph: SERVICEA) @join__type(graph: SERVICEA, key: "sku") @join__type(graph: SERVICEB, key: "sku") {
 	sku: String!
 	upc: String!
-	price: Int! @join__field(graph: SERVICEB)
+	price: Int! @join__field(graph: SERVICEB, requires: "sku")
 }
 type Query {
 	products: [Product]! @join__field(graph: SERVICEA)

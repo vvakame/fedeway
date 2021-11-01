@@ -1,0 +1,24 @@
+{
+  "data": {
+    "books": [
+      {
+        "name": "Structure and Interpretation of Computer Programs (1996)"
+      },
+      {
+        "name": "Object Oriented Software Construction (1997)"
+      },
+      {
+        "name": "Design Patterns (1995)"
+      },
+      {
+        "name": "The Year Was Null (null)"
+      },
+      {
+        "name": " (404)"
+      },
+      {
+        "name": "No Books Like This Book! (2019)"
+      }
+    ]
+  }
+}

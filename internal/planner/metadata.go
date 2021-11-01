@@ -6,29 +6,20 @@ import (
 
 	"github.com/goccy/go-yaml"
 	"github.com/vektah/gqlparser/v2/ast"
+	"github.com/vvakame/fedeway/internal/federation"
 )
 
 type FederationSchemaMetadata struct {
 	Graphs map[string]*Graph
 }
 
-type FederationTypeMetadata interface {
-	isFederationTypeMetadata()
-}
+type FederationTypeMetadata struct {
+	IsValueType bool
 
-var _ FederationTypeMetadata = (*FederationEntityTypeMetadata)(nil)
-var _ FederationTypeMetadata = (*FederationValueTypeMetadata)(nil)
-
-type FederationEntityTypeMetadata struct {
+	// available when IsValueType=false
 	GraphName string
 	Keys      map[string]ast.SelectionSet // readonly (FieldNode | InlineFragmentNode)[];
 }
-
-func (metadata *FederationEntityTypeMetadata) isFederationTypeMetadata() {}
-
-type FederationValueTypeMetadata struct{}
-
-func (metadata *FederationValueTypeMetadata) isFederationTypeMetadata() {}
 
 type FederationFieldMetadata struct {
 	GraphName string
@@ -42,14 +33,14 @@ var _ yaml.InterfaceMarshaler = (*ComposedSchema)(nil)
 type ComposedSchema struct {
 	Schema         *ast.Schema `yaml:"-"`
 	SchemaMetadata *FederationSchemaMetadata
-	TypeMetadata   map[*ast.Definition]FederationTypeMetadata
+	TypeMetadata   map[*ast.Definition]*FederationTypeMetadata
 	FieldMetadata  map[*ast.FieldDefinition]*FederationFieldMetadata
 }
 
 func (cs *ComposedSchema) marshalObject() (interface{}, error) {
 	type metadataHolderYAML struct {
 		Schema *FederationSchemaMetadata
-		Type   map[string]FederationTypeMetadata
+		Type   map[string]*FederationTypeMetadata
 		Field  map[string]*FederationFieldMetadata
 	}
 
@@ -57,7 +48,7 @@ func (cs *ComposedSchema) marshalObject() (interface{}, error) {
 		Schema: cs.SchemaMetadata,
 	}
 
-	result.Type = make(map[string]FederationTypeMetadata)
+	result.Type = make(map[string]*FederationTypeMetadata)
 	for def, meta := range cs.TypeMetadata {
 		result.Type[def.Name] = meta
 	}
@@ -108,41 +99,58 @@ func (cs *ComposedSchema) MarshalJSON() ([]byte, error) {
 	return json.Marshal(obj)
 }
 
-func newComposedSchema(schema *ast.Schema) *ComposedSchema {
-	metadataHolder := &ComposedSchema{
-		Schema:         schema,
-		SchemaMetadata: nil,
-		TypeMetadata:   make(map[*ast.Definition]FederationTypeMetadata),
-		FieldMetadata:  make(map[*ast.FieldDefinition]*FederationFieldMetadata),
+func newComposedSchema(schema *ast.Schema, metadata *federation.FederationMetadata) *ComposedSchema {
+	cs := &ComposedSchema{
+		Schema: schema,
 	}
-	return metadataHolder
+	if metadata != nil {
+		for typ, prevMeta := range metadata.FederationTypeMap {
+			meta := cs.getTypeMetadata(typ)
+			meta.IsValueType = prevMeta.IsValueType
+			// TODO これ嘘では？
+			for serviceName, keyss := range prevMeta.Keys {
+				for _, keys := range keyss {
+					meta.Keys[serviceName] = append(meta.Keys[serviceName], keys...)
+				}
+			}
+		}
+		for typ, prevMeta := range metadata.FederationFieldMap {
+			meta := cs.getFieldMetadata(typ)
+			meta.Provides = prevMeta.Provides
+			meta.Requires = prevMeta.Requires
+		}
+	}
+
+	return cs
 }
 
-func (cs *ComposedSchema) setSchemaMetadata(value *FederationSchemaMetadata) {
-	cs.SchemaMetadata = value
+func (cs *ComposedSchema) getSchemaMetadata() *FederationSchemaMetadata {
+	if cs.SchemaMetadata == nil {
+		cs.SchemaMetadata = &FederationSchemaMetadata{}
+	}
+	return cs.SchemaMetadata
 }
 
-func (cs *ComposedSchema) setTypeMetadata(typ *ast.Definition, value FederationTypeMetadata) {
+func (cs *ComposedSchema) getTypeMetadata(typ *ast.Definition) *FederationTypeMetadata {
 	if cs.TypeMetadata == nil {
-		cs.TypeMetadata = make(map[*ast.Definition]FederationTypeMetadata)
+		cs.TypeMetadata = make(map[*ast.Definition]*FederationTypeMetadata)
 	}
-	cs.TypeMetadata[typ] = value
+	if cs.TypeMetadata[typ] == nil {
+		cs.TypeMetadata[typ] = &FederationTypeMetadata{
+			Keys: make(map[string]ast.SelectionSet),
+		}
+	}
+	return cs.TypeMetadata[typ]
 }
 
-func (cs *ComposedSchema) setFieldMetadata(fieldDef *ast.FieldDefinition, value *FederationFieldMetadata) {
+func (cs *ComposedSchema) getFieldMetadata(fieldDef *ast.FieldDefinition) *FederationFieldMetadata {
 	if cs.FieldMetadata == nil {
 		cs.FieldMetadata = make(map[*ast.FieldDefinition]*FederationFieldMetadata)
 	}
-	cs.FieldMetadata[fieldDef] = value
-}
-
-func toEntityTypeMetadata(meta FederationTypeMetadata) *FederationEntityTypeMetadata {
-	switch meta := meta.(type) {
-	case *FederationEntityTypeMetadata:
-		return meta
-	default:
-		return nil
+	if cs.FieldMetadata[fieldDef] == nil {
+		cs.FieldMetadata[fieldDef] = &FederationFieldMetadata{}
 	}
+	return cs.FieldMetadata[fieldDef]
 }
 
 type Graph struct {

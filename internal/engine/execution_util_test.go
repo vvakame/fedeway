@@ -58,7 +58,7 @@ func getFederatedTestingSchema(ctx context.Context, t *testing.T) (*planner.Comp
 		serviceMap[fixture.Name()] = lds
 	}
 
-	_, sdl, err := federation.ComposeAndValidate(ctx, services)
+	_, sdl, metadata, err := federation.ComposeAndValidate(ctx, services)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +74,7 @@ func getFederatedTestingSchema(ctx context.Context, t *testing.T) (*planner.Comp
 		t.Fatal(gErr)
 	}
 
-	cs, err := planner.BuildComposedSchema(ctx, schemaDoc)
+	cs, err := planner.BuildComposedSchema(ctx, schemaDoc, metadata)
 	if err != nil {
 		t.Fatal(err)
 	}

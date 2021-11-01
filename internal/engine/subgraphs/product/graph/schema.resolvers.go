@@ -5,7 +5,9 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/product/graph/generated"
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/product/graph/model"
@@ -20,7 +22,18 @@ func (r *bookResolver) Sku(ctx context.Context, obj *model.Book) (string, error)
 }
 
 func (r *bookResolver) Name(ctx context.Context, obj *model.Book, delimeter *string) (*string, error) {
-	s := fmt.Sprintf("%s%s(%d)", *obj.Title, *delimeter, *obj.Year)
+	var title, year string
+	if obj.Title == nil {
+		return nil, errors.New("Book doesn't have title value")
+	}
+	title = *obj.Title
+	if obj.Year != nil {
+		year = strconv.Itoa(*obj.Year)
+	} else {
+		year = "null"
+	}
+
+	s := fmt.Sprintf("%s%s(%s)", title, *delimeter, year)
 	return &s, nil
 }
 

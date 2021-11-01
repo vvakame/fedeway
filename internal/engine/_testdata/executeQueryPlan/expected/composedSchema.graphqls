@@ -21,7 +21,7 @@ type Book implements Product @join__owner(graph: BOOKS) @join__type(graph: BOOKS
 	isCheckedOut: Boolean @join__field(graph: INVENTORY)
 	upc: String! @join__field(graph: PRODUCT)
 	sku: String! @join__field(graph: PRODUCT)
-	name(delimeter: String = " "): String @join__field(graph: PRODUCT)
+	name(delimeter: String = " "): String @join__field(graph: PRODUCT, requires: "title year")
 	price: String @join__field(graph: PRODUCT)
 	details: ProductDetailsBook @join__field(graph: PRODUCT)
 	reviews: [Review] @join__field(graph: REVIEWS)
@@ -36,7 +36,7 @@ type Car implements Vehicle @join__owner(graph: PRODUCT) @join__type(graph: PROD
 	id: String!
 	description: String
 	price: String
-	retailPrice: String @join__field(graph: REVIEWS)
+	retailPrice: String @join__field(graph: REVIEWS, requires: "price")
 }
 type Error {
 	code: Int
@@ -72,7 +72,7 @@ type KeyValue {
 type Library @join__owner(graph: BOOKS) @join__type(graph: BOOKS, key: "id") @join__type(graph: ACCOUNTS, key: "id") {
 	id: ID!
 	name: String
-	userAccount(id: ID! = "1"): User @join__field(graph: ACCOUNTS)
+	userAccount(id: ID! = "1"): User @join__field(graph: ACCOUNTS, requires: "name")
 }
 union MetadataOrError = KeyValue | Error
 type Mutation {
@@ -130,7 +130,7 @@ type Query {
 type Review @join__owner(graph: REVIEWS) @join__type(graph: REVIEWS, key: "id") {
 	id: ID!
 	body(format: Boolean = false): String
-	author: User
+	author: User @join__field(graph: REVIEWS, provides: "username")
 	product: Product
 	metadata: [MetadataOrError]
 }
@@ -179,7 +179,7 @@ type Van implements Vehicle @join__owner(graph: PRODUCT) @join__type(graph: PROD
 	id: String!
 	description: String
 	price: String
-	retailPrice: String @join__field(graph: REVIEWS)
+	retailPrice: String @join__field(graph: REVIEWS, requires: "price")
 }
 interface Vehicle {
 	id: String!
