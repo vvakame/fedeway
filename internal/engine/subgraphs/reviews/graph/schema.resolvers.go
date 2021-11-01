@@ -29,7 +29,7 @@ func (r *bookResolver) Reviews(ctx context.Context, obj *model.Book) ([]*model.R
 }
 
 func (r *bookResolver) RelatedReviews(ctx context.Context, obj *model.Book) ([]*model.Review, error) {
-	var result []*model.Review
+	result := make([]*model.Review, 0)
 	for _, similarBool := range obj.SimilarBooks {
 		for _, review := range r.reviews {
 			switch product := review.Product.(type) {

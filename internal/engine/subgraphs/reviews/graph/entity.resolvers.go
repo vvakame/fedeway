@@ -12,7 +12,7 @@ import (
 )
 
 func (r *entityResolver) FindBookByIsbn(ctx context.Context, isbn string) (*model.Book, error) {
-	return nil, errors.New("FindBookByIsbn is not implemented")
+	return &model.Book{Isbn: isbn}, nil
 }
 
 func (r *entityResolver) FindCarByID(ctx context.Context, id string) (*model.Car, error) {
@@ -20,7 +20,7 @@ func (r *entityResolver) FindCarByID(ctx context.Context, id string) (*model.Car
 }
 
 func (r *entityResolver) FindFurnitureByUpc(ctx context.Context, upc string) (*model.Furniture, error) {
-	return nil, errors.New("FindFurnitureByUpc is not implemented")
+	return &model.Furniture{Upc: upc}, nil
 }
 
 func (r *entityResolver) FindReviewByID(ctx context.Context, id string) (*model.Review, error) {

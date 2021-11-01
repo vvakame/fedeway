@@ -1,0 +1,10 @@
+# errors
+# should not include an empty "errors" array when no errors were encountered
+query {
+    me {
+        name {
+            first
+            last
+        }
+    }
+}

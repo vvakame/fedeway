@@ -1,0 +1,12 @@
+QueryPlan {
+	Fetch(service: "accounts") {
+		query {
+			me {
+				name {
+					first
+					last
+				}
+			}
+		}
+	},
+}

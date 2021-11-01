@@ -1,0 +1,9 @@
+# option:skip: true
+# TODO superGraphWithInaccessible を使う必要がある 元のやつなんか長々とコメント書いてある FIXME的な
+# @inaccessible
+# doesn't leak @inaccessible typenames in error messages
+query {
+    vehicle(id: "1") {
+        id
+    }
+}

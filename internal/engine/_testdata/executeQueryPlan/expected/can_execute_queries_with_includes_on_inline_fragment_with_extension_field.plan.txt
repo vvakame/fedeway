@@ -1,0 +1,45 @@
+QueryPlan {
+	Sequence {
+		Fetch(service: "product") {
+			query {
+				topProducts(first: 5) {
+					__typename
+					... on Book @include(if: true) {
+						price
+						__typename
+						isbn
+					}
+					... on Furniture {
+						price
+						__typename
+						sku
+					}
+				}
+			}
+		},
+		Flatten(path: "topProducts.@") {
+			Fetch(service: "inventory") {
+				{
+					... on Book {
+						__typename
+						isbn
+					}
+				}
+				{
+					... on Furniture {
+						__typename
+						sku
+					}
+				} =>
+				{
+					... on Book @include(if: true) {
+						inStock
+					}
+					... on Furniture {
+						inStock
+					}
+				}
+			},
+		},
+	},
+}
