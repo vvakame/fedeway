@@ -1,0 +1,21 @@
+# option:skip: true
+# errors
+# should send a request to downstream services for the remaining entities when some entities are undefined
+query {
+    # The first 3 products are all Furniture, but the next 2 are Books
+    topProducts(first: 5) {
+        reviews {
+            body
+        }
+        ... on Book {
+            reviews {
+                author {
+                    name {
+                        first
+                        last
+                    }
+                }
+            }
+        }
+    }
+}

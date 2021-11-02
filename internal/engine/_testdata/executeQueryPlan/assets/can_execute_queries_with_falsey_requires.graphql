@@ -1,0 +1,6 @@
+# can execute queries with falsey @requires (except undefined)
+query {
+    books {
+        name # Requires title, year (on Book type)
+    }
+}

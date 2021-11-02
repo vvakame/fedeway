@@ -1,0 +1,13 @@
+# option:skip: true
+# TODO superGraphWithInaccessible を使う必要がある
+# @inaccessible
+# should return a validation error when an @inaccessible field is requested
+query {
+    topReviews {
+        body
+        author {
+            username
+            ssn
+        }
+    }
+}

@@ -1,17 +1,18 @@
 {
   "name": "testbed",
   "version": "1.0.0",
+  "private": true,
   "description": "",
-  "main": "index.js",
   "scripts": {
     "build": "tsc"
   },
-  "author": "",
+  "author": "vvakame",
   "license": "ISC",
   "devDependencies": {
     "@apollo/federation": "^0.33.3",
     "@apollo/gateway": "^0.42.3",
     "apollo-graphql": "^0.9.3",
+    "apollo-server": "^3.4.0",
     "graphql": "^15.6.1",
     "graphql-tag": "^2.12.5",
     "typescript": "^4.4.4"

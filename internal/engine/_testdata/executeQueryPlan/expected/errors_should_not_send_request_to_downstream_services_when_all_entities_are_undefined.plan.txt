@@ -1,0 +1,69 @@
+QueryPlan {
+	Sequence {
+		Fetch(service: "product") {
+			query {
+				topProducts(first: 3) {
+					__typename
+					... on Book {
+						__typename
+						isbn
+					}
+					... on Furniture {
+						__typename
+						upc
+					}
+				}
+			}
+		},
+		Flatten(path: "topProducts.@") {
+			Fetch(service: "reviews") {
+				{
+					... on Book {
+						__typename
+						isbn
+					}
+				}
+				{
+					... on Furniture {
+						__typename
+						upc
+					}
+				} =>
+				{
+					... on Book {
+						reviews {
+							body
+							author {
+								__typename
+								id
+							}
+						}
+					}
+					... on Furniture {
+						reviews {
+							body
+						}
+					}
+				}
+			},
+		},
+		Flatten(path: "topProducts.@.reviews.@.author") {
+			Fetch(service: "accounts") {
+				{
+					... on User {
+						__typename
+						id
+					}
+				} =>
+				{
+					... on User {
+						name {
+							first
+							last
+						}
+					}
+				}
+			},
+		},
+	},
+}

@@ -125,7 +125,7 @@ func TestExecute(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			fileName := file.Name()[:len(file.Name())-len(".graphqls")]
+			fileName := file.Name()[:len(file.Name())-len(".graphql")]
 
 			testutils.CheckGoldenFile(t, responseBytes, path.Join(expectFileDir, fileName+".response.json"))
 		})

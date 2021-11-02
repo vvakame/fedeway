@@ -78,8 +78,8 @@ func Execute(ctx context.Context, args *ExecutionArgs) *graphql.Response {
 		}
 	}
 	ctx = graphql.WithOperationContext(ctx, oc)
-
-	ctx = graphql.WithResponseContext(ctx, graphql.DefaultErrorPresenter, oc.Recover)
+	// TODO default 使うのをやめる
+	ctx = graphql.WithResponseContext(ctx, graphql.DefaultErrorPresenter, graphql.DefaultRecover)
 
 	// If a valid execution context cannot be created due to incorrect arguments,
 	// a "Response" with only errors is returned.
@@ -382,7 +382,7 @@ func completeValue(ctx context.Context, exeContext *ExecutionContext, returnType
 
 	// If field type is a leaf type, Scalar or Enum, serialize to a valid value,
 	// returning null if serialization is not possible.
-	if utils.IsLeadType(exeContext.Schema.Types[returnType.NamedType]) {
+	if utils.IsLeafType(exeContext.Schema.Types[returnType.NamedType]) {
 		return completeLeafValue(ctx, returnType, result)
 	}
 
@@ -425,6 +425,15 @@ func completeListValue(ctx context.Context, exeContext *ExecutionContext, return
 		graphql.AddErrorf(ctx, `expected slice or array, but did not find one for field "%s.%s"`, fc.Object, fc.Field.Name)
 		return graphql.Null
 	}
+
+	// TODO goroutine内でのpanicをrecoverする必要がある
+	// 以下はgqlgenでの対応パターン
+	//defer func() {
+	//	if r := recover(); r != nil {
+	//		ec.Error(ctx, ec.Recover(ctx, r))
+	//		ret = graphql.Null
+	//	}
+	//}()
 
 	// This is specified as a simple map, however we're optimizing the path
 	// where the list contains no Promises by avoiding creating another Promise.
@@ -568,7 +577,15 @@ func ensureValidRuntimeType(ctx context.Context, runtimeTypeName string, exeCont
 // Complete an Object value by executing all sub-selections.
 func completeObjectValue(ctx context.Context, exeContext *ExecutionContext, returnType *ast.Type, fieldNode graphql.CollectedField, result interface{}) graphql.Marshaler {
 	// Collect sub-fields to execute to complete this value.
-	subFieldNodes := graphql.CollectFields(graphql.GetOperationContext(ctx), fieldNode.SelectionSet, []string{returnType.Name()})
+	oc := graphql.GetOperationContext(ctx)
+	returnTypeDef := exeContext.Schema.Types[returnType.Name()]
+	implementDefs := exeContext.Schema.GetImplements(returnTypeDef)
+	satisfies := make([]string, 0, len(implementDefs)+1)
+	satisfies = append(satisfies, returnTypeDef.Name)
+	for _, implementDef := range implementDefs {
+		satisfies = append(satisfies, implementDef.Name)
+	}
+	subFieldNodes := graphql.CollectFields(oc, fieldNode.SelectionSet, satisfies)
 
 	// If there is an isTypeOf predicate function, call it with the
 	// current result. If isTypeOf returns false, then raise an error rather
@@ -576,7 +593,7 @@ func completeObjectValue(ctx context.Context, exeContext *ExecutionContext, retu
 	// NOTE: original では promise 周りの処理が色々あったけど多分省いてよいはず
 
 	// TODO returnType じゃなくて types から引いた definition を渡しているけど List とか NonNull の情報が落ちてるのでまずいのではないか…？ あとで確認する
-	return executeFields(ctx, exeContext, exeContext.Schema.Types[returnType.Name()], result, subFieldNodes)
+	return executeFields(ctx, exeContext, returnTypeDef, result, subFieldNodes)
 }
 
 // If a resolveType function is not given, then a default resolve behavior is

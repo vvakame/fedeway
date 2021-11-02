@@ -1,0 +1,26 @@
+{
+  "data": {
+    "topProducts": [
+      {
+        "price": "899",
+        "inStock": true
+      },
+      {
+        "price": "1299",
+        "inStock": false
+      },
+      {
+        "price": "54",
+        "inStock": true
+      },
+      {
+        "price": "39",
+        "inStock": true
+      },
+      {
+        "price": "29",
+        "inStock": false
+      }
+    ]
+  }
+}

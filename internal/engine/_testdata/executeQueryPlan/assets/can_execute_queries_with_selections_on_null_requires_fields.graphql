@@ -1,0 +1,11 @@
+# option:skip: true
+# can execute queries with selections on null @requires fields
+query {
+    book(isbn: "0987654321") {
+        # Requires similarBooks { isbn }
+        relatedReviews {
+            id
+            body
+        }
+    }
+}

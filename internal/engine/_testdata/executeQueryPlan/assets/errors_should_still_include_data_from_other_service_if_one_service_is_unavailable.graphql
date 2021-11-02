@@ -1,0 +1,15 @@
+# option:skip: true
+# TODO delete serviceMap.accounts とかしてる
+# errors
+# should still include data from other services if one services is unavailable
+query {
+    me {
+        name {
+            first
+            last
+        }
+    }
+    topReviews {
+        body
+    }
+}

@@ -1,0 +1,12 @@
+# should only return fields that have been requested directly
+query {
+    topReviews {
+        body
+        author {
+            name {
+                first
+                last
+            }
+        }
+    }
+}

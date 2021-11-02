@@ -12,6 +12,7 @@ import (
 	"github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/parser"
+	"github.com/vvakame/fedeway/internal/federation"
 	"github.com/vvakame/fedeway/internal/log"
 	"github.com/vvakame/fedeway/internal/plan"
 	"github.com/vvakame/fedeway/internal/testutils"
@@ -85,12 +86,12 @@ func TestBuildQueryPlan(t *testing.T) {
 				t.Fatal(gErr)
 			}
 
-			schema, mh, err := buildComposedSchema(ctx, schemaDoc)
+			composedSchema, err := BuildComposedSchema(ctx, schemaDoc, &federation.FederationMetadata{})
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			query, gErrs := gqlparser.LoadQuery(schema, string(b1))
+			query, gErrs := gqlparser.LoadQuery(composedSchema.Schema, string(b1))
 			if gErrs != nil {
 				t.Fatal(gErrs)
 			}
@@ -99,7 +100,7 @@ func TestBuildQueryPlan(t *testing.T) {
 				t.Fatal("operation length is 0")
 			}
 
-			opctx, err := buildOperationContext(ctx, schema, mh, query, "")
+			opctx, err := BuildOperationContext(ctx, composedSchema, query, "")
 			if err != nil {
 				t.Fatal(err)
 			}

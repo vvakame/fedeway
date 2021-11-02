@@ -1,0 +1,11 @@
+# option:skip: true
+# can execute queries with list @requires
+query {
+    book(isbn: "0201633612") {
+        # Requires similarBooks { isbn }
+        relatedReviews {
+            id
+            body
+        }
+    }
+}

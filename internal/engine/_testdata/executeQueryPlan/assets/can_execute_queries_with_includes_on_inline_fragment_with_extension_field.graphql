@@ -1,0 +1,13 @@
+# can execute queries with @include on inline fragment with extension field
+query {
+    topProducts(first: 5) {
+        ... on Book @include(if: true) {
+            price
+            inStock
+        }
+        ... on Furniture {
+            price
+            inStock
+        }
+    }
+}

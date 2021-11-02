@@ -1,0 +1,78 @@
+# copied from: federation/federation-integration-testsuite-js/src/fixtures/accounts.ts
+
+directive @stream on FIELD
+directive @transform(from: String!) on FIELD
+directive @tag(name: String!) repeatable on
+    | FIELD_DEFINITION
+    | INTERFACE
+    | OBJECT
+    | UNION
+
+enum CacheControlScope {
+    PUBLIC
+    PRIVATE
+}
+
+directive @cacheControl(
+    maxAge: Int
+    scope: CacheControlScope
+    inheritMaxAge: Boolean
+) on FIELD_DEFINITION | OBJECT | INTERFACE | UNION
+
+scalar JSON # @specifiedBy(url: "https://json-spec.dev")
+
+schema {
+    query: Query # TODO gqlgen not supported renamed root type.
+    mutation: Mutation
+}
+
+extend type Query {
+    user(id: ID!): User
+    me: User @cacheControl(maxAge: 1000, scope: PRIVATE)
+}
+
+type PasswordAccount @key(fields: "email") {
+    email: String!
+}
+
+type SMSAccount @key(fields: "number") {
+    number: String
+}
+
+union AccountType @tag(name: "from-accounts") = PasswordAccount | SMSAccount
+
+type UserMetadata {
+    name: String
+    address: String
+    description: String
+}
+
+# TODO gqlgen doesn't support multiple @key. simply ignored 2nd & later.
+type User @key(fields: "id") @key(fields: "username name { first last }") @tag(name: "from-accounts") {
+    id: ID! @tag(name: "accounts")
+    name: Name @cacheControl(inheritMaxAge: true)
+    username: String
+    birthDate(locale: String): String @tag(name: "admin") @tag(name: "dev")
+    account: AccountType
+    metadata: [UserMetadata]
+    ssn: String
+}
+
+type Name {
+    first: String
+    last: String
+}
+
+type Mutation {
+    login(
+        username: String!
+        password: String!
+        userId: String # @deprecated(reason: "Use username instead")
+    ): User
+}
+
+extend type Library @key(fields: "id") {
+    id: ID! @external
+    name: String @external
+    userAccount(id: ID! = "1"): User @requires(fields: "name")
+}

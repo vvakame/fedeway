@@ -1,0 +1,12 @@
+# option:skip: true
+# TODO overrideResolversInService とかして Query.me の結果変えてる
+# errors
+# should include an error when a root-level field errors out
+query {
+    me {
+        name {
+            first
+            last
+        }
+    }
+}

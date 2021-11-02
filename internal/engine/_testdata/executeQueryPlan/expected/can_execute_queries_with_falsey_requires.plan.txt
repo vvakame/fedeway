@@ -1,0 +1,31 @@
+QueryPlan {
+	Sequence {
+		Fetch(service: "books") {
+			query {
+				books {
+					__typename
+					isbn
+					title
+					year
+				}
+			}
+		},
+		Flatten(path: "books.@") {
+			Fetch(service: "product") {
+				{
+					... on Book {
+						__typename
+						isbn
+						title
+						year
+					}
+				} =>
+				{
+					... on Book {
+						name
+					}
+				}
+			},
+		},
+	},
+}

@@ -1,0 +1,30 @@
+# copied from: federation/federation-integration-testsuite-js/src/fixtures/inventory.ts
+
+directive @stream on FIELD
+directive @transform(from: String!) on FIELD
+
+extend interface Product {
+    inStock: Boolean
+}
+
+extend type Furniture implements Product @key(fields: "sku") {
+    sku: String! @external
+    inStock: Boolean
+    isHeavy: Boolean
+}
+
+extend type Book implements Product @key(fields: "isbn") {
+    isbn: String! @external
+    inStock: Boolean
+    isCheckedOut: Boolean
+}
+
+extend type UserMetadata {
+    description: String @external
+}
+
+extend type User @key(fields: "id") {
+    id: ID! @external
+    metadata: [UserMetadata] @external
+    goodDescription: Boolean # TODO gqlgen issue 1138  @requires(fields: "metadata { description }")
+}

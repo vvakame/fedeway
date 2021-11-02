@@ -1,0 +1,40 @@
+# copied from: federation/federation-integration-testsuite-js/src/fixtures/documents.ts
+
+directive @stream on FIELD
+directive @transform(from: String!) on FIELD
+
+extend type Query {
+    body: Body!
+}
+
+union Body = Image | Text
+
+interface NamedObject {
+    name: String!
+}
+
+type Image implements NamedObject {
+    name: String!
+    # Same as option below but the type is different
+    attributes: ImageAttributes!
+}
+
+type Text implements NamedObject {
+    name: String!
+    # Same as option above but the type is different
+    attributes: TextAttributes!
+}
+
+type ImageAttributes {
+    url: String!
+}
+
+type TextAttributes {
+    bold: Boolean
+    text: String
+}
+
+# TODO gqlgen is not generate _service on Query when any directives not exists
+type Noop @key(fields: "noop") {
+    noop: String
+}

@@ -7,7 +7,7 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
-func ComposeAndValidate(ctx context.Context, serviceList []*ServiceDefinition) (schema *ast.Schema, supergraphSDL string, err error) {
+func ComposeAndValidate(ctx context.Context, serviceList []*ServiceDefinition) (schema *ast.Schema, supergraphSDL string, matadata *FederationMetadata, err error) {
 	// NOTE: 全体的な設計方針
 	//   js版はimmutableな構成になっていて、元データは破壊されない
 	//   こちらの設計では非破壊にするのは手間が多い割りにそうする必要があるのか不明である
@@ -33,8 +33,7 @@ func ComposeAndValidate(ctx context.Context, serviceList []*ServiceDefinition) (
 
 	errors = append(errors, validateServicesBeforeComposition(normalizedServiceList)...)
 
-	var errs []error
-	schema, supergraphSDL, errs = composeServices(ctx, normalizedServiceList)
+	schema, supergraphSDL, matadata, errs := composeServices(ctx, normalizedServiceList)
 
 	if len(errs) != 0 {
 		errors = append(errors, errs...)
@@ -44,8 +43,8 @@ func ComposeAndValidate(ctx context.Context, serviceList []*ServiceDefinition) (
 
 	if len(errors) > 0 {
 		err := multierror.Append(nil, errors...)
-		return schema, "", err
+		return schema, "", matadata, err
 	}
 
-	return schema, supergraphSDL, nil
+	return schema, supergraphSDL, matadata, nil
 }

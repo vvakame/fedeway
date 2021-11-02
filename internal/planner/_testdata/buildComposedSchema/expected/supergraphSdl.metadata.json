@@ -28,9 +28,18 @@
     }
   },
   "Type": {
-    "Account": {},
-    "Amazon": {},
+    "Account": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
+    "Amazon": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
     "Book": {
+      "IsValueType": false,
       "GraphName": "books",
       "Keys": {
         "books": [
@@ -84,6 +93,7 @@
       }
     },
     "Car": {
+      "IsValueType": false,
       "GraphName": "product",
       "Keys": {
         "product": [
@@ -112,8 +122,13 @@
         ]
       }
     },
-    "Error": {},
+    "Error": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
     "Furniture": {
+      "IsValueType": false,
       "GraphName": "product",
       "Keys": {
         "inventory": [
@@ -154,11 +169,28 @@
         ]
       }
     },
-    "Ikea": {},
-    "Image": {},
-    "ImageAttributes": {},
-    "KeyValue": {},
+    "Ikea": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
+    "Image": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
+    "ImageAttributes": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
+    "KeyValue": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
     "Library": {
+      "IsValueType": false,
       "GraphName": "books",
       "Keys": {
         "accounts": [
@@ -187,9 +219,18 @@
         ]
       }
     },
-    "Mutation": {},
-    "Name": {},
+    "Mutation": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
+    "Name": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
     "PasswordAccount": {
+      "IsValueType": false,
       "GraphName": "accounts",
       "Keys": {
         "accounts": [
@@ -206,10 +247,23 @@
         ]
       }
     },
-    "ProductDetailsBook": {},
-    "ProductDetailsFurniture": {},
-    "Query": {},
+    "ProductDetailsBook": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
+    "ProductDetailsFurniture": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
+    "Query": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
     "Review": {
+      "IsValueType": false,
       "GraphName": "reviews",
       "Keys": {
         "reviews": [
@@ -227,6 +281,7 @@
       }
     },
     "SMSAccount": {
+      "IsValueType": false,
       "GraphName": "accounts",
       "Keys": {
         "accounts": [
@@ -243,9 +298,18 @@
         ]
       }
     },
-    "Text": {},
-    "TextAttributes": {},
+    "Text": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
+    "TextAttributes": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
     "User": {
+      "IsValueType": false,
       "GraphName": "accounts",
       "Keys": {
         "accounts": [
@@ -329,8 +393,13 @@
         ]
       }
     },
-    "UserMetadata": {},
+    "UserMetadata": {
+      "IsValueType": true,
+      "GraphName": "",
+      "Keys": {}
+    },
     "Van": {
+      "IsValueType": false,
       "GraphName": "product",
       "Keys": {
         "product": [

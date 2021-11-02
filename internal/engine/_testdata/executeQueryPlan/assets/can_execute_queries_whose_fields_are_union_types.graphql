@@ -1,0 +1,20 @@
+# option:skip: true
+# can execute queries whose fields are union types
+query {
+    user(id: "1") {
+        name {
+            first
+            last
+        }
+        thing {
+            ... on Vehicle {
+                description
+                price
+                retailPrice
+            }
+            ... on Ikea {
+                asile
+            }
+        }
+    }
+}

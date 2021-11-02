@@ -9,20 +9,21 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vektah/gqlparser/v2/validator"
+	"github.com/vvakame/fedeway/internal/federation"
 	"github.com/vvakame/fedeway/internal/graphql"
 )
 
-func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*ast.Schema, *metadataHolder, error) {
+func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument, metadata *federation.FederationMetadata) (*ComposedSchema, error) {
 	schema, gErr := validator.ValidateSchemaDocument(document)
 	if gErr != nil {
-		return nil, nil, gErr
+		return nil, gErr
 	}
 
 	coreName := "core"
 	coreDirective := schema.Directives[coreName]
 
 	if coreDirective == nil {
-		return nil, nil, errors.New("expected core schema, but can't find @core directive")
+		return nil, errors.New("expected core Schema, but can't find @core directive")
 	}
 
 	joinName := "join"
@@ -30,48 +31,48 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 		fullyQualifiedName := fmt.Sprintf("%s__%s", joinName, name)
 		directive := schema.Directives[fullyQualifiedName]
 		if directive == nil {
-			return nil, fmt.Errorf("composed schema should define @%s directive", fullyQualifiedName)
+			return nil, fmt.Errorf("composed Schema should define @%s directive", fullyQualifiedName)
 		}
 		return directive, nil
 	}
 
 	ownerDirective, err := getJoinDirective("owner")
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	typeDirective, err := getJoinDirective("type")
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	fieldDirective, err := getJoinDirective("field")
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	graphDirective, err := getJoinDirective("graph")
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	graphEnumType := schema.Types[fmt.Sprintf("%s__Graph", joinName)]
 	if graphEnumType == nil {
-		return nil, nil, fmt.Errorf("%s__Graph should be an enum", joinName)
+		return nil, fmt.Errorf("%s__Graph should be an enum", joinName)
 	}
 
-	mh := newMetadataHolder(schema)
+	cs := newComposedSchema(schema, metadata)
 
 	graphMap := make(map[string]*Graph)
-	mh.setSchemaMetadata(&FederationSchemaMetadata{Graphs: graphMap})
+	cs.getSchemaMetadata().Graphs = graphMap
 
 	for _, graphValue := range graphEnumType.EnumValues {
 		name := graphValue.Name
 
 		graphDirectiveArgs, err := getArgumentValuesForDirective(graphDirective, graphValue.Directives)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		if len(graphDirectiveArgs) == 0 {
-			return nil, nil, gqlerror.Errorf(
-				"%s value %s in composed schema should have a @%s directive",
+			return nil, gqlerror.Errorf(
+				"%s value %s in composed Schema should have a @%s directive",
 				graphEnumType.Name, name, graphDirective.Name,
 			)
 		}
@@ -124,10 +125,10 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 
 		ownerDirectiveArgs, err := getArgumentValuesForDirective(ownerDirective, typ.Directives)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
-		var typeMetadata FederationTypeMetadata
+		typeMetadata := cs.getTypeMetadata(typ)
 		if len(ownerDirectiveArgs) != 0 {
 			var graphName string
 			{
@@ -141,29 +142,26 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 			}
 			graph := graphMap[graphName]
 			if graph == nil {
-				return nil, nil, gqlerror.Errorf(
+				return nil, gqlerror.Errorf(
 					`programming error: found unexpected 'graph' argument value "%s" in @%s directive`,
 					graphName, ownerDirective.Name,
 				)
 			}
-			typeMetadata = &FederationEntityTypeMetadata{
-				GraphName: graph.Name,
-				Keys:      make(map[string]ast.SelectionSet),
-			}
+			typeMetadata.IsValueType = false
+			typeMetadata.GraphName = graph.Name
+			typeMetadata.Keys = make(map[string]ast.SelectionSet)
 		} else {
-			typeMetadata = &FederationValueTypeMetadata{}
+			typeMetadata.IsValueType = true
 		}
-
-		mh.setTypeMetadata(typ, typeMetadata)
 
 		typeDirectivesArgs, err := getArgumentValuesForRepeatableDirective(typeDirective, typ.Directives)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
-		if _, ok := typeMetadata.(*FederationEntityTypeMetadata); !ok && len(typeDirectivesArgs) != 0 {
+		if typeMetadata.IsValueType && len(typeDirectivesArgs) != 0 {
 			// TODO 条件式これであってるか怪しい…
-			return nil, nil, fmt.Errorf(
+			return nil, fmt.Errorf(
 				`GraphQL type "%s" cannot have a @%s directive without an @%s directive`,
 				typ.Name, typeDirective.Name, ownerDirective.Name,
 			)
@@ -171,7 +169,7 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 
 		for _, typeDirectiveArgs := range typeDirectivesArgs {
 			if len(typeDirectiveArgs) == 0 {
-				return nil, nil, fmt.Errorf(
+				return nil, fmt.Errorf(
 					`GraphQL type "%s" must provide a 'graph' argument to the @%s directive`,
 					typ.Name, typeDirective.Name,
 				)
@@ -189,7 +187,7 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 			}
 			graph := graphMap[graphName]
 			if graph == nil {
-				return nil, nil, gqlerror.Errorf(
+				return nil, gqlerror.Errorf(
 					`programming error: found unexpected 'graph' argument value "%s" in @%s directive`,
 					graphName, typeDirective.Name,
 				)
@@ -207,15 +205,10 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 			}
 			keyFields, err := parseFieldSet(source)
 			if err != nil {
-				return nil, nil, err
+				return nil, err
 			}
 
-			entityTypeMetadata, ok := typeMetadata.(*FederationEntityTypeMetadata)
-			if !ok {
-				return nil, nil, fmt.Errorf("unexpected type %T", typeMetadata)
-			}
-
-			entityTypeMetadata.Keys[graph.Name] = keyFields
+			typeMetadata.Keys[graph.Name] = keyFields
 		}
 
 		for _, fieldDef := range typ.Fields {
@@ -230,14 +223,14 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 
 			fieldDirectiveArgs, err := getArgumentValuesForDirective(fieldDirective, fieldDef.Directives)
 			if err != nil {
-				return nil, nil, err
+				return nil, err
 			}
 
 			if len(fieldDirectiveArgs) == 0 {
 				continue
 			}
 
-			var fieldMetadata *FederationFieldMetadata
+			fieldMetadata := cs.getFieldMetadata(fieldDef)
 			var graphName string
 			{
 				v, ok := fieldDirectiveArgs["graph"]
@@ -251,19 +244,13 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 			if graphName != "" {
 				graph := graphMap[graphName]
 				if graph == nil {
-					return nil, nil, gqlerror.Errorf(
+					return nil, gqlerror.Errorf(
 						`programming error: found unexpected 'graph' argument value "%s" in @%s directive`,
 						graphName, fieldDirective.Name,
 					)
 				}
-				fieldMetadata = &FederationFieldMetadata{
-					GraphName: graph.Name,
-				}
-			} else {
-				fieldMetadata = &FederationFieldMetadata{}
+				fieldMetadata.GraphName = graph.Name
 			}
-
-			mh.setFieldMetadata(fieldDef, fieldMetadata)
 
 			var requires ast.SelectionSet
 			{
@@ -273,10 +260,10 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 					if ok {
 						requires, err = parseFieldSet(s)
 						if err != nil {
-							return nil, nil, err
+							return nil, err
 						}
 					} else {
-						return nil, nil, fmt.Errorf("unexpected 'requires' type: %T", v)
+						return nil, fmt.Errorf("unexpected 'requires' type: %T", v)
 					}
 				}
 			}
@@ -290,10 +277,10 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 					if ok {
 						provides, err = parseFieldSet(s)
 						if err != nil {
-							return nil, nil, err
+							return nil, err
 						}
 					} else {
-						return nil, nil, fmt.Errorf("unexpected 'provides' type: %T", v)
+						return nil, fmt.Errorf("unexpected 'provides' type: %T", v)
 					}
 				}
 			}
@@ -301,5 +288,5 @@ func buildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*as
 		}
 	}
 
-	return schema, mh, nil
+	return cs, nil
 }

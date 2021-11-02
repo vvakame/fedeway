@@ -1,0 +1,30 @@
+{
+  "data": {
+    "topProducts": [
+      {
+        "reviews": [
+          {
+            "body": "Love it!"
+          },
+          {
+            "body": "Prefer something else."
+          }
+        ]
+      },
+      {
+        "reviews": [
+          {
+            "body": "Too expensive."
+          }
+        ]
+      },
+      {
+        "reviews": [
+          {
+            "body": "Could be better."
+          }
+        ]
+      }
+    ]
+  }
+}

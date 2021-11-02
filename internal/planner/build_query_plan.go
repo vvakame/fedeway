@@ -22,7 +22,7 @@ type OperationContext struct {
 	OperationName string
 	Schema        *ast.Schema
 	Fragments     ast.FragmentDefinitionList
-	metadata      *metadataHolder
+	metadata      *ComposedSchema
 }
 
 type queryPlanConfig struct {
@@ -234,7 +234,9 @@ func splitSubfields(ctx context.Context, qpctx *queryPlanningContext, path ast.P
 		var isValueType bool
 		{
 			metadata := qpctx.getFederationMetadataForType(parentType)
-			_, isValueType = metadata.(*FederationValueTypeMetadata)
+			if metadata != nil {
+				isValueType = metadata.IsValueType
+			}
 		}
 		if parentType.Kind != ast.Object || isValueType {
 			baseService = parentGroup.ServiceName
@@ -557,7 +559,7 @@ func (fg *FetchGroup) mergeDependentGroups(that *FetchGroup) {
 	}
 }
 
-func buildOperationContext(ctx context.Context, schema *ast.Schema, mh *metadataHolder, document *ast.QueryDocument, operationName string) (*OperationContext, error) {
+func BuildOperationContext(ctx context.Context, cs *ComposedSchema, document *ast.QueryDocument, operationName string) (*OperationContext, error) {
 	var operation *ast.OperationDefinition
 	if operationName != "" {
 		operation = document.Operations.ForName(operationName)
@@ -577,9 +579,9 @@ func buildOperationContext(ctx context.Context, schema *ast.Schema, mh *metadata
 	opctx := &OperationContext{
 		QueryDocument: document,
 		OperationName: operationName,
-		Schema:        schema,
+		Schema:        cs.Schema,
 		Fragments:     document.Fragments,
-		metadata:      mh,
+		metadata:      cs,
 	}
 
 	return opctx, nil
