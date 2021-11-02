@@ -1,0 +1,20 @@
+# errors
+# should not send request to downstream services when all entities are undefined
+query {
+    # The first 3 products are all Furniture
+    topProducts(first: 3) {
+        reviews {
+            body
+        }
+        ... on Book {
+            reviews {
+                author {
+                    name {
+                        first
+                        last
+                    }
+                }
+            }
+        }
+    }
+}

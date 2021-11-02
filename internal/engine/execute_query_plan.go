@@ -214,6 +214,9 @@ func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNo
 		representationToEntity := make([]int, 0, len(entities))
 
 		for index, entity := range entities {
+			if entity == nil {
+				continue
+			}
 			originalEntity := entity
 			entity, ok := originalEntity.(map[string]interface{})
 			if !ok {
@@ -404,7 +407,12 @@ func flattenResultsAtPath(resultLock *sync.Mutex, shouldLock bool, value interfa
 		values := value.([]interface{})
 		newValues := make([]interface{}, 0, len(values))
 		for _, element := range values {
-			newValues = append(newValues, flattenResultsAtPath(resultLock, false, element, rest))
+			v := flattenResultsAtPath(resultLock, false, element, rest)
+			if vs, ok := v.([]interface{}); ok {
+				newValues = append(newValues, vs...)
+			} else {
+				newValues = append(newValues, v)
+			}
 		}
 		return newValues
 	} else {
