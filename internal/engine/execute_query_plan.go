@@ -269,7 +269,7 @@ func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNo
 			return gqlerror.Errorf(`expected "data._entities" to contain %d elements`, len(representations))
 		}
 
-		for i := range entities {
+		for i := range receivedEntities {
 			utils.DeepMerge(entities[representationToEntity[i]], receivedEntities[i])
 		}
 	}

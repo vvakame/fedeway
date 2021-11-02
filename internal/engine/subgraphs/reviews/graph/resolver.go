@@ -79,6 +79,14 @@ func NewResolver() *Resolver {
 				Isbn: "0262510871",
 			},
 			Body: strptr("Wish I had read this before."),
+		},
+		{
+			ID:       "5",
+			AuthorID: "2",
+			Product: &model.Book{
+				Isbn: "0136291554",
+			},
+			Body: strptr("A bit outdated."),
 			Metadata: []model.MetadataOrError{
 				&model.KeyValue{
 					Key:   "likes",

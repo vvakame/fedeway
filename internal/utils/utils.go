@@ -41,7 +41,7 @@ func IsObjectType(def *ast.Definition) bool {
 	}
 }
 
-func IsLeadType(def *ast.Definition) bool {
+func IsLeafType(def *ast.Definition) bool {
 	switch def.Kind {
 	case ast.Scalar, ast.Enum:
 		return true

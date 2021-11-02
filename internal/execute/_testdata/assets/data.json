@@ -28,6 +28,7 @@
     "thing": {
       "__typename": "Ikea",
       "asile": 1
-    }
+    },
+    "retailPrice": 100
   }
 }
