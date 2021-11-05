@@ -1,4 +1,3 @@
-# option:skip: true
 # can execute an introspection query
 query IntrospectionQuery {
     __schema {
