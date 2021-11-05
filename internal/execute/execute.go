@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"context"
 	"reflect"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vektah/gqlparser/v2/validator"
@@ -170,6 +172,19 @@ func executeOperation(ctx context.Context, exeContext *ExecutionContext, operati
 	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
 		Object: typ.Name,
 	})
+
+	// IntrospectionQueryの対応を入れる
+	// js版だとSchema自体がIntrospectionQueryに対して応答的だがGo実装ではそうじゃないので
+	for _, field := range fields {
+		if field.Name == "__schema" {
+			rootValueMap, ok := rootValue.(map[string]interface{})
+			if !ok {
+				graphql.AddErrorf(ctx, "unexpected rootValue type: %T", rootValue)
+				return graphql.Null
+			}
+			rootValueMap["__schema"] = introspection.WrapSchema(exeContext.Schema)
+		}
+	}
 
 	// NOTE original では inline fragment と絡めた同名fieldのmergeについて後続の処理になげているので Map<string, ReadonlyArray<FieldNode>> 的な型になる
 	//      gqlgen では fragment の解決とmergeなどは適宜行われているため いわば Map<string, FieldNode> 相当の型になっている
@@ -358,7 +373,7 @@ func completeValue(ctx context.Context, exeContext *ExecutionContext, returnType
 			return graphql.Null
 		}
 		if completed == graphql.Null {
-			graphql.AddErrorf(ctx, "cannot return null for non-nullable field %s.%s", fc.Object, fc.Field.Name)
+			graphql.AddErrorf(ctx, "cannot return null for non-nullable field %s.%s", fieldNode.ObjectDefinition.Name, fieldNode.Name)
 			return graphql.Null
 		}
 		return completed
@@ -492,6 +507,12 @@ func completeLeafValue(ctx context.Context, returnType *ast.Type, result interfa
 		return graphql.MarshalInt32(result)
 	case string:
 		return graphql.MarshalString(result)
+	case *string:
+		if result == nil {
+			return graphql.Null
+		} else {
+			return graphql.MarshalString(*result)
+		}
 	case time.Time:
 		return graphql.MarshalTime(result)
 	case graphql.Marshaler:
@@ -630,8 +651,13 @@ func defaultFieldResolver(ctx context.Context, source interface{}, args map[stri
 	}
 
 	// ensure source is a value for which property access is acceptable.
-	if utils.IsObjectLike(source) {
-		source := source.(map[string]interface{})
+	if source == nil {
+		return nil, nil
+	} else if sourceV := reflect.ValueOf(source); sourceV.Kind() == reflect.Ptr && sourceV.IsNil() {
+		// trap typed nil
+		return nil, nil
+	}
+	if source, ok := source.(map[string]interface{}); ok {
 		property := source[fc.Field.Alias]
 		if f, ok := property.(func() (graphql.Marshaler, *gqlerror.Error)); ok {
 			// TODO このままだとまずくない
@@ -639,6 +665,72 @@ func defaultFieldResolver(ctx context.Context, source interface{}, args map[stri
 		}
 
 		return property, nil
+	}
+	{
+		lowerFieldName := strings.ToLower(fc.Field.Name)
+
+		rv := reflect.ValueOf(source)
+		if rv.Kind() == reflect.Struct && rv.Type().PkgPath() == "github.com/99designs/gqlgen/graphql/introspection" {
+			// []Type becomes Type. but several methods exist on *Type.
+			rvPtr := reflect.New(rv.Type())
+			rvPtr.Elem().Set(rv)
+			rv = rvPtr
+		}
+		rt := rv.Type()
+		for i := 0; i < rt.NumMethod(); i++ {
+			mv := rt.Method(i)
+			if !mv.IsExported() {
+				continue
+			}
+			if lowerFieldName != strings.ToLower(mv.Name) {
+				continue
+			}
+			reqVs := []reflect.Value{rv}
+			var respVs []reflect.Value
+			// TODO improve build of function call parameters
+			if mv.Type.NumIn() == 1 {
+				respVs = mv.Func.Call(reqVs)
+			} else if mv.Type.NumIn() == 2 {
+				if len(args) == 1 {
+					for _, argValue := range args {
+						reqVs = append(reqVs, reflect.ValueOf(argValue))
+					}
+				} else {
+					graphql.AddErrorf(ctx, "unsupported method signature: %s", mv.Func.String())
+					return nil, nil
+				}
+				respVs = mv.Func.Call(reqVs)
+			} else {
+				graphql.AddErrorf(ctx, "unsupported method signature: %s", mv.Func.String())
+				return nil, nil
+			}
+			if len(respVs) == 1 {
+				if respVs[0].Kind() == reflect.Ptr && respVs[0].IsNil() {
+					return nil, nil
+				}
+				resp := respVs[0].Interface()
+				return resp, nil
+			} else {
+				graphql.AddErrorf(ctx, "unsupported method return values: %s", mv.Func.String())
+				return nil, nil
+			}
+		}
+		if rv.Kind() == reflect.Ptr {
+			rv = rv.Elem()
+		}
+		if rv.Kind() == reflect.Struct {
+			for i := 0; i < rv.NumField(); i++ {
+				ft := rv.Type().Field(i)
+				if !ft.IsExported() {
+					continue
+				}
+				if lowerFieldName != strings.ToLower(ft.Name) {
+					continue
+				}
+
+				return rv.Field(i).Interface(), nil
+			}
+		}
 	}
 
 	return nil, nil

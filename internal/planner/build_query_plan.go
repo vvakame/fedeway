@@ -105,7 +105,9 @@ func BuildQueryPlan(ctx context.Context, operationContext *OperationContext, opt
 	}
 
 	var node plan.PlanNode
-	if qpctx.operation.Operation == ast.Mutation {
+	if len(nodes) == 0 {
+		// OK. e.g. IntrospectionQuery.
+	} else if qpctx.operation.Operation == ast.Mutation {
 		node, err = flatWrapSequence(ctx, nodes)
 	} else {
 		node, err = flatWrapParallel(ctx, nodes)
