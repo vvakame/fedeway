@@ -3,6 +3,7 @@ package execute
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"reflect"
 	"strings"
 	"sync"
@@ -515,6 +516,26 @@ func completeLeafValue(ctx context.Context, returnType *ast.Type, result interfa
 		}
 	case time.Time:
 		return graphql.MarshalTime(result)
+	case json.Number:
+		switch returnType.NamedType {
+		case "Int":
+			v, err := result.Int64()
+			if err != nil {
+				graphql.AddError(ctx, err)
+				return graphql.Null
+			}
+			return graphql.MarshalInt64(v)
+		case "Float":
+			v, err := result.Float64()
+			if err != nil {
+				graphql.AddError(ctx, err)
+				return graphql.Null
+			}
+			return graphql.MarshalFloat(v)
+		default:
+			graphql.AddErrorf(ctx, "unsupported return type for json.Number: %s", returnType.NamedType)
+			return graphql.Null
+		}
 	case graphql.Marshaler:
 		return result
 	default:
