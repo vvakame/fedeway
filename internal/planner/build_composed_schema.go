@@ -121,8 +121,6 @@ func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument, meta
 			continue
 		}
 
-		// TODO type.astNode assert?
-
 		ownerDirectiveArgs, err := getArgumentValuesForDirective(ownerDirective, typ.Directives)
 		if err != nil {
 			return nil, err
@@ -160,7 +158,6 @@ func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument, meta
 		}
 
 		if typeMetadata.IsValueType && len(typeDirectivesArgs) != 0 {
-			// TODO 条件式これであってるか怪しい…
 			return nil, fmt.Errorf(
 				`GraphQL type "%s" cannot have a @%s directive without an @%s directive`,
 				typ.Name, typeDirective.Name, ownerDirective.Name,
@@ -212,15 +209,6 @@ func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument, meta
 		}
 
 		for _, fieldDef := range typ.Fields {
-			//if len(fieldDef.Directives) == 0 {
-			//	// TODO この条件マジ？
-			//	return nil, nil, gqlerror.ErrorPosf(
-			//		fieldDef.Position,
-			//		`field "%s.%s" should contain AST nodes`,
-			//		typ.Name, fieldDef.Name,
-			//	)
-			//}
-
 			fieldDirectiveArgs, err := getArgumentValuesForDirective(fieldDirective, fieldDef.Directives)
 			if err != nil {
 				return nil, err

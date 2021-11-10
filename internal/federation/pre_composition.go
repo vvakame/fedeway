@@ -2,7 +2,7 @@ package federation
 
 func preCompositionValidators() []func(*ServiceDefinition) []error {
 	return []func(definition *ServiceDefinition) []error{
-		// TODO 実装すること
+		// TODO let's implements below rules!
 		// externalUsedOnBase,
 		// requiresUsedOnBase,
 		// keyFieldsMissingExternal,

@@ -320,12 +320,12 @@ func (impl *extendSchemaImpl) extendNamedType(typ *ast.Definition) (*ast.Definit
 }
 
 func (impl *extendSchemaImpl) extendField(typ *ast.FieldDefinition) (*ast.FieldDefinition, *gqlerror.Error) {
-	// TODO originalは色々やってる
+	// originalは色々やってる
 	return typ, nil
 }
 
 func (impl *extendSchemaImpl) buildType(astNode *ast.Definition) *ast.Definition {
-	// TODO ここの実装originalに比べると相当乱暴
+	// ここの実装originalに比べると相当乱暴
 	// 基本的には 後勝ち が実装されていればよいはず…
 	return astNode
 }
@@ -376,13 +376,13 @@ func (impl *extendSchemaImpl) getOperationTypes(nodes ast.SchemaDefinitionList) 
 }
 
 func (impl *extendSchemaImpl) replaceDirective(directive *ast.DirectiveDefinition) *ast.DirectiveDefinition {
-	// TODO originalは色々やってる ...けどこれでいいのでは？
+	// originalは色々やってる ...けどこれでいいのでは？
 	return directive
 }
 
 func (impl *extendSchemaImpl) buildDirective(directive *ast.DirectiveDefinition) *ast.DirectiveDefinition {
 	// original: convert DirectiveDefinitionNode to GraphQLDirective
-	// TODO originalは色々やってる ...けどこれでいいのでは？
+	// originalは色々やってる ...けどこれでいいのでは？
 	return directive
 }
 
@@ -426,6 +426,6 @@ func (impl *extendSchemaImpl) buildFields(nodes ast.DefinitionList) (ast.FieldLi
 }
 
 func (impl *extendSchemaImpl) buildArguments(args ast.ArgumentDefinitionList) (ast.ArgumentDefinitionList, *gqlerror.Error) {
-	// TODO originalは色々やってる ...けどこれでいいのでは？
+	// originalは色々やってる ...けどこれでいいのでは？
 	return args, nil
 }
