@@ -17,15 +17,20 @@ import (
 )
 
 var _ graphql.ExecutableSchema = (*gatewayImpl)(nil)
+var _ engine.DataSource = (DataSource)(nil)
 
 type GatewayConfig struct {
 	ServiceDefinitions []*ServiceDefinition
 }
 
+type DataSource interface {
+	Process(ctx context.Context, oc *graphql.OperationContext) *graphql.Response
+}
+
 type ServiceDefinition struct {
 	Name       string
-	URL        string            // optional
-	DataSource engine.DataSource // TODO expose interface
+	URL        string // optional
+	DataSource DataSource
 }
 
 type gatewayImpl struct {
