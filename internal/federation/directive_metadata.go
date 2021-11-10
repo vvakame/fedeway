@@ -112,7 +112,6 @@ func (dm *DirectiveMetadata) applyMetadataToSupergraphSchema(schema *ast.Schema)
 	federationTypeMap := FederationTypeMap{}
 	federationFieldMap := FederationFieldMap{}
 
-	// TODO sort いる？
 	for _, directiveUsagesPerType := range dm.DirectiveUsagesPerSubgraph {
 		for typeName, entity := range directiveUsagesPerType {
 			directives := entity.Directives

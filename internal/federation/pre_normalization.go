@@ -10,8 +10,9 @@ import (
 
 func preNormalizationValidators() []func(*ServiceDefinition) []error {
 	return []func(definition *ServiceDefinition) []error{
+		// TODO let's implements below rules!
 		rootFieldUsed,
-		// tagDirective, // TODO @tag の定義が一致しているかのチェックをしているだけなので一旦省く
+		// tagDirective,
 	}
 }
 

@@ -107,7 +107,7 @@ func newComposedSchema(schema *ast.Schema, metadata *federation.FederationMetada
 		for typ, prevMeta := range metadata.FederationTypeMap {
 			meta := cs.getTypeMetadata(typ)
 			meta.IsValueType = prevMeta.IsValueType
-			// TODO これ嘘では？
+			// is this right...?
 			for serviceName, keyss := range prevMeta.Keys {
 				for _, keys := range keyss {
 					meta.Keys[serviceName] = append(meta.Keys[serviceName], keys...)

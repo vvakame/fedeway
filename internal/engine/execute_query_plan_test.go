@@ -112,7 +112,7 @@ func TestExecuteQueryPlan(t *testing.T) {
 				ResolverMiddleware: func(ctx context.Context, next graphql.Resolver) (res interface{}, err error) {
 					return next(ctx)
 				},
-				Stats: graphql.Stats{}, // TODO
+				Stats: graphql.Stats{}, // TODO support stats
 			}
 
 			resp := ExecuteQueryPlan(ctx, plan, serviceMap, composedSchema.Schema, oc)

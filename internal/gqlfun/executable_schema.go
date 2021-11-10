@@ -46,7 +46,7 @@ func Execute(ctx context.Context, es graphql.ExecutableSchema, query string, vai
 		return &graphql.Response{Errors: gErrs}
 	}
 	ctx = graphql.WithOperationContext(ctx, oc)
-	// TODO default 使うのをやめる
+	// TODO make configurable
 	ctx = graphql.WithResponseContext(ctx, graphql.DefaultErrorPresenter, graphql.DefaultRecover)
 
 	rh := es.Exec(ctx)

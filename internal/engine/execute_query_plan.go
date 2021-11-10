@@ -48,8 +48,8 @@ func ExecuteQueryPlan(ctx context.Context, queryPlan *plan.QueryPlan, serviceMap
 		RootValue:      data,
 		VariableValues: requestContext.Variables,
 		OperationName:  requestContext.OperationName,
-		FieldResolver:  nil, // TODO 独自の実装にする…？ デフォルトで利用されるものがfederation用っぽいやつなのでこのままでもいいんだけど
-		TypeResolver:   nil, // TODO 同上
+		FieldResolver:  nil,
+		TypeResolver:   nil,
 	})
 	if len(resp.Errors) != 0 {
 		// ここではエラーが発生しないはず
@@ -68,7 +68,7 @@ func ExecuteQueryPlan(ctx context.Context, queryPlan *plan.QueryPlan, serviceMap
 // service unless we are capturing traces for Studio.
 // ... original comment said.
 func executeNode(ctx context.Context, ec *executionContext, node plan.PlanNode, resultLock *sync.Mutex, results interface{}, path ast.Path) {
-	// TODO goroutine内でのpanicをrecoverする必要がある
+	// TODO capture panic & recover
 	// 以下はgqlgenでの対応パターン
 	//defer func() {
 	//	if r := recover(); r != nil {
@@ -141,11 +141,11 @@ func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNo
 			Doc:                  doc,
 			Operation:            doc.Operations.ForName(""),
 			DisableIntrospection: true,
-			RecoverFunc:          graphql.DefaultRecover, // TODO configurable
+			RecoverFunc:          graphql.DefaultRecover, // TODO make configurable
 			ResolverMiddleware: func(ctx context.Context, next graphql.Resolver) (res interface{}, err error) {
 				return next(ctx)
 			},
-			Stats: graphql.Stats{}, // TODO
+			Stats: graphql.Stats{}, // TODO support stats
 		}
 
 		response := service.Process(ctx, oc)
@@ -440,7 +440,7 @@ func downstreamServiceError(originalError *gqlerror.Error, serviceName string, p
 	}
 	extensions = newExtensions
 
-	// TODO pathの値が正しくない気がする
+	// TODO is this path correct? maybe wrong...?
 	newErr := gqlerror.WrapPath(path, originalError)
 	newErr.Message = message
 	newErr.Extensions = extensions

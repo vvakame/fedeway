@@ -79,7 +79,5 @@ func getFederatedTestingSchema(ctx context.Context, t *testing.T) (*planner.Comp
 		t.Fatal(err)
 	}
 
-	// TODO js版だとQueryPlannerを返している
-
 	return cs, serviceMap
 }

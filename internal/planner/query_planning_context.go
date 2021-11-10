@@ -11,8 +11,8 @@ import (
 )
 
 var typenameField = &ast.Field{
-	// Alias: "__typename", // TODO これ必要かも？
-	Name: "__typename",
+	Alias: "__typename",
+	Name:  "__typename",
 }
 
 func buildQueryPlanningContext(operationContext *OperationContext, autoFragmentation bool) (*queryPlanningContext, error) {
@@ -85,7 +85,7 @@ func (qpctx *queryPlanningContext) collectFields(ctx context.Context, scope *Sco
 		case *ast.FragmentSpread:
 			fragment := qpctx.fragments.ForName(selection.Name)
 			if fragment == nil {
-				// TODO ほんまか？エラーじゃないか？
+				// TODO should be error?
 				continue
 			}
 

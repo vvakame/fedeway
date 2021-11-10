@@ -195,7 +195,6 @@ func buildMapsFromServiceList(ctx context.Context, serviceList []*ServiceDefinit
 			// TODO: handle extensions of non-object types?
 			if definition.Kind == ast.Object || definition.Kind == ast.InputObject {
 				if len(definition.Fields) == 0 {
-					// TODO this break is not exactly same as original.
 					continue
 				}
 
@@ -217,7 +216,6 @@ func buildMapsFromServiceList(ctx context.Context, serviceList []*ServiceDefinit
 
 			if definition.Kind == ast.Enum {
 				if len(definition.EnumValues) == 0 {
-					// TODO this break is not exactly same as original.
 					continue
 				}
 
@@ -267,8 +265,6 @@ func buildMapsFromServiceList(ctx context.Context, serviceList []*ServiceDefinit
 			// If none of the directive's locations are executable, we don't need to
 			// include it in the composed schema at all.
 			if len(executableLocations) == 0 {
-				// TODO this break is not exactly same as original.
-				// いやーここ間違ってない？
 				continue
 			}
 
@@ -379,7 +375,6 @@ func buildSchemaFromDefinitionsAndExtensions(ctx context.Context, typeDefinition
 			}
 		}
 		if !foundInterfaceLike {
-			// TODO ここで ServiceName の情報が失われている気がするが…？
 			definitionsDocument.Definitions = append(definitionsDocument.Definitions, definitions...)
 			continue
 		}
@@ -399,7 +394,6 @@ func buildSchemaFromDefinitionsAndExtensions(ctx context.Context, typeDefinition
 
 		// No interfaces, no aggregation - just return what we got.
 		if len(uniqueInterfaces) == 0 {
-			// TODO ここで ServiceName の情報が失われている気がするが…？
 			definitionsDocument.Definitions = append(definitionsDocument.Definitions, definitions...)
 			continue
 		}
@@ -408,11 +402,9 @@ func buildSchemaFromDefinitionsAndExtensions(ctx context.Context, typeDefinition
 		rest := typeDefinitions[1:]
 
 		for _, typeDefinition := range rest {
-			// TODO ここで ServiceName の情報が失われている気がするが…？
 			definitionsDocument.Definitions = append(definitionsDocument.Definitions, typeDefinition.Definition)
 		}
 
-		// TODO ここで ServiceName の情報が失われている気がするが…？
 		{
 			copied := *first.Definition
 			first.Definition = &copied
@@ -452,7 +444,6 @@ func buildSchemaFromDefinitionsAndExtensions(ctx context.Context, typeDefinition
 	for _, typeExtensionName := range typeExtensionNames {
 		typeExtensions := typeExtensionsMap[typeExtensionName]
 		for _, typeExtension := range typeExtensions {
-			// TODO ここで ServiceName の情報が失われている気がするが…？
 			extensionsDocument.Extensions = append(extensionsDocument.Extensions, typeExtension.Definition)
 		}
 	}

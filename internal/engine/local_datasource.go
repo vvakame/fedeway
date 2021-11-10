@@ -43,7 +43,7 @@ func (lds *LocalDataSource) SDL(ctx context.Context) (string, gqlerror.List) {
 
 func (ds *LocalDataSource) Process(ctx context.Context, oc *graphql.OperationContext) *graphql.Response {
 	ctx = graphql.WithOperationContext(ctx, oc)
-	// TODO default 使うのをやめる
+	// TODO make configurable
 	ctx = graphql.WithResponseContext(ctx, graphql.DefaultErrorPresenter, graphql.DefaultRecover)
 
 	gErrs := validator.Validate(ds.ExecutableSchema.Schema(), oc.Doc)

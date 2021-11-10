@@ -166,12 +166,7 @@ func defaultRootOperationTypes(typeDefs *ast.SchemaDocument) *ast.SchemaDocument
 
 		processSchemaDef := func(schemaDefList ast.SchemaDefinitionList) {
 			for idx, doc := range schemaDefList {
-				{
-					copied := *doc
-					doc = &copied
-					schemaDefList[idx] = doc
-					// TODO ここコピーが不完全… operationType が元の値を編集している
-				}
+				schemaDefList[idx] = doc
 				for _, operationType := range doc.OperationTypes {
 					switch operationType.Operation {
 					case ast.Query:
@@ -241,12 +236,10 @@ func defaultRootOperationTypes(typeDefs *ast.SchemaDocument) *ast.SchemaDocument
 	// type RootMutation {
 	//   updateProduct: RootQuery <--- rename `RootQuery` to `Query`
 	// }
-	{ // TODO node.Fields がコピーから保護されていない
+	{ //
 		for _, node := range schemaWithDefaultRootTypes.Definitions {
 			for _, field := range node.Fields {
 				if _, ok := rootOperationTypeMap[field.Type.Name()]; ok {
-					copied := *field
-					field = &copied
 					field.Type.NamedType = rootOperationTypeMap[field.Type.Name()]
 				}
 			}

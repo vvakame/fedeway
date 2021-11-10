@@ -139,7 +139,7 @@ func parseSelections(source string) (ast.SelectionSet, error) {
 		return nil, gErr
 	}
 
-	// TODO positionをstripしたほうがよいといえばよい
+	// TODO position should be strip
 	return queryDocument.Operations[0].SelectionSet, nil
 }
 
