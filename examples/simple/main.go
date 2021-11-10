@@ -11,7 +11,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-logr/logr"
 	"github.com/go-logr/stdr"
-	"github.com/vvakame/fedeway/internal/gateway"
+	"github.com/vvakame/fedeway/gateway"
 )
 
 func main() {

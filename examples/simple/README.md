@@ -10,7 +10,7 @@ $ git checkout e24d9aca9d7a8fe9490ab53efeddc2ef8152f4a1
 $ npm ci
 $ npm run start-services
 
-$ shell B
+# shell B
 $ go run .
 $ open http://localhost:8080/
 ```
