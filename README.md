@@ -1,6 +1,6 @@
 # fedeway
 
-Apollo Federation Gateway implementations by Go.
+Apollo Federation Gateway v1 implementations by Go.
 
 ## TODO
 
@@ -15,13 +15,12 @@ Apollo Federation Gateway implementations by Go.
   * make configurable about `graphql.DefaultErrorPresenter` and `graphql.DefaultRecover`
   * use `DisableIntrospection` value
   * support `graphql.Stats`
+  * observability. support OpenCensus or OpenTelemetry
 
-## Known issue
-
-### gqlgen
+## Issue from gqlgen
 
 * nested `@requires` is not supported [#1138](https://github.com/99designs/gqlgen/issues/1138)
-* `_service` is not present when SDL doesn't have subgraph-like syntax.
-* doesn't support renamed root type likes `schema { query: RootQuery }`.
 * multiple `@key` is not supported [#1031](https://github.com/99designs/gqlgen/issues/1031)
 * `collectFields` return values bug [#1311](https://github.com/99designs/gqlgen/issues/1311) [#1329](https://github.com/99designs/gqlgen/issues/1329)
+* `_service` is not present when SDL doesn't have subgraph-like syntax.
+* doesn't support renamed root type likes `schema { query: RootQuery }`.
