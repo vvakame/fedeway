@@ -42,6 +42,12 @@ func (lds *LocalDataSource) SDL(ctx context.Context) (string, gqlerror.List) {
 }
 
 func (ds *LocalDataSource) Process(ctx context.Context, oc *graphql.OperationContext) *graphql.Response {
+	if oc.ResolverMiddleware == nil {
+		oc.ResolverMiddleware = func(ctx context.Context, next graphql.Resolver) (interface{}, error) {
+			return next(ctx)
+		}
+	}
+
 	ctx = graphql.WithOperationContext(ctx, oc)
 	// TODO make configurable
 	ctx = graphql.WithResponseContext(ctx, graphql.DefaultErrorPresenter, graphql.DefaultRecover)

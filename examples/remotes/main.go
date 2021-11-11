@@ -54,7 +54,7 @@ func realMain() error {
 
 	srv := handler.NewDefaultServer(gw)
 	mux := http.NewServeMux()
-	mux.Handle("/", playground.Handler("fedeway - simple", "/query"))
+	mux.Handle("/", playground.Handler("fedeway - remotes", "/query"))
 	mux.Handle("/query", srv)
 
 	port := os.Getenv("PORT")

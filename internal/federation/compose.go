@@ -315,7 +315,6 @@ func buildMapsFromServiceList(ctx context.Context, serviceList []*ServiceDefinit
 }
 
 func buildSchemaFromDefinitionsAndExtensions(ctx context.Context, typeDefinitionsMap TypeDefinitionsMap, typeExtensionsMap TypeDefinitionsMap, directiveDefinitionsMap DirectiveDefinitionsMap, directiveMetadata *DirectiveMetadata, serviceList []*ServiceDefinition) (*ast.Schema, []error) {
-	// TODO errors の型が gqlerror のやつかもしれない
 	var errors []error
 
 	// We only want to include the definitions of other known Apollo directives
@@ -480,10 +479,7 @@ func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap Typ
 	//   addFederationMetadataToSchemaNodes では ASTNodeのextensionsにfederationという属性を追加したい
 	//   そして、その後の printSupergraphSdl で metadata とここまでの schema を組み合わせて最終的なSDLを生成している
 	// ただ、Go版では既存の型に外部からフィールドを追加したりできないこと、schema 自体はresolverを持たない(executableではない)などの差がある
-	// なので、ここでは metadata の生成と print での出力という構成を改め、 schema に直接各種データを盛り付けていくことにする
-
-	// TODO ↑を鑑みてrenameしたほうがよくない？
-	// TODO ↑metadata引き継ぎしないといけないことがわかって構造変えたから上の説明と実装も直したほうがいいかも
+	// なので、ここでは metadata の生成と print でのSDL出力という構成を改め、 schema に直接各種データを盛り付けていくことにする
 
 	federationTypeMap := FederationTypeMap{}
 	federationFieldMap := FederationFieldMap{}
