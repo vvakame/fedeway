@@ -64,9 +64,9 @@ func BuildQueryPlan(ctx context.Context, operationContext *OperationContext, opt
 
 	logger.Info(
 		"building plan",
-		"operation", qpctx.operation.Operation,
+		//"operation", qpctx.operation.Operation,
 		"rootType", rootType.Name,
-		"fragments", qpctx.fragments,
+		//"fragments", qpctx.fragments,
 		"autoFragmentation", qpctx.autoFragmentation,
 	)
 
