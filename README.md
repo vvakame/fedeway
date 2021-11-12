@@ -2,6 +2,8 @@
 
 Apollo Federation Gateway v1 implementations by Go.
 
+:warning: This product is under development. don't use in production. :warning:
+
 ## TODO
 
 * implements validation rules on...
