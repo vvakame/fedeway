@@ -533,6 +533,19 @@ func completeLeafValue(ctx context.Context, returnType *ast.Type, result interfa
 			}
 			return graphql.MarshalFloat(v)
 		default:
+			// for custom scalar
+			{
+				v, err := result.Int64()
+				if err == nil {
+					return graphql.MarshalInt64(v)
+				}
+			}
+			{
+				v, err := result.Float64()
+				if err == nil {
+					return graphql.MarshalFloat(v)
+				}
+			}
 			graphql.AddErrorf(ctx, "unsupported return type for json.Number: %s", returnType.NamedType)
 			return graphql.Null
 		}
