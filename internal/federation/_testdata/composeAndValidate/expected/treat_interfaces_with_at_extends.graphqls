@@ -4,9 +4,9 @@ directive @join__graph(name: String!, url: String!) on ENUM_VALUE
 directive @join__owner(graph: join__Graph!) on OBJECT | INTERFACE
 directive @join__type(graph: join__Graph!, key: join__FieldSet) on OBJECT | INTERFACE
 interface Product {
+	price: Int!
 	sku: String!
 	upc: String!
-	price: Int!
 }
 type Query {
 	products: [Product]! @join__field(graph: SERVICEA)
