@@ -5,20 +5,20 @@ directive @join__owner(graph: join__Graph!) on OBJECT | INTERFACE
 directive @join__type(graph: join__Graph!, key: join__FieldSet) on OBJECT | INTERFACE
 directive @myExecutableDirective on FIELD
 type Mutation {
-	updateProduct: Product @join__field(graph: SERVICEA)
 	createReview: Review @join__field(graph: SERVICEB)
+	updateProduct: Product @join__field(graph: SERVICEA)
 }
 type Product @join__owner(graph: SERVICEA) @join__type(graph: SERVICEA, key: "sku") {
-	sku: String!
 	price: Float
+	sku: String!
 }
 type Query {
 	product: Product @join__field(graph: SERVICEA)
 	review: Review @join__field(graph: SERVICEB)
 }
 type Review @join__owner(graph: SERVICEB) @join__type(graph: SERVICEB, key: "id") {
-	id: String!
 	content: String
+	id: String!
 }
 enum core__Purpose {
 	"""

@@ -75,72 +75,12 @@
           "name": "Book",
           "fields": [
             {
-              "name": "isbn",
+              "name": "details",
               "args": [],
               "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "title",
-              "args": [],
-              "type": {
-                "kind": "SCALAR",
-                "name": "String",
+                "kind": "OBJECT",
+                "name": "ProductDetailsBook",
                 "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "year",
-              "args": [],
-              "type": {
-                "kind": "SCALAR",
-                "name": "Int",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "similarBooks",
-              "args": [],
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "LIST",
-                  "name": null,
-                  "ofType": {
-                    "kind": "OBJECT",
-                    "name": "Book",
-                    "ofType": null
-                  }
-                }
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "metadata",
-              "args": [],
-              "type": {
-                "kind": "LIST",
-                "name": null,
-                "ofType": {
-                  "kind": "UNION",
-                  "name": "MetadataOrError",
-                  "ofType": null
-                }
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -168,7 +108,7 @@
               "deprecationReason": null
             },
             {
-              "name": "upc",
+              "name": "isbn",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -183,14 +123,14 @@
               "deprecationReason": null
             },
             {
-              "name": "sku",
+              "name": "metadata",
               "args": [],
               "type": {
-                "kind": "NON_NULL",
+                "kind": "LIST",
                 "name": null,
                 "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
+                  "kind": "UNION",
+                  "name": "MetadataOrError",
                   "ofType": null
                 }
               },
@@ -230,12 +170,24 @@
               "deprecationReason": null
             },
             {
-              "name": "details",
+              "name": "relatedReviews",
               "args": [],
               "type": {
-                "kind": "OBJECT",
-                "name": "ProductDetailsBook",
-                "ofType": null
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "OBJECT",
+                      "name": "Review",
+                      "ofType": null
+                    }
+                  }
+                }
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -256,7 +208,7 @@
               "deprecationReason": null
             },
             {
-              "name": "relatedReviews",
+              "name": "similarBooks",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -265,15 +217,63 @@
                   "kind": "LIST",
                   "name": null,
                   "ofType": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "OBJECT",
-                      "name": "Review",
-                      "ofType": null
-                    }
+                    "kind": "OBJECT",
+                    "name": "Book",
+                    "ofType": null
                   }
                 }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "sku",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "title",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "upc",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "year",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -309,12 +309,12 @@
           "possibleTypes": [
             {
               "kind": "OBJECT",
-              "name": "Ikea",
+              "name": "Amazon",
               "ofType": null
             },
             {
               "kind": "OBJECT",
-              "name": "Amazon",
+              "name": "Ikea",
               "ofType": null
             }
           ]
@@ -327,12 +327,12 @@
           "interfaces": [],
           "enumValues": [
             {
-              "name": "PUBLIC",
+              "name": "PRIVATE",
               "isDeprecated": false,
               "deprecationReason": null
             },
             {
-              "name": "PRIVATE",
+              "name": "PUBLIC",
               "isDeprecated": false,
               "deprecationReason": null
             }
@@ -344,6 +344,17 @@
           "name": "Car",
           "fields": [
             {
+              "name": "description",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
               "name": "id",
               "args": [],
               "type": {
@@ -354,17 +365,6 @@
                   "name": "String",
                   "ofType": null
                 }
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "description",
-              "args": [],
-              "type": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -449,79 +449,12 @@
           "name": "Furniture",
           "fields": [
             {
-              "name": "upc",
-              "args": [],
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "sku",
-              "args": [],
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "name",
-              "args": [],
-              "type": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "price",
-              "args": [],
-              "type": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
               "name": "brand",
               "args": [],
               "type": {
                 "kind": "UNION",
                 "name": "Brand",
                 "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "metadata",
-              "args": [],
-              "type": {
-                "kind": "LIST",
-                "name": null,
-                "ofType": {
-                  "kind": "UNION",
-                  "name": "MetadataOrError",
-                  "ofType": null
-                }
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -560,6 +493,43 @@
               "deprecationReason": null
             },
             {
+              "name": "metadata",
+              "args": [],
+              "type": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "UNION",
+                  "name": "MetadataOrError",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "name",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "price",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
               "name": "reviews",
               "args": [],
               "type": {
@@ -568,6 +538,36 @@
                 "ofType": {
                   "kind": "OBJECT",
                   "name": "Review",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "sku",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "upc",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
                   "ofType": null
                 }
               },
@@ -621,21 +621,6 @@
           "name": "Image",
           "fields": [
             {
-              "name": "name",
-              "args": [],
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
               "name": "attributes",
               "args": [],
               "type": {
@@ -644,6 +629,21 @@
                 "ofType": {
                   "kind": "OBJECT",
                   "name": "ImageAttributes",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "name",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
                   "ofType": null
                 }
               },
@@ -816,12 +816,12 @@
           "possibleTypes": [
             {
               "kind": "OBJECT",
-              "name": "KeyValue",
+              "name": "Error",
               "ofType": null
             },
             {
               "kind": "OBJECT",
-              "name": "Error",
+              "name": "KeyValue",
               "ofType": null
             }
           ]
@@ -831,21 +831,33 @@
           "name": "Mutation",
           "fields": [
             {
-              "name": "login",
+              "name": "deleteReview",
               "args": [
                 {
-                  "name": "username",
+                  "name": "id",
                   "type": {
                     "kind": "NON_NULL",
                     "name": null,
                     "ofType": {
                       "kind": "SCALAR",
-                      "name": "String",
+                      "name": "ID",
                       "ofType": null
                     }
                   },
                   "defaultValue": null
-                },
+                }
+              ],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "login",
+              "args": [
                 {
                   "name": "password",
                   "type": {
@@ -865,6 +877,19 @@
                     "kind": "SCALAR",
                     "name": "String",
                     "ofType": null
+                  },
+                  "defaultValue": null
+                },
+                {
+                  "name": "username",
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "String",
+                      "ofType": null
+                    }
                   },
                   "defaultValue": null
                 }
@@ -922,31 +947,6 @@
               "type": {
                 "kind": "OBJECT",
                 "name": "Review",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteReview",
-              "args": [
-                {
-                  "name": "id",
-                  "type": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "SCALAR",
-                      "name": "ID",
-                      "ofType": null
-                    }
-                  },
-                  "defaultValue": null
-                }
-              ],
-              "type": {
-                "kind": "SCALAR",
-                "name": "Boolean",
                 "ofType": null
               },
               "isDeprecated": false,
@@ -1077,31 +1077,23 @@
           "name": "Product",
           "fields": [
             {
-              "name": "upc",
+              "name": "details",
               "args": [],
               "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
+                "kind": "INTERFACE",
+                "name": "ProductDetails",
+                "ofType": null
               },
               "isDeprecated": false,
               "deprecationReason": null
             },
             {
-              "name": "sku",
+              "name": "inStock",
               "args": [],
               "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -1129,28 +1121,6 @@
               "deprecationReason": null
             },
             {
-              "name": "details",
-              "args": [],
-              "type": {
-                "kind": "INTERFACE",
-                "name": "ProductDetails",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "inStock",
-              "args": [],
-              "type": {
-                "kind": "SCALAR",
-                "name": "Boolean",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
               "name": "reviews",
               "args": [],
               "type": {
@@ -1159,6 +1129,36 @@
                 "ofType": {
                   "kind": "OBJECT",
                   "name": "Review",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "sku",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "upc",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
                   "ofType": null
                 }
               },
@@ -1257,7 +1257,7 @@
           "name": "ProductDetailsFurniture",
           "fields": [
             {
-              "name": "country",
+              "name": "color",
               "args": [],
               "type": {
                 "kind": "SCALAR",
@@ -1268,7 +1268,7 @@
               "deprecationReason": null
             },
             {
-              "name": "color",
+              "name": "country",
               "args": [],
               "type": {
                 "kind": "SCALAR",
@@ -1295,37 +1295,16 @@
           "name": "Query",
           "fields": [
             {
-              "name": "user",
-              "args": [
-                {
-                  "name": "id",
-                  "type": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "SCALAR",
-                      "name": "ID",
-                      "ofType": null
-                    }
-                  },
-                  "defaultValue": null
-                }
-              ],
-              "type": {
-                "kind": "OBJECT",
-                "name": "User",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "me",
+              "name": "body",
               "args": [],
               "type": {
-                "kind": "OBJECT",
-                "name": "User",
-                "ofType": null
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "UNION",
+                  "name": "Body",
+                  "ofType": null
+                }
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -1396,16 +1375,12 @@
               "deprecationReason": null
             },
             {
-              "name": "body",
+              "name": "me",
               "args": [],
               "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "UNION",
-                  "name": "Body",
-                  "ofType": null
-                }
+                "kind": "OBJECT",
+                "name": "User",
+                "ofType": null
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -1436,26 +1411,26 @@
               "deprecationReason": null
             },
             {
-              "name": "vehicle",
+              "name": "topCars",
               "args": [
                 {
-                  "name": "id",
+                  "name": "first",
                   "type": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "SCALAR",
-                      "name": "String",
-                      "ofType": null
-                    }
+                    "kind": "SCALAR",
+                    "name": "Int",
+                    "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": "5"
                 }
               ],
               "type": {
-                "kind": "INTERFACE",
-                "name": "Vehicle",
-                "ofType": null
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "Car",
+                  "ofType": null
+                }
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -1486,31 +1461,6 @@
               "deprecationReason": null
             },
             {
-              "name": "topCars",
-              "args": [
-                {
-                  "name": "first",
-                  "type": {
-                    "kind": "SCALAR",
-                    "name": "Int",
-                    "ofType": null
-                  },
-                  "defaultValue": "5"
-                }
-              ],
-              "type": {
-                "kind": "LIST",
-                "name": null,
-                "ofType": {
-                  "kind": "OBJECT",
-                  "name": "Car",
-                  "ofType": null
-                }
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
               "name": "topReviews",
               "args": [
                 {
@@ -1534,6 +1484,56 @@
               },
               "isDeprecated": false,
               "deprecationReason": null
+            },
+            {
+              "name": "user",
+              "args": [
+                {
+                  "name": "id",
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "ID",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": null
+                }
+              ],
+              "type": {
+                "kind": "OBJECT",
+                "name": "User",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "vehicle",
+              "args": [
+                {
+                  "name": "id",
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "String",
+                      "ofType": null
+                    }
+                  },
+                  "defaultValue": null
+                }
+              ],
+              "type": {
+                "kind": "INTERFACE",
+                "name": "Vehicle",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
             }
           ],
           "inputFields": [],
@@ -1546,16 +1546,12 @@
           "name": "Review",
           "fields": [
             {
-              "name": "id",
+              "name": "author",
               "args": [],
               "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "ID",
-                  "ofType": null
-                }
+                "kind": "OBJECT",
+                "name": "User",
+                "ofType": null
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -1582,23 +1578,16 @@
               "deprecationReason": null
             },
             {
-              "name": "author",
+              "name": "id",
               "args": [],
               "type": {
-                "kind": "OBJECT",
-                "name": "User",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "product",
-              "args": [],
-              "type": {
-                "kind": "INTERFACE",
-                "name": "Product",
-                "ofType": null
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "ID",
+                  "ofType": null
+                }
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -1617,6 +1606,17 @@
               },
               "isDeprecated": false,
               "deprecationReason": null
+            },
+            {
+              "name": "product",
+              "args": [],
+              "type": {
+                "kind": "INTERFACE",
+                "name": "Product",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
             }
           ],
           "inputFields": [],
@@ -1629,19 +1629,6 @@
           "name": "ReviewProduct",
           "fields": [],
           "inputFields": [
-            {
-              "name": "upc",
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
-              },
-              "defaultValue": null
-            },
             {
               "name": "body",
               "type": {
@@ -1661,6 +1648,19 @@
                 "kind": "SCALAR",
                 "name": "Int",
                 "ofType": null
+              },
+              "defaultValue": null
+            },
+            {
+              "name": "upc",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
               },
               "defaultValue": null
             }
@@ -1704,21 +1704,6 @@
           "name": "Text",
           "fields": [
             {
-              "name": "name",
-              "args": [],
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
               "name": "attributes",
               "args": [],
               "type": {
@@ -1727,6 +1712,21 @@
                 "ofType": {
                   "kind": "OBJECT",
                   "name": "TextAttributes",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "name",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
                   "ofType": null
                 }
               },
@@ -1803,6 +1803,15 @@
           "fields": [],
           "inputFields": [
             {
+              "name": "body",
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "defaultValue": null
+            },
+            {
               "name": "id",
               "type": {
                 "kind": "NON_NULL",
@@ -1812,15 +1821,6 @@
                   "name": "ID",
                   "ofType": null
                 }
-              },
-              "defaultValue": null
-            },
-            {
-              "name": "body",
-              "type": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
               },
               "defaultValue": null
             }
@@ -1834,37 +1834,11 @@
           "name": "User",
           "fields": [
             {
-              "name": "id",
+              "name": "account",
               "args": [],
               "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "ID",
-                  "ofType": null
-                }
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "name",
-              "args": [],
-              "type": {
-                "kind": "OBJECT",
-                "name": "Name",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "username",
-              "args": [],
-              "type": {
-                "kind": "SCALAR",
-                "name": "String",
+                "kind": "UNION",
+                "name": "AccountType",
                 "ofType": null
               },
               "isDeprecated": false,
@@ -1892,12 +1866,38 @@
               "deprecationReason": null
             },
             {
-              "name": "account",
+              "name": "goodAddress",
               "args": [],
               "type": {
-                "kind": "UNION",
-                "name": "AccountType",
+                "kind": "SCALAR",
+                "name": "Boolean",
                 "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "goodDescription",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "id",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "ID",
+                  "ofType": null
+                }
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -1918,60 +1918,12 @@
               "deprecationReason": null
             },
             {
-              "name": "ssn",
+              "name": "name",
               "args": [],
               "type": {
-                "kind": "SCALAR",
-                "name": "String",
+                "kind": "OBJECT",
+                "name": "Name",
                 "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "goodDescription",
-              "args": [],
-              "type": {
-                "kind": "SCALAR",
-                "name": "Boolean",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "vehicle",
-              "args": [],
-              "type": {
-                "kind": "INTERFACE",
-                "name": "Vehicle",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "thing",
-              "args": [],
-              "type": {
-                "kind": "UNION",
-                "name": "Thing",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "reviews",
-              "args": [],
-              "type": {
-                "kind": "LIST",
-                "name": null,
-                "ofType": {
-                  "kind": "OBJECT",
-                  "name": "Review",
-                  "ofType": null
-                }
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -1992,11 +1944,59 @@
               "deprecationReason": null
             },
             {
-              "name": "goodAddress",
+              "name": "reviews",
+              "args": [],
+              "type": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "Review",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "ssn",
               "args": [],
               "type": {
                 "kind": "SCALAR",
-                "name": "Boolean",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "thing",
+              "args": [],
+              "type": {
+                "kind": "UNION",
+                "name": "Thing",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "username",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "vehicle",
+              "args": [],
+              "type": {
+                "kind": "INTERFACE",
+                "name": "Vehicle",
                 "ofType": null
               },
               "isDeprecated": false,
@@ -2012,17 +2012,6 @@
           "kind": "OBJECT",
           "name": "UserMetadata",
           "fields": [
-            {
-              "name": "name",
-              "args": [],
-              "type": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
             {
               "name": "address",
               "args": [],
@@ -2044,6 +2033,17 @@
               },
               "isDeprecated": false,
               "deprecationReason": null
+            },
+            {
+              "name": "name",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
             }
           ],
           "inputFields": [],
@@ -2056,6 +2056,17 @@
           "name": "Van",
           "fields": [
             {
+              "name": "description",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
               "name": "id",
               "args": [],
               "type": {
@@ -2066,17 +2077,6 @@
                   "name": "String",
                   "ofType": null
                 }
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "description",
-              "args": [],
-              "type": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
               },
               "isDeprecated": false,
               "deprecationReason": null
@@ -2120,6 +2120,17 @@
           "name": "Vehicle",
           "fields": [
             {
+              "name": "description",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
               "name": "id",
               "args": [],
               "type": {
@@ -2130,17 +2141,6 @@
                   "name": "String",
                   "ofType": null
                 }
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            },
-            {
-              "name": "description",
-              "args": [],
-              "type": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
               },
               "isDeprecated": false,
               "deprecationReason": null

@@ -5,12 +5,12 @@ directive @join__owner(graph: join__Graph!) on OBJECT | INTERFACE
 directive @join__type(graph: join__Graph!, key: join__FieldSet) on OBJECT | INTERFACE
 union CatalogItem = Couch | Mattress
 type Couch {
-	sku: ID!
 	material: String!
+	sku: ID!
 }
 type Mattress {
-	sku: ID!
 	size: String!
+	sku: ID!
 }
 type Query {
 	filler: String @join__field(graph: SERVICEB)

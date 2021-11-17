@@ -787,7 +787,7 @@ func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.S
 		}
 	}
 
-	// TODO schema = lexicographicSortSchema(schema);
+	schema = graphql.LexicographicSortSchema(schema)
 
 	// NOTE: addFederationMetadataToSchemaNodes では各nodeにextensionを追加していく
 	//       この実装ではsupergraphSDLがあればQueryPlanが作成できて用が足りるのでこの処理は一旦実装しない
