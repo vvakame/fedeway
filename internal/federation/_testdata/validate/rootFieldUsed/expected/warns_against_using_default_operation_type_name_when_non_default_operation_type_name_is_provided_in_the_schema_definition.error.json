@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceA] Mutation -\u003e Found invalid use of default root operation name `Mutation`. `Mutation` is disallowed when `Schema.mutation` is set to a type other than `Mutation`",
+    "locations": [
+      {
+        "line": 12,
+        "column": 6
+      }
+    ],
+    "extensions": {
+      "code": "ROOT_MUTATION_USED",
+      "file": "warns_against_using_default_operation_type_name_when_non_default_operation_type_name_is_provided_in_the_schema_definition.graphqls"
+    }
+  }
+]

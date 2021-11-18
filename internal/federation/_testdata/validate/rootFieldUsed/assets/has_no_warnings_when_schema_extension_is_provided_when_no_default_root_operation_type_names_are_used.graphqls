@@ -1,0 +1,14 @@
+# option:name: schemaExtension
+# rootFieldUsed
+# has no warnings when a schema definition / extension is provided, when no default root operation type names are used
+extend schema {
+    query: RootQuery
+}
+
+type RootQuery {
+    product: Product
+}
+
+type Product {
+    sku: String
+}

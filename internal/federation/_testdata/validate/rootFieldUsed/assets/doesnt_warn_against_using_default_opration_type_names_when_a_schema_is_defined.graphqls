@@ -1,0 +1,14 @@
+# option:name: serviceA
+# rootFieldUsed
+# doesn't warn against using default operation type names when a schema is defined
+schema {
+    mutation: Mutation
+}
+
+type Query {
+    validUseOfQuery: Boolean
+}
+
+type Mutation {
+    validUseOfMutation: Product
+}

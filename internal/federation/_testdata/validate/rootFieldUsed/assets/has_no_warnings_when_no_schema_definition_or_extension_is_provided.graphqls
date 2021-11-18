@@ -1,0 +1,10 @@
+# option:name: serviceA
+# rootFieldUsed
+# has no warnings when no schema definition or extension is provided
+type Query {
+    product: Product
+}
+
+type Product {
+    sku: String
+}
