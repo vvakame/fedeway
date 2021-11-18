@@ -1,0 +1,18 @@
+# option:name: serviceA
+# rootFieldUsed
+# warns when a schema definition / extension is provided, as well as a default root type or extension
+schema {
+    query: RootQuery
+}
+
+type RootQuery {
+    product: Product
+}
+
+type Product {
+    sku: String
+}
+
+type Query {
+    invalidUseOfQuery: Boolean
+}

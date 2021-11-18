@@ -2,10 +2,25 @@ package federation
 
 import (
 	"context"
+	"strings"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/vektah/gqlparser/v2/ast"
 )
+
+type multierror []error
+
+func (errs multierror) Error() string {
+	if len(errs) == 1 {
+		return errs[0].Error()
+	}
+
+	msgs := make([]string, len(errs))
+	for idx, err := range errs {
+		msgs[idx] = err.Error()
+	}
+
+	return strings.Join(msgs, "\n")
+}
 
 func ComposeAndValidate(ctx context.Context, serviceList []*ServiceDefinition) (schema *ast.Schema, supergraphSDL string, matadata *FederationMetadata, err error) {
 	// NOTE: 全体的な設計方針
@@ -42,7 +57,7 @@ func ComposeAndValidate(ctx context.Context, serviceList []*ServiceDefinition) (
 	errors = append(errors, validateComposedSchema(schema, serviceList)...)
 
 	if len(errors) > 0 {
-		err := multierror.Append(nil, errors...)
+		err := multierror(errors)
 		return schema, "", matadata, err
 	}
 

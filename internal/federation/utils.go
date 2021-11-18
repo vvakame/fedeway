@@ -147,7 +147,7 @@ func logServiceAndType(serviceName, typeName, fieldName string) string {
 	if fieldName != "" {
 		fieldName = fmt.Sprintf(".%s", fieldName)
 	}
-	return fmt.Sprintf("[%s] %s%s -> ", serviceName, typeName, fieldName)
+	return fmt.Sprintf("[%s] %s%s ->", serviceName, typeName, fieldName)
 }
 
 // Create a map of { fieldName: serviceName } for each field.
