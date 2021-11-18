@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceA] Query -\u003e Found invalid use of default root operation name `Query`. `Query` is disallowed when `Schema.query` is set to a type other than `Query`",
+    "locations": [
+      {
+        "line": 18,
+        "column": 6
+      }
+    ],
+    "extensions": {
+      "code": "ROOT_QUERY_USED",
+      "file": "serviceA.graphqls"
+    }
+  }
+]

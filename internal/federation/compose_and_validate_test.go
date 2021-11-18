@@ -2,6 +2,7 @@ package federation
 
 import (
 	"context"
+	"encoding/json"
 	"io/ioutil"
 	"path"
 	"sort"
@@ -93,7 +94,13 @@ func TestComposeAndValidate(t *testing.T) {
 
 			schema, supergraphSDL, _, err := ComposeAndValidate(ctx, serviceDefs)
 			if err != nil {
-				t.Fatal(err)
+				b, err := json.MarshalIndent(err, "", "  ")
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				testutils.CheckGoldenFile(t, b, path.Join(expectFileDir, dir.Name()+".error.json"))
+				return
 			}
 			_ = schema
 

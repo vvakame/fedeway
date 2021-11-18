@@ -8,7 +8,6 @@ require (
 	github.com/go-logr/logr v1.2.0
 	github.com/go-logr/stdr v1.2.0
 	github.com/goccy/go-yaml v1.9.4
-	github.com/hashicorp/go-multierror v1.1.1
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/vektah/gqlparser/v2 v2.2.0
 )
@@ -18,7 +17,6 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
-	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.0 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect

@@ -74,7 +74,7 @@ func rootFieldUsed(service *ServiceDefinition) []error {
 
 				gErr := gqlerror.ErrorPosf(
 					def.Position,
-					"%s Found invalid use of default root operation name `%s`. `%s` is disallowed when `Schema.%s}` is set to a type other than `%s`",
+					"%s Found invalid use of default root operation name `%s`. `%s` is disallowed when `Schema.%s` is set to a type other than `%s`",
 					logServiceAndType(serviceName, rootOperationName, ""),
 					rootOperationName, rootOperationName, strings.ToLower(rootOperationName), rootOperationName,
 				)
