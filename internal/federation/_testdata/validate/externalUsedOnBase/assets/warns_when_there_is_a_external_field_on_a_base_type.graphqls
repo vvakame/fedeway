@@ -1,0 +1,8 @@
+# option:name: serviceA
+# externalUsedOnBase
+# warns when there is a @external field on a base type
+type Product @key(fields: "sku") {
+    sku: String!
+    upc: String! @external
+    id: ID!
+}

@@ -15,13 +15,13 @@ import (
 	"github.com/vvakame/fedeway/internal/testutils"
 )
 
-func TestRootFieldUsed(t *testing.T) {
-	// test case are ported from federation-js/src/composition/validate/preNormalization/__tests__/rootFieldUsed.test.ts
+func TestExternalUsedOnBase(t *testing.T) {
+	// test case are ported from federation-js/src/composition/validate/preComposition/__tests__/externalUsedOnBase.test.ts
 
-	const testFileDir = "./_testdata/validate/rootFieldUsed/assets"
-	expectFileDir := "./_testdata/validate/rootFieldUsed/expected"
+	const testFileDir = "./_testdata/validate/externalUsedOnBase/assets"
+	expectFileDir := "./_testdata/validate/externalUsedOnBase/expected"
 
-	rule := rootFieldUsed
+	rule := externalUsedOnBase
 
 	files, err := ioutil.ReadDir(testFileDir)
 	if err != nil {

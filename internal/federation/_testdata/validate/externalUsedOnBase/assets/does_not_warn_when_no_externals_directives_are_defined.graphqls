@@ -1,0 +1,13 @@
+# option:name: serviceA
+# externalUsedOnBase
+# does not warn when no externals directives are defined
+type Product @key(fields: "color { id value }") {
+    sku: String!
+    upc: String!
+    color: Color!
+}
+
+type Color {
+    id: ID!
+    value: String!
+}

@@ -23,7 +23,6 @@ func rootFieldUsed(service *ServiceDefinition) []error {
 	serviceName := service.Name
 	typeDefs := service.TypeDefs
 
-	// TODO gqlerror.List にするべきでは？
 	var errors []error
 
 	defaultRootOperationNames := []string{"Query", "Mutation", "Subscription"}
