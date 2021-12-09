@@ -1,8 +1,12 @@
 package federation
 
 import (
+	"fmt"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
+	"github.com/vektah/gqlparser/v2/parser"
+	"github.com/vektah/gqlparser/v2/validator"
+	"github.com/vvakame/fedeway/internal/graphql"
 )
 
 func preCompositionValidators() []func(*ServiceDefinition) []error {
@@ -10,7 +14,7 @@ func preCompositionValidators() []func(*ServiceDefinition) []error {
 		// TODO let's implements below rules!
 		externalUsedOnBase,
 		requiresUsedOnBase,
-		// keyFieldsMissingExternal,
+		keyFieldsMissingExternal,
 		// reservedFieldUsed,
 		// duplicateEnumOrScalar,
 		// duplicateEnumValue,
@@ -34,6 +38,9 @@ func externalUsedOnBase(service *ServiceDefinition) []error {
 						"%s Found extraneous @external directive. @external cannot be used on base types.",
 						logServiceAndType(serviceName, typeDefinition.Name, field.Name),
 					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
 					gErr.Extensions["code"] = "EXTERNAL_USED_ON_BASE"
 					errors = append(errors, gErr)
 				}
@@ -65,11 +72,135 @@ func requiresUsedOnBase(service *ServiceDefinition) []error {
 						"%s Found extraneous @requires directive. @requires cannot be used on base types.",
 						logServiceAndType(serviceName, typeDefinition.Name, field.Name),
 					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
 					gErr.Extensions["code"] = "REQUIRES_USED_ON_BASE"
 					errors = append(errors, gErr)
 				}
 			}
 		}
+	}
+
+	return errors
+}
+
+// For every @key directive, it must reference a field marked as @external
+func keyFieldsMissingExternal(service *ServiceDefinition) []error {
+	serviceName := service.Name
+	typeDefs := service.TypeDefs
+
+	var errors []error
+
+	// Build an array that accounts for all key directives on type extensions.
+	type S struct {
+		TypeName    string
+		KeyArgument string
+	}
+	var keyDirectiveInfoOnTypeExtensions []*S
+	for _, node := range typeDefs.Extensions {
+		keyDirectivesOnTypeExtension := node.Directives.ForNames("key")
+
+		for _, keyDirective := range keyDirectivesOnTypeExtension {
+			if len(keyDirective.Arguments) == 0 {
+				continue
+			}
+			if keyDirective.Arguments[0].Value.Kind != ast.StringValue {
+				continue
+			}
+			keyDirectiveInfoOnTypeExtensions = append(keyDirectiveInfoOnTypeExtensions, &S{
+				TypeName:    node.Name,
+				KeyArgument: keyDirective.Arguments[0].Value.Raw,
+			})
+		}
+	}
+
+	// this allows us to build a partial schema
+	schemaDoc, gErr := parser.ParseSchema(validator.Prelude)
+	if gErr != nil {
+		errors = append(errors, gErr)
+		return errors
+	}
+	schemaDoc.Directives = append(schemaDoc.Directives, graphql.GraphQLSpecifiedByDirective) // TODO remove this line later when validator.Prelude contains @specifiedBy directive
+	schemaDoc.Directives = append(schemaDoc.Directives, apolloTypeSystemDirectives...)
+	schemaDoc.Merge(typeDefs)
+
+	schema, gErr := validator.ValidateSchemaDocument(schemaDoc)
+	if gErr != nil {
+		errors = append(errors, gErr)
+		return errors
+	}
+
+	for _, ext := range keyDirectiveInfoOnTypeExtensions {
+		typeName := ext.TypeName
+		keyArgument := ext.KeyArgument
+
+		keyDirectiveSelectionSet, gErr := parser.ParseQuery(&ast.Source{
+			Input: fmt.Sprintf(`fragment __generated on %s { %s }`, typeName, keyArgument),
+		})
+		if gErr != nil {
+			errors = append(errors, gErr)
+			return errors
+		}
+		gErrs := validator.Validate(schema, keyDirectiveSelectionSet)
+		if len(gErrs) != 0 && len(gErrs) != 1 {
+			// 1 means Fragment "__generated" is never used.
+			for _, gErr := range gErrs {
+				errors = append(errors, gErr)
+			}
+			return errors
+		}
+
+		var validateSelectionSet func(selectionSet ast.SelectionSet)
+		validateSelectionSet = func(selectionSet ast.SelectionSet) {
+			for _, selection := range selectionSet {
+				switch node := selection.(type) {
+				case *ast.Field:
+					fieldDef := node.Definition
+					parentType := schema.Types[node.ObjectDefinition.Name]
+					if parentType == nil {
+						continue
+					}
+					if fieldDef == nil {
+						// TODO: find all fields that have @external and suggest them / heursitic match
+						gErr := gqlerror.ErrorPosf(
+							node.Position,
+							"%s A @key directive specifies a field which is not found in this service. Add a field to this type with @external.",
+							logServiceAndType(serviceName, parentType.Name, ""),
+						)
+						if gErr.Extensions == nil {
+							gErr.Extensions = make(map[string]interface{})
+						}
+						gErr.Extensions["code"] = "KEY_FIELDS_MISSING_EXTERNAL"
+						errors = append(errors, gErr)
+						continue
+					}
+
+					externalDirectivesOnField := fieldDef.Directives.ForNames("external")
+
+					if len(externalDirectivesOnField) == 0 {
+						gErr := gqlerror.ErrorPosf(
+							node.Position,
+							"%s A @key directive specifies the `%s` field which has no matching @external field.",
+							logServiceAndType(serviceName, parentType.Name, ""),
+							fieldDef.Name,
+						)
+						if gErr.Extensions == nil {
+							gErr.Extensions = make(map[string]interface{})
+						}
+						gErr.Extensions["code"] = "KEY_FIELDS_MISSING_EXTERNAL"
+						errors = append(errors, gErr)
+					}
+
+					validateSelectionSet(node.SelectionSet)
+
+				default:
+					errors = append(errors, fmt.Errorf("unsupported selection type: %T", selection))
+				}
+			}
+		}
+
+		validateSelectionSet(keyDirectiveSelectionSet.Fragments[0].SelectionSet)
 	}
 
 	return errors

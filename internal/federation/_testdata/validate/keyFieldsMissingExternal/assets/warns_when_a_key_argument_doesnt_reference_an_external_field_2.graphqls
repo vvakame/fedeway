@@ -1,0 +1,16 @@
+# option:name: serviceA
+# keyFieldsMissingExternal
+# warns when a @key argument doesn't reference an @external field
+extend type Car @key(fields: "model { name kit { upc } } year") {
+    model: Model! @external
+    year: String! @external
+}
+
+extend type Model {
+    name: String!
+    kit: Kit
+}
+
+type Kit {
+    upc: String!
+}

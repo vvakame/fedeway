@@ -1,0 +1,17 @@
+# option:name: serviceA
+# keyFieldsMissingExternal
+# has no warnings with correct selection set / nested @external usage
+extend type Car @key(fields: "model { name kit { upc } } year") {
+    model: Model! @external
+    year: String! @external
+    color: String!
+}
+
+extend type Model {
+    name: String! @external
+    kit: Kit @external
+}
+
+extend type Kit {
+    upc: String! @external
+}

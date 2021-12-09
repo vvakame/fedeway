@@ -1,0 +1,38 @@
+[
+  {
+    "message": "[serviceA] Model -\u003e A @key directive specifies the `name` field which has no matching @external field.",
+    "locations": [
+      {
+        "line": 1,
+        "column": 39
+      }
+    ],
+    "extensions": {
+      "code": "KEY_FIELDS_MISSING_EXTERNAL"
+    }
+  },
+  {
+    "message": "[serviceA] Model -\u003e A @key directive specifies the `kit` field which has no matching @external field.",
+    "locations": [
+      {
+        "line": 1,
+        "column": 44
+      }
+    ],
+    "extensions": {
+      "code": "KEY_FIELDS_MISSING_EXTERNAL"
+    }
+  },
+  {
+    "message": "[serviceA] Kit -\u003e A @key directive specifies the `upc` field which has no matching @external field.",
+    "locations": [
+      {
+        "line": 1,
+        "column": 50
+      }
+    ],
+    "extensions": {
+      "code": "KEY_FIELDS_MISSING_EXTERNAL"
+    }
+  }
+]
