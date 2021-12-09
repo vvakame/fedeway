@@ -1,0 +1,13 @@
+# option:name: serviceA
+# keyFieldsMissingExternal
+# warns when a @key argument doesn't reference an @external field
+extend type Product @key(fields: "sku") {
+    sku: String!
+    upc: String!
+    color: Color!
+}
+
+type Color {
+    id: ID!
+    value: String!
+}

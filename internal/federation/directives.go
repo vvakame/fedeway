@@ -33,7 +33,7 @@ var externalDirective = &ast.DirectiveDefinition{
 	Name: "external",
 	Locations: []ast.DirectiveLocation{
 		ast.LocationObject,
-		ast.LocationField,
+		ast.LocationFieldDefinition,
 	},
 	Position: blankPos,
 }
@@ -106,3 +106,10 @@ var federationDirectives = ast.DirectiveDefinitionList{
 var otherKnownDirectiveDefinitions = ast.DirectiveDefinitionList{
 	tagDirective,
 }
+
+var apolloTypeSystemDirectives = func() ast.DirectiveDefinitionList {
+	list := make(ast.DirectiveDefinitionList, 0, len(federationDirectives)+len(otherKnownDirectiveDefinitions))
+	list = append(list, federationDirectives...)
+	list = append(list, otherKnownDirectiveDefinitions...)
+	return list
+}()

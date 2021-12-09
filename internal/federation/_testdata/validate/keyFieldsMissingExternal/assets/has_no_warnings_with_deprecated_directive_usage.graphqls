@@ -1,0 +1,23 @@
+# option:name: serviceA
+# keyFieldsMissingExternal
+# has no warnings with @deprecated directive usage
+extend type Car @key(fields: "model { name kit { upc } } year") {
+    model: Model! @external
+    year: String! @external
+    color: String! @deprecated(reason: "Use colors instead")
+    colors: Color!
+}
+
+extend type Model {
+    name: String! @external
+    kit: Kit @external
+}
+
+extend type Kit {
+    upc: String! @external
+}
+
+enum Color {
+    Red
+    Blue
+}

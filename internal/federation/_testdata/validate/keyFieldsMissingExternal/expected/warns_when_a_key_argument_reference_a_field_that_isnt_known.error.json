@@ -1,0 +1,14 @@
+[
+  {
+    "message": "[serviceA] Product -\u003e A @key directive specifies a field which is not found in this service. Add a field to this type with @external.",
+    "locations": [
+      {
+        "line": 1,
+        "column": 35
+      }
+    ],
+    "extensions": {
+      "code": "KEY_FIELDS_MISSING_EXTERNAL"
+    }
+  }
+]

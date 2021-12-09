@@ -77,6 +77,9 @@ func rootFieldUsed(service *ServiceDefinition) []error {
 					logServiceAndType(serviceName, rootOperationName, ""),
 					rootOperationName, rootOperationName, strings.ToLower(rootOperationName), rootOperationName,
 				)
+				if gErr.Extensions == nil {
+					gErr.Extensions = make(map[string]interface{})
+				}
 				gErr.Extensions["code"] = fmt.Sprintf("ROOT_%s_USED", strings.ToUpper(rootOperationName))
 				errors = append(errors, gErr)
 			}

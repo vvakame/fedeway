@@ -1,0 +1,14 @@
+[
+  {
+    "message": "[serviceA] Product -\u003e A @key directive specifies the `sku` field which has no matching @external field.",
+    "locations": [
+      {
+        "line": 1,
+        "column": 35
+      }
+    ],
+    "extensions": {
+      "code": "KEY_FIELDS_MISSING_EXTERNAL"
+    }
+  }
+]
