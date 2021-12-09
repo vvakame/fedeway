@@ -1,0 +1,8 @@
+# option:name: serviceA
+# requiresUsedOnBase
+# warns when there is a @requires field on a base type
+type Product @key(fields: "sku") {
+    sku: String!
+    upc: String! @requires(fields: "sku")
+    id: ID!
+}

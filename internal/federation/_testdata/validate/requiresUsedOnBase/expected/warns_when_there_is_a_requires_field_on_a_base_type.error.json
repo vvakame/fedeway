@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceA] Product.upc -\u003e Found extraneous @requires directive. @requires cannot be used on base types.",
+    "locations": [
+      {
+        "line": 6,
+        "column": 19
+      }
+    ],
+    "extensions": {
+      "code": "REQUIRES_USED_ON_BASE",
+      "file": "warns_when_there_is_a_requires_field_on_a_base_type.graphqls"
+    }
+  }
+]
