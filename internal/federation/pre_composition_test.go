@@ -45,6 +45,10 @@ func TestPreCompositionValidators(t *testing.T) {
 			Name: "duplicateEnumOrScalar",
 			Rule: duplicateEnumOrScalar,
 		},
+		{
+			Name: "duplicateEnumValue",
+			Rule: duplicateEnumValue,
+		},
 	}
 
 	for _, spec := range specs {
