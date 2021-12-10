@@ -16,7 +16,7 @@ func preCompositionValidators() []func(*ServiceDefinition) []error {
 		requiresUsedOnBase,
 		keyFieldsMissingExternal,
 		reservedFieldUsed,
-		// duplicateEnumOrScalar,
+		duplicateEnumOrScalar,
 		// duplicateEnumValue,
 	}
 }
@@ -251,6 +251,63 @@ func reservedFieldUsed(service *ServiceDefinition) []error {
 				gErr.Extensions["code"] = "RESERVED_FIELD_USED"
 				errors = append(errors, gErr)
 			}
+		}
+	}
+
+	return errors
+}
+
+func duplicateEnumOrScalar(service *ServiceDefinition) []error {
+	serviceName := service.Name
+	typeDefs := service.TypeDefs
+
+	var errors []error
+
+	// keep track of every enum and scalar and error if there are ever duplicates
+	enums := make(map[string]struct{})
+	scalars := make(map[string]struct{})
+
+	for _, definition := range typeDefs.Definitions {
+		switch definition.Kind {
+		case ast.Enum:
+			name := definition.Name
+			_, ok := enums[name]
+			if ok {
+				gErr := gqlerror.ErrorPosf(
+					definition.Position,
+					"%s The enum, `%s` was defined multiple times in this service. Remove one of the definitions for `%s`",
+					logServiceAndType(serviceName, name, ""),
+					name,
+					name,
+				)
+				if gErr.Extensions == nil {
+					gErr.Extensions = make(map[string]interface{})
+				}
+				gErr.Extensions["code"] = "DUPLICATE_ENUM_DEFINITION"
+				errors = append(errors, gErr)
+			}
+
+			enums[name] = struct{}{}
+
+		case ast.Scalar:
+			name := definition.Name
+			_, ok := scalars[name]
+			if ok {
+				gErr := gqlerror.ErrorPosf(
+					definition.Position,
+					"%s The scalar, `%s` was defined multiple times in this service. Remove one of the definitions for `%s`",
+					logServiceAndType(serviceName, name, ""),
+					name,
+					name,
+				)
+				if gErr.Extensions == nil {
+					gErr.Extensions = make(map[string]interface{})
+				}
+				gErr.Extensions["code"] = "DUPLICATE_SCALAR_DEFINITION"
+				errors = append(errors, gErr)
+			}
+
+			scalars[name] = struct{}{}
 		}
 	}
 

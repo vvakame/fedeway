@@ -1,0 +1,20 @@
+# option:name: serviceA
+# duplicateEnumOrScalar
+# does not error with proper enum and scalar usage
+type Product @key(fields: "color { id value }") {
+    sku: String!
+    upc: String!
+    shippingDate: Date
+    type: ProductType
+}
+
+enum ProductType {
+    BOOK
+    FURNITURE
+}
+
+extend enum ProductType {
+    DIGITAL
+}
+
+scalar Date

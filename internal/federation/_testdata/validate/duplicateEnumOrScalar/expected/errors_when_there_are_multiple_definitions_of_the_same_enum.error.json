@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceA] ProductType -\u003e The enum, `ProductType` was defined multiple times in this service. Remove one of the definitions for `ProductType`",
+    "locations": [
+      {
+        "line": 20,
+        "column": 6
+      }
+    ],
+    "extensions": {
+      "code": "DUPLICATE_ENUM_DEFINITION",
+      "file": "errors_when_there_are_multiple_definitions_of_the_same_enum.graphqls"
+    }
+  }
+]
