@@ -41,6 +41,10 @@ func TestPreCompositionValidators(t *testing.T) {
 			Name: "reservedFieldUsed",
 			Rule: reservedFieldUsed,
 		},
+		{
+			Name: "duplicateEnumOrScalar",
+			Rule: duplicateEnumOrScalar,
+		},
 	}
 
 	for _, spec := range specs {

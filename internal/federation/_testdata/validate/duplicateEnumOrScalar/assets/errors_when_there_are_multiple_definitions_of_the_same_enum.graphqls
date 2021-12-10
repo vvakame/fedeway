@@ -1,0 +1,22 @@
+# option:name: serviceA
+# duplicateEnumOrScalar
+# errors when there are multiple definitions of the same enum
+type Product @key(fields: "color { id value }") {
+    sku: String!
+    upc: String!
+    color: Color!
+}
+
+type Color {
+    id: ID!
+    value: String!
+}
+
+enum ProductType {
+    BOOK
+    FURNITURE
+}
+
+enum ProductType {
+    DIGITAL
+}

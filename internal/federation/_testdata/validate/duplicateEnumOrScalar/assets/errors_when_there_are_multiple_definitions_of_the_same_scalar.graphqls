@@ -1,0 +1,11 @@
+# option:name: serviceA
+# duplicateEnumOrScalar
+# errors when there are multiple definitions of the same scalar
+scalar Date
+type Product @key(fields: "color { id value }") {
+    sku: String!
+    upc: String!
+    deliveryDate: Date
+}
+
+scalar Date

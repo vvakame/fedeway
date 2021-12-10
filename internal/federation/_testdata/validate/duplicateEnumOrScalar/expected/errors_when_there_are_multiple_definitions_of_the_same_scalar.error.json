@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceA] Date -\u003e The scalar, `Date` was defined multiple times in this service. Remove one of the definitions for `Date`",
+    "locations": [
+      {
+        "line": 11,
+        "column": 8
+      }
+    ],
+    "extensions": {
+      "code": "DUPLICATE_SCALAR_DEFINITION",
+      "file": "errors_when_there_are_multiple_definitions_of_the_same_scalar.graphqls"
+    }
+  }
+]
