@@ -1,0 +1,23 @@
+# option:name: serviceA
+# duplicateEnumValue
+# errors when there are duplicate enum values in a single service
+type Product @key(fields: "color { id value }") {
+    sku: String!
+    upc: String!
+    color: Color!
+}
+
+type Color {
+    id: ID!
+    value: String!
+}
+
+enum ProductType {
+    BOOK
+    FURNITURE
+}
+
+extend enum ProductType {
+    DIGITAL
+    BOOK
+}

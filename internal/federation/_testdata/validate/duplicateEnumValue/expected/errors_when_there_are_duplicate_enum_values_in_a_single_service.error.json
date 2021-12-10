@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceA] ProductType.BOOK -\u003e The enum, `ProductType` has multiple definitions of the `BOOK` value.",
+    "locations": [
+      {
+        "line": 22,
+        "column": 5
+      }
+    ],
+    "extensions": {
+      "code": "DUPLICATE_ENUM_VALUE",
+      "file": "errors_when_there_are_duplicate_enum_values_in_a_single_service.graphqls"
+    }
+  }
+]

@@ -11,13 +11,12 @@ import (
 
 func preCompositionValidators() []func(*ServiceDefinition) []error {
 	return []func(definition *ServiceDefinition) []error{
-		// TODO let's implements below rules!
 		externalUsedOnBase,
 		requiresUsedOnBase,
 		keyFieldsMissingExternal,
 		reservedFieldUsed,
 		duplicateEnumOrScalar,
-		// duplicateEnumValue,
+		duplicateEnumValue,
 	}
 }
 
@@ -308,6 +307,91 @@ func duplicateEnumOrScalar(service *ServiceDefinition) []error {
 			}
 
 			scalars[name] = struct{}{}
+		}
+	}
+
+	return errors
+}
+
+func duplicateEnumValue(service *ServiceDefinition) []error {
+	serviceName := service.Name
+	typeDefs := service.TypeDefs
+
+	var errors []error
+
+	enums := make(map[string][]string)
+
+	for _, definition := range typeDefs.Definitions {
+		if definition.Kind != ast.Enum {
+			continue
+		}
+
+		name := definition.Name
+		enumValues := make([]string, 0, len(definition.EnumValues))
+		for _, enumValue := range definition.EnumValues {
+			enumValues = append(enumValues, enumValue.Name)
+		}
+
+		if len(enums[name]) != 0 {
+			for _, valueName := range enumValues {
+				for _, v := range enums[name] {
+					if valueName == v {
+						gErr := gqlerror.ErrorPosf(
+							definition.Position,
+							"%s The enum, `%s` has multiple definitions of the `%s` value.",
+							logServiceAndType(serviceName, name, valueName),
+							name,
+							valueName,
+						)
+						if gErr.Extensions == nil {
+							gErr.Extensions = make(map[string]interface{})
+						}
+						gErr.Extensions["code"] = "DUPLICATE_ENUM_VALUE"
+						errors = append(errors, gErr)
+						break
+					}
+				}
+				enums[name] = append(enums[name], valueName)
+			}
+		} else {
+			enums[name] = enumValues
+		}
+	}
+
+	for _, definition := range typeDefs.Extensions {
+		if definition.Kind != ast.Enum {
+			continue
+		}
+
+		name := definition.Name
+		enumValues := make([]string, 0, len(definition.EnumValues))
+		for _, enumValue := range definition.EnumValues {
+			enumValues = append(enumValues, enumValue.Name)
+		}
+
+		if len(enums[name]) != 0 {
+			for _, valueName := range enumValues {
+				for _, v := range enums[name] {
+					if valueName == v {
+						gErr := gqlerror.ErrorPosf(
+							definition.EnumValues.ForName(valueName).Position,
+							"%s The enum, `%s` has multiple definitions of the `%s` value.",
+							logServiceAndType(serviceName, name, valueName),
+							name,
+							valueName,
+						)
+						if gErr.Extensions == nil {
+							gErr.Extensions = make(map[string]interface{})
+						}
+						gErr.Extensions["code"] = "DUPLICATE_ENUM_VALUE"
+						errors = append(errors, gErr)
+						break
+					}
+				}
+				enums[name] = append(enums[name], valueName)
+			}
+		} else {
+			enums[name] = enumValues
 		}
 	}
 
