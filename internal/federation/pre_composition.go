@@ -15,7 +15,7 @@ func preCompositionValidators() []func(*ServiceDefinition) []error {
 		externalUsedOnBase,
 		requiresUsedOnBase,
 		keyFieldsMissingExternal,
-		// reservedFieldUsed,
+		reservedFieldUsed,
 		// duplicateEnumOrScalar,
 		// duplicateEnumValue,
 	}
@@ -201,6 +201,57 @@ func keyFieldsMissingExternal(service *ServiceDefinition) []error {
 		}
 
 		validateSelectionSet(keyDirectiveSelectionSet.Fragments[0].SelectionSet)
+	}
+
+	return errors
+}
+
+// Schemas should not define the _service or _entitites fields on the query root
+func reservedFieldUsed(service *ServiceDefinition) []error {
+	serviceName := service.Name
+	typeDefs := service.TypeDefs
+
+	var errors []error
+
+	rootQueryName := "Query"
+	for _, schemaDef := range typeDefs.Schema {
+		for _, node := range schemaDef.OperationTypes {
+			// find the Query type if redefined
+			if node.Operation == ast.Query {
+				rootQueryName = node.Type
+			}
+		}
+	}
+	for _, schemaDef := range typeDefs.SchemaExtension {
+		for _, node := range schemaDef.OperationTypes {
+			// find the Query type if redefined
+			if node.Operation == ast.Query {
+				rootQueryName = node.Type
+			}
+		}
+	}
+
+	for _, node := range typeDefs.Definitions {
+		if node.Name != rootQueryName {
+			continue
+		}
+		for _, field := range node.Fields {
+			fieldName := field.Name
+			switch fieldName {
+			case "_service", "_entities":
+				gErr := gqlerror.ErrorPosf(
+					field.Position,
+					"%s %s is a field reserved for federation and can't be used at the Query root.",
+					logServiceAndType(serviceName, rootQueryName, field.Name),
+					fieldName,
+				)
+				if gErr.Extensions == nil {
+					gErr.Extensions = make(map[string]interface{})
+				}
+				gErr.Extensions["code"] = "RESERVED_FIELD_USED"
+				errors = append(errors, gErr)
+			}
+		}
 	}
 
 	return errors

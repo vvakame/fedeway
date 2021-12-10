@@ -37,6 +37,10 @@ func TestPreCompositionValidators(t *testing.T) {
 			Name: "keyFieldsMissingExternal",
 			Rule: keyFieldsMissingExternal,
 		},
+		{
+			Name: "reservedFieldUsed",
+			Rule: reservedFieldUsed,
+		},
 	}
 
 	for _, spec := range specs {
