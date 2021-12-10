@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[schemaDefinition] RootQuery._entities -\u003e _entities is a field reserved for federation and can't be used at the Query root.",
+    "locations": [
+      {
+        "line": 10,
+        "column": 5
+      }
+    ],
+    "extensions": {
+      "code": "RESERVED_FIELD_USED",
+      "file": "warns_when_service_or_entities_is_used_in_a_schema_extension_1.graphqls"
+    }
+  }
+]

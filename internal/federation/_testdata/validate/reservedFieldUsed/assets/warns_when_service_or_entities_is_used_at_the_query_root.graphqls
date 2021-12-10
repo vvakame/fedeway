@@ -1,0 +1,12 @@
+# option:name: serviceA
+# reservedFieldUsed
+# warns when _service or _entities is used at the query root
+type Query {
+    product: Product
+    _service: String!
+    _entities: String!
+}
+
+type Product {
+    sku: String
+}

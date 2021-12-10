@@ -1,0 +1,10 @@
+# option:name: serviceA
+# reservedFieldUsed
+# has no warnings when _service and _entities arent used
+type Query {
+    product: Product
+}
+
+type Product {
+    sku: String
+}

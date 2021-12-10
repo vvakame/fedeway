@@ -1,0 +1,16 @@
+# option:name: serviceA
+# reservedFieldUsed
+# warns when reserved fields are used on custom Query types
+schema {
+    query: RootQuery
+}
+
+type RootQuery {
+    product: Product
+    _service: String
+    _entities: String
+}
+
+type Product {
+    sku: String
+}

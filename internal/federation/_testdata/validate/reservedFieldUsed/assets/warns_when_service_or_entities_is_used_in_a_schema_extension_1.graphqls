@@ -1,0 +1,15 @@
+# option:name: schemaDefinition
+# reservedFieldUsed
+# warns when _service or _entities is used in a schema extension
+schema {
+    query: RootQuery
+}
+
+type RootQuery {
+    product: Product
+    _entities: String!
+}
+
+type Product {
+    sku: String
+}

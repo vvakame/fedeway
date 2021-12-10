@@ -1,0 +1,28 @@
+[
+  {
+    "message": "[serviceA] RootQuery._service -\u003e _service is a field reserved for federation and can't be used at the Query root.",
+    "locations": [
+      {
+        "line": 10,
+        "column": 5
+      }
+    ],
+    "extensions": {
+      "code": "RESERVED_FIELD_USED",
+      "file": "warns_when_reserved_fields_are_used_on_custom_query_types.graphqls"
+    }
+  },
+  {
+    "message": "[serviceA] RootQuery._entities -\u003e _entities is a field reserved for federation and can't be used at the Query root.",
+    "locations": [
+      {
+        "line": 11,
+        "column": 5
+      }
+    ],
+    "extensions": {
+      "code": "RESERVED_FIELD_USED",
+      "file": "warns_when_reserved_fields_are_used_on_custom_query_types.graphqls"
+    }
+  }
+]
