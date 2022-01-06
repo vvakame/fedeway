@@ -143,11 +143,164 @@ func parseSelections(source string) (ast.SelectionSet, error) {
 	return queryDocument.Operations[0].SelectionSet, nil
 }
 
+func hasMatchingFieldInDirectives(directives []*ast.Directive, fieldNameToMatch string, namedType *ast.Definition) (bool, error) {
+	if namedType == nil {
+		return false, nil
+	}
+
+	// for each key directive, get the fields arg
+	for _, keyDirective := range directives {
+		if len(keyDirective.Arguments) == 0 {
+			continue
+		}
+
+		if keyDirective.Arguments[0].Value.Kind != ast.StringValue && keyDirective.Arguments[0].Value.Kind != ast.BlockValue {
+			// filter out any null/undefined args
+			continue
+		}
+
+		selections, err := parseSelections(keyDirective.Arguments[0].Value.Raw)
+		if err != nil {
+			return false, err
+		}
+
+		for _, selection := range selections {
+			field, ok := selection.(*ast.Field)
+			if !ok {
+				continue
+			}
+
+			if field.Name == fieldNameToMatch {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
+}
+
 func logServiceAndType(serviceName, typeName, fieldName string) string {
 	if fieldName != "" {
 		fieldName = fmt.Sprintf(".%s", fieldName)
 	}
 	return fmt.Sprintf("[%s] %s%s ->", serviceName, typeName, fieldName)
+}
+
+// Used for finding a field on the `schema` that returns `typeToFind`
+//
+// Used in validation of external directives to find uses of a field in a
+// `@provides` on another type.
+func findFieldsThatReturnType(schema *ast.Schema, typeToFind *ast.Definition) ast.FieldList {
+	if typeToFind.Kind != ast.Object {
+		return nil
+	}
+
+	var fieldsThatReturnType ast.FieldList
+
+	for _, selectionSetType := range schema.Types {
+		// for our purposes, only object types have fields that we care about.
+		if selectionSetType.Kind != ast.Object {
+			continue
+		}
+
+		// push fields that have return `typeToFind`
+		for _, field := range selectionSetType.Fields {
+			fieldReturnType := schema.Types[field.Type.Name()]
+			if fieldReturnType == typeToFind {
+				fieldsThatReturnType = append(fieldsThatReturnType, field)
+			}
+		}
+	}
+
+	return fieldsThatReturnType
+}
+
+// Searches recursively to see if a selection set includes references to
+// `typeToFind.fieldToFind`.
+//
+// Used in validation of external fields to find where/if a field is referenced
+// in a nested selection set for `@requires`
+//
+// For every selection, look at the root of the selection's type.
+// 1. If it's the type we're looking for, check its fields.
+//    Return true if field matches. Skip to step 3 if not
+// 2. If it's not the type we're looking for, skip to step 3
+// 3. Get the return type for each subselection and run this function on the subselection.
+func selectionIncludesField(
+	schema *ast.Schema,
+	selections ast.SelectionSet,
+	selectionSetType *ast.Definition, // type which applies to `selections`
+	typeToFind *ast.Definition, // type where the `@external` lives
+	fieldToFind string,
+) bool {
+
+	for _, selection := range selections {
+		var selectionName string
+		switch selection := selection.(type) {
+		case *ast.Field:
+			selectionName = selection.Name
+		case *ast.FragmentSpread, *ast.InlineFragment:
+			continue
+		}
+
+		// if the selected field matches the fieldname we're looking for,
+		// and its type is correct, we're done. Return true;
+		if selectionName == fieldToFind &&
+			selectionSetType.Name == typeToFind.Name {
+			return true
+		}
+
+		// if the field selection has a subselection, check each field recursively
+
+		// check to make sure the parent type contains the field
+		if selectionName == "" {
+			continue
+		}
+		var typeIncludesField bool
+		for _, field := range selectionSetType.Fields {
+			if field.Name == selectionName {
+				typeIncludesField = true
+				break
+			}
+		}
+		if !typeIncludesField {
+			continue
+		}
+
+		// get the return type of the selection
+		var returnType *ast.Definition
+		for _, field := range selectionSetType.Fields {
+			if field.Name != selectionName {
+				continue
+			}
+			returnType = schema.Types[field.Type.Name()]
+			break
+		}
+
+		if returnType == nil || returnType.Kind != ast.Object {
+			continue
+		}
+
+		subselections := selection.(*ast.Field).SelectionSet
+
+		// using the return type of a given selection and all the subselections,
+		// recursively search for matching selections. typeToFind and fieldToFind
+		// stay the same
+		if len(subselections) != 0 {
+			selectionDoesIncludeField := selectionIncludesField(
+				schema,
+				subselections,
+				returnType,
+				typeToFind,
+				fieldToFind,
+			)
+			if selectionDoesIncludeField {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // Create a map of { fieldName: serviceName } for each field.

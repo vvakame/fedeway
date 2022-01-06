@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/product/graph/generated"
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/product/graph/model"
 )

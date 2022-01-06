@@ -1,0 +1,7 @@
+# option:name: serviceA
+# externalUnused
+# does not warn when @external is selected by a @provides used from another type
+type User @key(fields: "id") {
+    id: ID!
+    username: String
+}

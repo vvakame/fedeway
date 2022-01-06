@@ -1,0 +1,6 @@
+# option:name: serviceA
+# externalUnused
+# does not warn when @external is selected by a @requires
+type Product @key(fields: "sku") {
+    sku: String!
+}

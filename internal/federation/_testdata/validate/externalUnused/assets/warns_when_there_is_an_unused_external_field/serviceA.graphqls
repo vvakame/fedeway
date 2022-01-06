@@ -1,0 +1,8 @@
+# option:name: serviceA
+# externalUnused
+# warns when there is an unused @external field
+type Product @key(fields: "id") {
+    sku: String!
+    upc: String!
+    id: ID!
+}

@@ -631,7 +631,7 @@ input UpdateReviewInput {
 }
 
 extend type UserMetadata {
-    address: String @external
+    address: String # TODO gqlgen issue 1138  @external
 }
 
 extend type User @key(fields: "id") @tag(name: "from-reviews") {
@@ -639,7 +639,7 @@ extend type User @key(fields: "id") @tag(name: "from-reviews") {
     username: String @external
     reviews: [Review]
     numberOfReviews: Int!
-    metadata: [UserMetadata] @external
+    metadata: [UserMetadata] # TODO gqlgen issue 1138  @external
     goodAddress: Boolean # TODO gqlgen issue 1138  @requires(fields: "metadata { address }")
 }
 
@@ -655,7 +655,7 @@ extend type Furniture implements Product @key(fields: "upc") {
 extend type Book implements Product @key(fields: "isbn") {
     isbn: String! @external
     reviews: [Review]
-    similarBooks: [Book]! @external
+    similarBooks: [Book]! # TODO gqlgen issue 1138  @external
     relatedReviews: [Review!]! # TODO gqlgen issue 1138  @requires(fields: "similarBooks { isbn }")
 }
 

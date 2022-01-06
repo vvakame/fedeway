@@ -1,0 +1,18 @@
+# option:name: serviceA
+# externalUnused
+# does not warn when @external is selected by a @requires in a deep subselection
+type User @key(fields: "id") {
+    id: ID!
+    username: String
+}
+
+type AccountRoles {
+    canRead: Group
+    canWrite: Group
+}
+
+type Group {
+    id: ID!
+    name: String
+    members: [User]
+}

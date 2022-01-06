@@ -1,0 +1,6 @@
+# option:name: serviceC
+# externalUnused
+# does not warn when @external is used on type with multiple @key directives
+extend type Product @key(fields: "sku") {
+    sku: String @external
+}
