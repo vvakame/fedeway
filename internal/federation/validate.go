@@ -18,11 +18,11 @@ func validateServicesBeforeNormalization(ctx context.Context, services []*Servic
 	return errors
 }
 
-func validateComposedSchema(schema *ast.Schema, serviceList []*ServiceDefinition) []error {
+func validateComposedSchema(schema *ast.Schema,metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
 	var warningsOrErrors []error
 
 	for _, validator := range postCompositionValidators() {
-		warningsOrErrors = append(warningsOrErrors, validator(schema, serviceList)...)
+		warningsOrErrors = append(warningsOrErrors, validator(schema, metadata,serviceList)...)
 	}
 
 	return warningsOrErrors

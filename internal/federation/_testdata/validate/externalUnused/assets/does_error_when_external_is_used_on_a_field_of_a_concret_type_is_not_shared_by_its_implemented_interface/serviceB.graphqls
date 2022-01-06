@@ -1,0 +1,12 @@
+# option:name: serviceB
+# externalUnused
+# does error when @external is used on a field of a concrete type is not shared by its implemented interface
+extend type Car implements Vehicle @key(fields: "id") {
+    id: ID! @external
+    speed: Int @external
+    wheelSize: Int @external
+}
+interface Vehicle {
+    id: ID!
+    speed: Int
+}

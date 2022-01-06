@@ -1,0 +1,8 @@
+# option:name: serviceB
+# externalUnused
+# warns when there is an unused @external field
+extend type Product {
+    sku: String! @external
+    id: ID! @external
+    price: Int! @requires(fields: "id")
+}

@@ -104,7 +104,7 @@ func keyFieldsMissingExternal(service *ServiceDefinition) []error {
 			if len(keyDirective.Arguments) == 0 {
 				continue
 			}
-			if keyDirective.Arguments[0].Value.Kind != ast.StringValue {
+			if keyDirective.Arguments[0].Value.Kind != ast.StringValue && keyDirective.Arguments[0].Value.Kind != ast.BlockValue {
 				continue
 			}
 			keyDirectiveInfoOnTypeExtensions = append(keyDirectiveInfoOnTypeExtensions, &S{

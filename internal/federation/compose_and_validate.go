@@ -54,7 +54,7 @@ func ComposeAndValidate(ctx context.Context, serviceList []*ServiceDefinition) (
 		errors = append(errors, errs...)
 	}
 
-	errors = append(errors, validateComposedSchema(schema, serviceList)...)
+	errors = append(errors, validateComposedSchema(schema, matadata, serviceList)...)
 
 	if len(errors) > 0 {
 		err := multierror(errors)

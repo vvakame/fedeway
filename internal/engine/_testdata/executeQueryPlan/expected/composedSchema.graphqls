@@ -21,7 +21,7 @@ type Book implements Product @join__owner(graph: BOOKS) @join__type(graph: BOOKS
 	price: String @join__field(graph: PRODUCT)
 	relatedReviews: [Review!]! @join__field(graph: REVIEWS)
 	reviews: [Review] @join__field(graph: REVIEWS)
-	similarBooks: [Book]!
+	similarBooks: [Book]! @join__field(graph: REVIEWS)
 	sku: String! @join__field(graph: PRODUCT)
 	title: String
 	upc: String! @join__field(graph: PRODUCT)
@@ -161,7 +161,7 @@ type User @tag(name: "from-accounts") @join__owner(graph: ACCOUNTS) @join__type(
 	goodAddress: Boolean @join__field(graph: REVIEWS)
 	goodDescription: Boolean @join__field(graph: INVENTORY)
 	id: ID! @tag(name: "accounts")
-	metadata: [UserMetadata]
+	metadata: [UserMetadata] @join__field(graph: REVIEWS)
 	name: Name
 	numberOfReviews: Int! @join__field(graph: REVIEWS)
 	reviews: [Review] @join__field(graph: REVIEWS)
@@ -171,8 +171,8 @@ type User @tag(name: "from-accounts") @join__owner(graph: ACCOUNTS) @join__type(
 	vehicle: Vehicle @join__field(graph: PRODUCT)
 }
 type UserMetadata @join__owner(graph: ACCOUNTS) {
-	address: String
-	description: String
+	address: String @join__field(graph: REVIEWS)
+	description: String @join__field(graph: INVENTORY)
 	name: String
 }
 type Van implements Vehicle @join__owner(graph: PRODUCT) @join__type(graph: PRODUCT, key: "id") @join__type(graph: REVIEWS, key: "id") {

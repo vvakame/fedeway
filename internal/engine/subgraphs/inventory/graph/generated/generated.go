@@ -313,12 +313,12 @@ extend type Book implements Product @key(fields: "isbn") {
 }
 
 extend type UserMetadata {
-    description: String @external
+    description: String # TODO gqlgen issue 1138  @external
 }
 
 extend type User @key(fields: "id") {
     id: ID! @external
-    metadata: [UserMetadata] @external
+    metadata: [UserMetadata] # TODO gqlgen issue 1138  @external
     goodDescription: Boolean # TODO gqlgen issue 1138  @requires(fields: "metadata { description }")
 }
 `, BuiltIn: false},

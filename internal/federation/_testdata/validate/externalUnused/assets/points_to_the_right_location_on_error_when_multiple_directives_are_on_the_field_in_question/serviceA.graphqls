@@ -1,0 +1,12 @@
+# option:name: serviceA
+# externalUnused
+# points to the right location on error when multiple directives are on the field in question
+type Car implements Vehicle @key(fields: "id") {
+    id: ID!
+    speed: Int
+    wheelSize: Int
+}
+interface Vehicle {
+    id: ID!
+    speed: Int
+}

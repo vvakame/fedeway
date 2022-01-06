@@ -1,0 +1,10 @@
+# option:name: serviceB
+# externalUnused
+# does not warn when @external is selected by a @provides used from another type
+type Review {
+    author: User @provides(fields: "username")
+}
+
+extend type User @key(fields: "id") {
+    username: String @external
+}

@@ -142,7 +142,8 @@ func buildMapsFromServiceList(ctx context.Context, serviceList []*ServiceDefinit
 				typeName := definition.Name
 
 				for _, keyDirective := range definition.Directives.ForNames("key") {
-					if len(keyDirective.Arguments) != 0 && keyDirective.Arguments[0].Value.Kind == ast.StringValue {
+					if len(keyDirective.Arguments) != 0 &&
+						(keyDirective.Arguments[0].Value.Kind == ast.StringValue || keyDirective.Arguments[0].Value.Kind == ast.BlockValue) {
 						if _, ok := keyDirectivesMap[typeName]; !ok {
 							keyDirectivesMap[typeName] = ServiceNameToKeyDirectivesMap{}
 						}
@@ -511,7 +512,8 @@ func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap Typ
 		if namedType.Kind == ast.Object {
 			for _, field := range namedType.Fields {
 				providesDirective := field.Directives.ForName("provides")
-				if providesDirective != nil && len(providesDirective.Arguments) != 0 && providesDirective.Arguments[0].Value.Kind == ast.StringValue {
+				if providesDirective != nil && len(providesDirective.Arguments) != 0 &&
+					(providesDirective.Arguments[0].Value.Kind == ast.StringValue || providesDirective.Arguments[0].Value.Kind == ast.BlockValue) {
 					provides, err := parseSelections(providesDirective.Arguments[0].Value.Raw)
 					if err != nil {
 						return nil, err
@@ -541,7 +543,8 @@ func addFederationMetadataToSchemaNodes(schema *ast.Schema, typeToServiceMap Typ
 				fieldMeta.ServiceName = extendingServiceName
 
 				requiresDirective := field.Directives.ForName("requires")
-				if requiresDirective != nil && len(requiresDirective.Arguments) != 0 && requiresDirective.Arguments[0].Value.Kind == ast.StringValue {
+				if requiresDirective != nil && len(requiresDirective.Arguments) != 0 &&
+					(requiresDirective.Arguments[0].Value.Kind == ast.StringValue || requiresDirective.Arguments[0].Value.Kind == ast.BlockValue) {
 					requires, err := parseSelections(requiresDirective.Arguments[0].Value.Raw)
 					if err != nil {
 						return nil, err
@@ -794,7 +797,16 @@ func composeServices(ctx context.Context, services []*ServiceDefinition) (*ast.S
 	// TODO ここで graphNameToEnumValueName ひねり出すのやめたほうがよさそう
 	graphNameToEnumValueName, _ := getJoinGraphEnum(services)
 	// NOTE: original では schema に変更を加えていない (@join__type とかが付随していない)
-	metadata, err := addFederationMetadataToSchemaNodes(schema, typeToServiceMap, externalFields, keyDirectivesMap, valueTypes, directiveDefinitionsMap, directiveMetadata, graphNameToEnumValueName)
+	metadata, err := addFederationMetadataToSchemaNodes(
+		schema,
+		typeToServiceMap,
+		externalFields,
+		keyDirectivesMap,
+		valueTypes,
+		directiveDefinitionsMap,
+		directiveMetadata,
+		graphNameToEnumValueName,
+	)
 	if err != nil {
 		errors = append(errors, err)
 		return nil, "", nil, errors

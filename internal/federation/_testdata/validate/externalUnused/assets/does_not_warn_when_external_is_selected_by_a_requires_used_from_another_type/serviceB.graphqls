@@ -1,0 +1,16 @@
+# option:name: serviceB
+# externalUnused
+# does not warn when @external is selected by a @requires used from another type
+type Review {
+    author: User
+}
+
+extend type User @key(fields: "id") {
+    roles: AccountRoles!
+    isAdmin: Boolean! @requires(fields: "roles { canWrite }")
+}
+
+# Externals -- only referenced by the @requires on User.isAdmin
+extend type AccountRoles {
+    canWrite: Boolean @external
+}
