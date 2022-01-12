@@ -1,0 +1,8 @@
+# option:name: serviceA
+# requiresFieldsMissingExternal
+# warns when there is a @requires with no matching @external field
+type Product @key(fields: "sku") {
+    sku: String!
+    upc: String!
+    id: ID!
+}

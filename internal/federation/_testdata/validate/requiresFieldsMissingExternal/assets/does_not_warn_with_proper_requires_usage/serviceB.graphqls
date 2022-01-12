@@ -1,0 +1,7 @@
+# option:name: serviceB
+# requiresFieldsMissingExternal
+# does not warn with proper @requires usage
+extend type Product {
+    id: ID! @external
+    price: Int! @requires(fields: "id")
+}

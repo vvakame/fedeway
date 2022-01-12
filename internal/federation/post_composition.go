@@ -11,7 +11,7 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 		externalUnused,
 		externalMissingOnBase,
 		externalTypeMismatch,
-		// requiresFieldsMissingExternal,
+		requiresFieldsMissingExternal,
 		// requiresFieldsMissingOnBase,
 		// keyFieldsMissingOnBase,
 		// keyFieldsSelectInvalidType,
@@ -354,6 +354,72 @@ func externalTypeMismatch(schema *ast.Schema, metadata *FederationMetadata, serv
 						gErr.Extensions = make(map[string]interface{})
 					}
 					gErr.Extensions["code"] = "EXTERNAL_TYPE_MISMATCH"
+					errors = append(errors, gErr)
+				}
+			}
+		}
+	}
+
+	return errors
+}
+
+// for every @requires, there should be a matching @external
+func requiresFieldsMissingExternal(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
+	var errors []error
+
+	for typeName, namedType := range schema.Types {
+		// Only object types have fields
+		if namedType.Kind != ast.Object {
+			continue
+		}
+
+		// for each field, if there's a requires on it, check that there's a matching
+		// @external field, and that the types referenced are from the base type
+		for _, field := range namedType.Fields {
+			fieldName := field.Name
+			fieldFederationMetadata := metadata.FederationFieldMap.Get(field)
+			serviceName := fieldFederationMetadata.ServiceName
+
+			// serviceName should always exist on fields that have @requires federation data, since
+			// the only case where serviceName wouldn't exist is on a base type, and in that case,
+			// the `requires` metadata should never get added to begin with. This should be caught in
+			// composition work. This kind of error should be validated _before_ composition.
+			if serviceName == "" {
+				continue
+			}
+
+			if len(fieldFederationMetadata.Requires) == 0 {
+				continue
+			}
+
+			typeFederationMetadata := metadata.FederationTypeMap.Get(namedType)
+			externalFieldsOnTypeForService := typeFederationMetadata.Externals[serviceName]
+
+			selections := fieldFederationMetadata.Requires
+			for _, selection := range selections {
+				selectionField := selection.(*ast.Field)
+
+				var foundMatchingExternal bool
+				for _, ext := range externalFieldsOnTypeForService {
+					if ext.Field.Name == selectionField.Name {
+						foundMatchingExternal = true
+						break
+					}
+				}
+				if !foundMatchingExternal {
+					typeNode := findTypeNodeInServiceList(typeName, serviceName, serviceList)
+					fieldNode := typeNode.Fields.ForName(fieldName)
+
+					gErr := gqlerror.ErrorPosf(
+						fieldNode.Position, // TODO エラーを出力する箇所が厳密に元の実装を踏襲していない directiveのvalueのposはstripされていてわからなくなってしまっているため
+						"%s requires the field `%s` to be marked as @external.",
+						logServiceAndType(serviceName, typeName, fieldName),
+						selectionField.Name,
+					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
+					gErr.Extensions["code"] = "REQUIRES_FIELDS_MISSING_EXTERNAL"
 					errors = append(errors, gErr)
 				}
 			}
