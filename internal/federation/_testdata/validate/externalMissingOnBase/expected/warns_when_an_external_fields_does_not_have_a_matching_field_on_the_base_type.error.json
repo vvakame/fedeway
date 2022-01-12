@@ -1,0 +1,28 @@
+[
+  {
+    "message": "[serviceB] Product.id -\u003e marked @external but id was defined in serviceC, not in the service that owns Product (serviceA)",
+    "locations": [
+      {
+        "line": 6,
+        "column": 18
+      }
+    ],
+    "extensions": {
+      "code": "EXTERNAL_MISSING_ON_BASE",
+      "file": "serviceB.graphqls"
+    }
+  },
+  {
+    "message": "[serviceC] Product.test -\u003e marked @external but test is not defined on the base service of Product (serviceA)",
+    "locations": [
+      {
+        "line": 7,
+        "column": 16
+      }
+    ],
+    "extensions": {
+      "code": "EXTERNAL_MISSING_ON_BASE",
+      "file": "serviceC.graphqls"
+    }
+  }
+]

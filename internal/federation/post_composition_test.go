@@ -3,6 +3,7 @@ package federation
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"path"
 	"sort"
@@ -16,99 +17,122 @@ import (
 	"github.com/vvakame/fedeway/internal/testutils"
 )
 
-func TestExternalUnused(t *testing.T) {
-	// test case are ported from federation-js/src/composition/validate/postComposition/__tests__/externalUnused.test.ts
+func TestPostCompositionValidators(t *testing.T) {
+	t.Parallel()
 
-	const testFileDir = "./_testdata/validate/externalUnused/assets"
-	expectFileDir := "./_testdata/validate/externalUnused/expected"
-
-	rule := externalUnused
-
-	dirs, err := ioutil.ReadDir(testFileDir)
-	if err != nil {
-		t.Fatal(err)
+	type Spec struct {
+		Name string
+		Rule func(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error
 	}
 
-	for _, dir := range dirs {
-		if !dir.IsDir() {
-			continue
-		}
+	specs := []*Spec{
+		{
+			Name: "externalUnused",
+			Rule: externalUnused,
+		},
+		{
+			Name: "externalMissingOnBase",
+			Rule: externalMissingOnBase,
+		},
+	}
 
-		t.Run(dir.Name(), func(t *testing.T) {
-			dirPath := path.Join(testFileDir, dir.Name())
-			files, err := ioutil.ReadDir(dirPath)
+	for _, spec := range specs {
+		spec := spec
+		t.Run(spec.Name, func(t *testing.T) {
+			t.Parallel()
+
+			testFileDir := fmt.Sprintf("./_testdata/validate/%s/assets", spec.Name)
+			expectFileDir := fmt.Sprintf("./_testdata/validate/%s/expected", spec.Name)
+
+			rule := spec.Rule
+
+			dirs, err := ioutil.ReadDir(testFileDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			var serviceDefs []*ServiceDefinition
-			for _, file := range files {
-				if file.IsDir() {
-					continue
-				} else if !strings.HasSuffix(file.Name(), ".graphqls") {
+			for _, dir := range dirs {
+				if !dir.IsDir() {
 					continue
 				}
 
-				filePath := path.Join(testFileDir, dir.Name(), file.Name())
-				b, err := ioutil.ReadFile(filePath)
-				if err != nil {
-					t.Fatal(err)
-				}
+				t.Run(dir.Name(), func(t *testing.T) {
+					dirPath := path.Join(testFileDir, dir.Name())
+					files, err := ioutil.ReadDir(dirPath)
+					if err != nil {
+						t.Fatal(err)
+					}
 
-				if testutils.FindOptionBool(t, "skip", string(b)) {
-					t.Logf("test case skip by %s", filePath)
-					t.SkipNow()
-				}
+					var serviceDefs []*ServiceDefinition
+					for _, file := range files {
+						if file.IsDir() {
+							continue
+						} else if !strings.HasSuffix(file.Name(), ".graphqls") {
+							continue
+						}
 
-				name := testutils.FindOptionString(t, "name", string(b))
-				if name == "" {
-					t.Fatalf("option:name is not exists on %s", filePath)
-				}
-				urlValue := testutils.FindOptionString(t, "url", string(b))
+						filePath := path.Join(testFileDir, dir.Name(), file.Name())
+						b, err := ioutil.ReadFile(filePath)
+						if err != nil {
+							t.Fatal(err)
+						}
 
-				schemaDoc, gErr := parser.ParseSchema(&ast.Source{
-					Name:  file.Name(),
-					Input: string(b),
+						if testutils.FindOptionBool(t, "skip", string(b)) {
+							t.Logf("test case skip by %s", filePath)
+							t.SkipNow()
+						}
+
+						name := testutils.FindOptionString(t, "name", string(b))
+						if name == "" {
+							t.Fatalf("option:name is not exists on %s", filePath)
+						}
+						urlValue := testutils.FindOptionString(t, "url", string(b))
+
+						schemaDoc, gErr := parser.ParseSchema(&ast.Source{
+							Name:  file.Name(),
+							Input: string(b),
+						})
+						if gErr != nil {
+							t.Fatal(gErr)
+						}
+
+						serviceDefs = append(serviceDefs, &ServiceDefinition{
+							TypeDefs: schemaDoc,
+							Name:     name,
+							URL:      urlValue,
+						})
+					}
+					sort.SliceStable(serviceDefs, func(i, j int) bool {
+						return serviceDefs[i].Name < serviceDefs[j].Name
+					})
+
+					if len(serviceDefs) == 0 {
+						t.Logf("%s doesn't have testing assets", dirPath)
+						t.SkipNow()
+					}
+
+					ctx := context.Background()
+					ctx = log.WithLogger(ctx, testlogr.NewTestLogger(t))
+
+					schema, _, metadata, errs := composeServices(ctx, serviceDefs)
+					if len(errs) != 0 {
+						t.Fatal(errs)
+					}
+
+					errs = rule(schema, metadata, serviceDefs)
+					if errs == nil {
+						// for pretty print
+						errs = []error{}
+					}
+
+					b, err := json.MarshalIndent(errs, "", "  ")
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					testutils.CheckGoldenFile(t, b, path.Join(expectFileDir, dir.Name()+".error.json"))
 				})
-				if gErr != nil {
-					t.Fatal(gErr)
-				}
-
-				serviceDefs = append(serviceDefs, &ServiceDefinition{
-					TypeDefs: schemaDoc,
-					Name:     name,
-					URL:      urlValue,
-				})
 			}
-			sort.SliceStable(serviceDefs, func(i, j int) bool {
-				return serviceDefs[i].Name < serviceDefs[j].Name
-			})
-
-			if len(serviceDefs) == 0 {
-				t.Logf("%s doesn't have testing assets", dirPath)
-				t.SkipNow()
-			}
-
-			ctx := context.Background()
-			ctx = log.WithLogger(ctx, testlogr.NewTestLogger(t))
-
-			schema, _, metadata, errs := composeServices(ctx, serviceDefs)
-			if len(errs) != 0 {
-				t.Fatal(errs)
-			}
-
-			errs = rule(schema, metadata, serviceDefs)
-			if errs == nil {
-				// for pretty print
-				errs = []error{}
-			}
-
-			b, err := json.MarshalIndent(errs, "", "  ")
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			testutils.CheckGoldenFile(t, b, path.Join(expectFileDir, dir.Name()+".error.json"))
 		})
 	}
 }
