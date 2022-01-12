@@ -1,0 +1,7 @@
+# option:name: serviceC
+# requiresFieldsMissingOnBase
+# warns when requires selects a field not found on the base type
+extend type Product @key(fields: "sku") {
+    id: ID! @external
+    weight: Float! @requires(fields: "id")
+}

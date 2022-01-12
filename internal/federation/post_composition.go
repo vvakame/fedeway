@@ -1,9 +1,10 @@
 package federation
 
 import (
+	"sort"
+
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
-	"sort"
 )
 
 func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*ServiceDefinition) []error {
@@ -13,7 +14,7 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 		externalMissingOnBase,
 		externalTypeMismatch,
 		requiresFieldsMissingExternal,
-		// requiresFieldsMissingOnBase,
+		requiresFieldsMissingOnBase,
 		// keyFieldsMissingOnBase,
 		// keyFieldsSelectInvalidType,
 		// providesFieldsMissingExternal,
@@ -464,6 +465,72 @@ func requiresFieldsMissingExternal(schema *ast.Schema, metadata *FederationMetad
 						gErr.Extensions = make(map[string]interface{})
 					}
 					gErr.Extensions["code"] = "REQUIRES_FIELDS_MISSING_EXTERNAL"
+					errors = append(errors, gErr)
+				}
+			}
+		}
+	}
+
+	return errors
+}
+
+// The fields arg in @requires can only reference fields on the base type
+func requiresFieldsMissingOnBase(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
+	var errors []error
+
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, typeName := range typeNames {
+		namedType := schema.Types[typeName]
+		// Only object types have fields
+		if namedType.Kind != ast.Object {
+			continue
+		}
+
+		// for each field, if there's a requires on it, check that there's a matching
+		// @external field, and that the types referenced are from the base type
+		for _, field := range namedType.Fields {
+			fieldName := field.Name
+			fieldFederationMetadata := metadata.FederationFieldMap.Get(field)
+			serviceName := fieldFederationMetadata.ServiceName
+
+			// serviceName should always exist on fields that have @requires federation data, since
+			// the only case where serviceName wouldn't exist is on a base type, and in that case,
+			// the `requires` metadata should never get added to begin with. This should be caught in
+			// composition work. This kind of error should be validated _before_ composition.
+			if serviceName == "" {
+				continue
+			}
+
+			if len(fieldFederationMetadata.Requires) == 0 {
+				continue
+			}
+
+			selections := fieldFederationMetadata.Requires
+			for _, selection := range selections {
+				selectionField := selection.(*ast.Field)
+
+				// check the selections are from the _base_ type (no serviceName)
+				matchingFieldOnType := namedType.Fields.ForName(selectionField.Name)
+				typeFederationMetadata := metadata.FederationFieldMap.Get(matchingFieldOnType)
+
+				if typeFederationMetadata.ServiceName != "" {
+					typeNode := findTypeNodeInServiceList(typeName, serviceName, serviceList)
+					fieldNode := typeNode.Fields.ForName(fieldName)
+
+					gErr := gqlerror.ErrorPosf(
+						fieldNode.Position, // TODO エラーを出力する箇所が厳密に元の実装を踏襲していない directiveのvalueのposはstripされていてわからなくなってしまっているため
+						"%s requires the field `%s` to be @external. @external fields must exist on the base type, not an extension.",
+						logServiceAndType(serviceName, typeName, fieldName),
+						selectionField.Name,
+					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
+					gErr.Extensions["code"] = "REQUIRES_FIELDS_MISSING_ON_BASE"
 					errors = append(errors, gErr)
 				}
 			}

@@ -1,0 +1,6 @@
+# option:name: serviceA
+# requiresFieldsMissingOnBase
+# warns when requires selects a field not found on the base type
+type Product @key(fields: "sku") {
+    sku: String!
+}

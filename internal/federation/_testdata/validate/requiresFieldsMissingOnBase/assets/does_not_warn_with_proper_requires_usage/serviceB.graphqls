@@ -1,0 +1,8 @@
+# option:name: serviceB
+# requiresFieldsMissingOnBase
+# does not warn with proper @requires usage
+extend type Product @key(fields: "sku") {
+    sku: String! @external
+    id: ID!
+    weight: Float! @requires(fields: "sku")
+}
