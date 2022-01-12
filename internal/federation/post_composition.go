@@ -3,6 +3,7 @@ package federation
 import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
+	"sort"
 )
 
 func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*ServiceDefinition) []error {
@@ -11,7 +12,7 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 		externalUnused,
 		externalMissingOnBase,
 		externalTypeMismatch,
-		// requiresFieldsMissingExternal,
+		requiresFieldsMissingExternal,
 		// requiresFieldsMissingOnBase,
 		// keyFieldsMissingOnBase,
 		// keyFieldsSelectInvalidType,
@@ -29,7 +30,14 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 func externalUnused(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
 	var errors []error
 
-	for parentTypeName, parentType := range schema.Types {
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, parentTypeName := range typeNames {
+		parentType := schema.Types[parentTypeName]
+
 		// Only object types have fields
 		if parentType.Kind != ast.Object {
 			continue
@@ -54,7 +62,13 @@ func externalUnused(schema *ast.Schema, metadata *FederationMetadata, serviceLis
 		}
 
 		// loop over every service that has extensions with @external
-		for serviceName, externalFieldsForService := range typeFederationMetadata.Externals {
+		serviceNames := make([]string, 0, len(typeFederationMetadata.Externals))
+		for serviceName := range typeFederationMetadata.Externals {
+			serviceNames = append(serviceNames, serviceName)
+		}
+		sort.Strings(serviceNames)
+		for _, serviceName := range serviceNames {
+			externalFieldsForService := typeFederationMetadata.Externals[serviceName]
 			// for a single service, loop over the external fields.
 		OUTER:
 			for _, externalFields := range externalFieldsForService {
@@ -234,7 +248,13 @@ func externalUnused(schema *ast.Schema, metadata *FederationMetadata, serviceLis
 func externalMissingOnBase(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
 	var errors []error
 
-	for typeName, namedType := range schema.Types {
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, typeName := range typeNames {
+		namedType := schema.Types[typeName]
 		// Only object types have fields
 		if namedType.Kind != ast.Object {
 			continue
@@ -249,7 +269,13 @@ func externalMissingOnBase(schema *ast.Schema, metadata *FederationMetadata, ser
 		}
 
 		// loop over every service that has extensions with @external
-		for serviceName, externalFieldsForService := range typeFederationMetadata.Externals {
+		serviceNames := make([]string, 0, len(typeFederationMetadata.Externals))
+		for serviceName := range typeFederationMetadata.Externals {
+			serviceNames = append(serviceNames, serviceName)
+		}
+		sort.Strings(serviceNames)
+		for _, serviceName := range serviceNames {
+			externalFieldsForService := typeFederationMetadata.Externals[serviceName]
 			// for a single service, loop over the external fields.
 			for _, externalFieldForService := range externalFieldsForService {
 				externalField := externalFieldForService.Field
@@ -306,7 +332,13 @@ func externalMissingOnBase(schema *ast.Schema, metadata *FederationMetadata, ser
 func externalTypeMismatch(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
 	var errors []error
 
-	for typeName, namedType := range schema.Types {
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, typeName := range typeNames {
+		namedType := schema.Types[typeName]
 		// Only object types have fields
 		if namedType.Kind != ast.Object {
 			continue
@@ -320,7 +352,13 @@ func externalTypeMismatch(schema *ast.Schema, metadata *FederationMetadata, serv
 		}
 
 		// loop over every service that has extensions with @external
-		for serviceName, externalFieldsForService := range typeFederationMetadata.Externals {
+		serviceNames := make([]string, 0, len(typeFederationMetadata.Externals))
+		for serviceName := range typeFederationMetadata.Externals {
+			serviceNames = append(serviceNames, serviceName)
+		}
+		sort.Strings(serviceNames)
+		for _, serviceName := range serviceNames {
+			externalFieldsForService := typeFederationMetadata.Externals[serviceName]
 			// for a single service, loop over the external fields.
 			for _, externalFieldForService := range externalFieldsForService {
 				externalField := externalFieldForService.Field
@@ -354,6 +392,78 @@ func externalTypeMismatch(schema *ast.Schema, metadata *FederationMetadata, serv
 						gErr.Extensions = make(map[string]interface{})
 					}
 					gErr.Extensions["code"] = "EXTERNAL_TYPE_MISMATCH"
+					errors = append(errors, gErr)
+				}
+			}
+		}
+	}
+
+	return errors
+}
+
+// for every @requires, there should be a matching @external
+func requiresFieldsMissingExternal(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
+	var errors []error
+
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, typeName := range typeNames {
+		namedType := schema.Types[typeName]
+		// Only object types have fields
+		if namedType.Kind != ast.Object {
+			continue
+		}
+
+		// for each field, if there's a requires on it, check that there's a matching
+		// @external field, and that the types referenced are from the base type
+		for _, field := range namedType.Fields {
+			fieldName := field.Name
+			fieldFederationMetadata := metadata.FederationFieldMap.Get(field)
+			serviceName := fieldFederationMetadata.ServiceName
+
+			// serviceName should always exist on fields that have @requires federation data, since
+			// the only case where serviceName wouldn't exist is on a base type, and in that case,
+			// the `requires` metadata should never get added to begin with. This should be caught in
+			// composition work. This kind of error should be validated _before_ composition.
+			if serviceName == "" {
+				continue
+			}
+
+			if len(fieldFederationMetadata.Requires) == 0 {
+				continue
+			}
+
+			typeFederationMetadata := metadata.FederationTypeMap.Get(namedType)
+			externalFieldsOnTypeForService := typeFederationMetadata.Externals[serviceName]
+
+			selections := fieldFederationMetadata.Requires
+			for _, selection := range selections {
+				selectionField := selection.(*ast.Field)
+
+				var foundMatchingExternal bool
+				for _, ext := range externalFieldsOnTypeForService {
+					if ext.Field.Name == selectionField.Name {
+						foundMatchingExternal = true
+						break
+					}
+				}
+				if !foundMatchingExternal {
+					typeNode := findTypeNodeInServiceList(typeName, serviceName, serviceList)
+					fieldNode := typeNode.Fields.ForName(fieldName)
+
+					gErr := gqlerror.ErrorPosf(
+						fieldNode.Position, // TODO エラーを出力する箇所が厳密に元の実装を踏襲していない directiveのvalueのposはstripされていてわからなくなってしまっているため
+						"%s requires the field `%s` to be marked as @external.",
+						logServiceAndType(serviceName, typeName, fieldName),
+						selectionField.Name,
+					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
+					gErr.Extensions["code"] = "REQUIRES_FIELDS_MISSING_EXTERNAL"
 					errors = append(errors, gErr)
 				}
 			}

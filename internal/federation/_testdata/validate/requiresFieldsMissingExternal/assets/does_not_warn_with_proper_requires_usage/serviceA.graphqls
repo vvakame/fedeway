@@ -1,0 +1,8 @@
+# option:name: serviceA
+# requiresFieldsMissingExternal
+# does not warn with proper @requires usage
+type Product {
+    sku: String!
+    upc: String!
+    id: ID!
+}

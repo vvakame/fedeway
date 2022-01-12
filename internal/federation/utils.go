@@ -414,6 +414,24 @@ func typeNodesAreEquivalent(firstNode *ast.Definition, secondNode *ast.Definitio
 	return true
 }
 
+func findTypeNodeInServiceList(typeName string, serviceName string, serviceList []*ServiceDefinition) *ast.Definition {
+	for _, service := range serviceList {
+		if service.Name != serviceName {
+			continue
+		}
+		def := service.TypeDefs.Definitions.ForName(typeName)
+		if def != nil {
+			return def
+		}
+		def = service.TypeDefs.Extensions.ForName(typeName)
+		if def != nil {
+			return def
+		}
+	}
+
+	return nil
+}
+
 func isFederationDirective(directiveName string) bool {
 	for _, node := range federationDirectives {
 		if node.Name == directiveName {

@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceB] Product.price -\u003e requires the field `id` to be marked as @external.",
+    "locations": [
+      {
+        "line": 5,
+        "column": 5
+      }
+    ],
+    "extensions": {
+      "code": "REQUIRES_FIELDS_MISSING_EXTERNAL",
+      "file": "serviceB.graphqls"
+    }
+  }
+]
