@@ -3,6 +3,7 @@ package federation
 import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
+	"sort"
 )
 
 func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*ServiceDefinition) []error {
@@ -29,7 +30,14 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 func externalUnused(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
 	var errors []error
 
-	for parentTypeName, parentType := range schema.Types {
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, parentTypeName := range typeNames {
+		parentType := schema.Types[parentTypeName]
+
 		// Only object types have fields
 		if parentType.Kind != ast.Object {
 			continue
@@ -54,7 +62,13 @@ func externalUnused(schema *ast.Schema, metadata *FederationMetadata, serviceLis
 		}
 
 		// loop over every service that has extensions with @external
-		for serviceName, externalFieldsForService := range typeFederationMetadata.Externals {
+		serviceNames := make([]string, 0, len(typeFederationMetadata.Externals))
+		for serviceName := range typeFederationMetadata.Externals {
+			serviceNames = append(serviceNames, serviceName)
+		}
+		sort.Strings(serviceNames)
+		for _, serviceName := range serviceNames {
+			externalFieldsForService := typeFederationMetadata.Externals[serviceName]
 			// for a single service, loop over the external fields.
 		OUTER:
 			for _, externalFields := range externalFieldsForService {
@@ -234,7 +248,13 @@ func externalUnused(schema *ast.Schema, metadata *FederationMetadata, serviceLis
 func externalMissingOnBase(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
 	var errors []error
 
-	for typeName, namedType := range schema.Types {
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, typeName := range typeNames {
+		namedType := schema.Types[typeName]
 		// Only object types have fields
 		if namedType.Kind != ast.Object {
 			continue
@@ -249,7 +269,13 @@ func externalMissingOnBase(schema *ast.Schema, metadata *FederationMetadata, ser
 		}
 
 		// loop over every service that has extensions with @external
-		for serviceName, externalFieldsForService := range typeFederationMetadata.Externals {
+		serviceNames := make([]string, 0, len(typeFederationMetadata.Externals))
+		for serviceName := range typeFederationMetadata.Externals {
+			serviceNames = append(serviceNames, serviceName)
+		}
+		sort.Strings(serviceNames)
+		for _, serviceName := range serviceNames {
+			externalFieldsForService := typeFederationMetadata.Externals[serviceName]
 			// for a single service, loop over the external fields.
 			for _, externalFieldForService := range externalFieldsForService {
 				externalField := externalFieldForService.Field
@@ -306,7 +332,13 @@ func externalMissingOnBase(schema *ast.Schema, metadata *FederationMetadata, ser
 func externalTypeMismatch(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
 	var errors []error
 
-	for typeName, namedType := range schema.Types {
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, typeName := range typeNames {
+		namedType := schema.Types[typeName]
 		// Only object types have fields
 		if namedType.Kind != ast.Object {
 			continue
@@ -320,7 +352,13 @@ func externalTypeMismatch(schema *ast.Schema, metadata *FederationMetadata, serv
 		}
 
 		// loop over every service that has extensions with @external
-		for serviceName, externalFieldsForService := range typeFederationMetadata.Externals {
+		serviceNames := make([]string, 0, len(typeFederationMetadata.Externals))
+		for serviceName := range typeFederationMetadata.Externals {
+			serviceNames = append(serviceNames, serviceName)
+		}
+		sort.Strings(serviceNames)
+		for _, serviceName := range serviceNames {
+			externalFieldsForService := typeFederationMetadata.Externals[serviceName]
 			// for a single service, loop over the external fields.
 			for _, externalFieldForService := range externalFieldsForService {
 				externalField := externalFieldForService.Field
@@ -367,7 +405,13 @@ func externalTypeMismatch(schema *ast.Schema, metadata *FederationMetadata, serv
 func requiresFieldsMissingExternal(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
 	var errors []error
 
-	for typeName, namedType := range schema.Types {
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, typeName := range typeNames {
+		namedType := schema.Types[typeName]
 		// Only object types have fields
 		if namedType.Kind != ast.Object {
 			continue
