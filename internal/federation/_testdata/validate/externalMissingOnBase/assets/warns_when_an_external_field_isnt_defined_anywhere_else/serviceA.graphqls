@@ -1,0 +1,7 @@
+# option:name: serviceA
+# externalMissingOnBase
+# warns when an @external field isn't defined anywhere else
+type Product @key(fields: "sku") {
+    sku: String!
+    upc: String!
+}

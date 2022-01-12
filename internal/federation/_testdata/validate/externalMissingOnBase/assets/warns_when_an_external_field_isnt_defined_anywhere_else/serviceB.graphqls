@@ -1,0 +1,7 @@
+# option:name: serviceB
+# externalMissingOnBase
+# warns when an @external field isn't defined anywhere else
+extend type Product {
+    specialId: String! @external
+    id: String! @requires(fields: "specialId")
+}

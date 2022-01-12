@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceB] Product.specialId -\u003e marked @external but specialId is not defined on the base service of Product (serviceA)",
+    "locations": [
+      {
+        "line": 5,
+        "column": 25
+      }
+    ],
+    "extensions": {
+      "code": "EXTERNAL_MISSING_ON_BASE",
+      "file": "serviceB.graphqls"
+    }
+  }
+]

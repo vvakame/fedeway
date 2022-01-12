@@ -9,7 +9,7 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 	return []func(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error{
 		// TODO let's implements below rules!
 		externalUnused,
-		// externalMissingOnBase,
+		externalMissingOnBase,
 		// externalTypeMismatch,
 		// requiresFieldsMissingExternal,
 		// requiresFieldsMissingOnBase,
@@ -223,6 +223,77 @@ func externalUnused(schema *ast.Schema, metadata *FederationMetadata, serviceLis
 				}
 				gErr.Extensions["code"] = "EXTERNAL_UNUSED"
 				errors = append(errors, gErr)
+			}
+		}
+	}
+
+	return errors
+}
+
+// All fields marked with @external must exist on the base type
+func externalMissingOnBase(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
+	var errors []error
+
+	for typeName, namedType := range schema.Types {
+		// Only object types have fields
+		if namedType.Kind != ast.Object {
+			continue
+		}
+
+		typeFederationMetadata := metadata.FederationTypeMap.Get(namedType)
+
+		// If externals is populated, we need to look at each one and confirm
+		// that field exists on base service
+		if len(typeFederationMetadata.Externals) == 0 {
+			continue
+		}
+
+		// loop over every service that has extensions with @external
+		for serviceName, externalFieldsForService := range typeFederationMetadata.Externals {
+			// for a single service, loop over the external fields.
+			for _, externalFieldForService := range externalFieldsForService {
+				externalField := externalFieldForService.Field
+				externalFieldName := externalField.Name
+				matchingBaseField := namedType.Fields.ForName(externalFieldName)
+
+				// @external field referenced a field that isn't defined anywhere
+				if matchingBaseField == nil {
+					gErr := gqlerror.ErrorPosf(
+						externalField.Directives.ForName("external").Position,
+						"%s marked @external but %s is not defined on the base service of %s (%s)",
+						logServiceAndType(serviceName, typeName, externalFieldName),
+						externalFieldName,
+						typeName,
+						typeFederationMetadata.ServiceName,
+					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
+					gErr.Extensions["code"] = "EXTERNAL_MISSING_ON_BASE"
+					errors = append(errors, gErr)
+					continue
+				}
+
+				// if the field has a serviceName, then it wasn't defined by the
+				// service that owns the type
+				fieldFederationMetadata := metadata.FederationFieldMap.Get(matchingBaseField)
+
+				if fieldFederationMetadata.ServiceName != "" {
+					gErr := gqlerror.ErrorPosf(
+						externalField.Directives.ForName("external").Position,
+						"%s marked @external but %s was defined in %s, not in the service that owns %s (%s)",
+						logServiceAndType(serviceName, typeName, externalFieldName),
+						externalFieldName,
+						fieldFederationMetadata.ServiceName,
+						typeName,
+						typeFederationMetadata.ServiceName,
+					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
+					gErr.Extensions["code"] = "EXTERNAL_MISSING_ON_BASE"
+					errors = append(errors, gErr)
+				}
 			}
 		}
 	}
