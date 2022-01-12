@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceB] Product.sku -\u003e the type of the @external field does not exist in the resulting composed schema",
+    "locations": [
+      {
+        "line": 6,
+        "column": 27
+      }
+    ],
+    "extensions": {
+      "code": "EXTERNAL_TYPE_MISMATCH",
+      "file": "serviceB.graphqls"
+    }
+  }
+]

@@ -1,0 +1,8 @@
+# option:name: serviceB
+# externalTypeMismatch
+# validateExternalDirectivesOnSchema
+# warns when an @external field's type does not exist in the composed schema
+extend type Product {
+    sku: NonExistentType! @external
+    id: String! @requires(fields: "sku")
+}
