@@ -1,0 +1,6 @@
+# option:name: serviceA
+# requiresFieldsMissingOnBase
+# does not warn with proper @requires usage
+type Product @key(fields: "sku") {
+    sku: String!
+}
