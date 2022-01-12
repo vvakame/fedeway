@@ -10,7 +10,7 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 		// TODO let's implements below rules!
 		externalUnused,
 		externalMissingOnBase,
-		// externalTypeMismatch,
+		externalTypeMismatch,
 		// requiresFieldsMissingExternal,
 		// requiresFieldsMissingOnBase,
 		// keyFieldsMissingOnBase,
@@ -292,6 +292,68 @@ func externalMissingOnBase(schema *ast.Schema, metadata *FederationMetadata, ser
 						gErr.Extensions = make(map[string]interface{})
 					}
 					gErr.Extensions["code"] = "EXTERNAL_MISSING_ON_BASE"
+					errors = append(errors, gErr)
+				}
+			}
+		}
+	}
+
+	return errors
+}
+
+// All fields marked with @external must match the type definition of the base service.
+// Additional warning if the type of the @external field doesn't exist at all on the schema
+func externalTypeMismatch(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
+	var errors []error
+
+	for typeName, namedType := range schema.Types {
+		// Only object types have fields
+		if namedType.Kind != ast.Object {
+			continue
+		}
+
+		// If externals is populated, we need to look at each one and confirm
+		// there is a matching @requires
+		typeFederationMetadata := metadata.FederationTypeMap.Get(namedType)
+		if len(typeFederationMetadata.Externals) == 0 {
+			continue
+		}
+
+		// loop over every service that has extensions with @external
+		for serviceName, externalFieldsForService := range typeFederationMetadata.Externals {
+			// for a single service, loop over the external fields.
+			for _, externalFieldForService := range externalFieldsForService {
+				externalField := externalFieldForService.Field
+				externalFieldName := externalField.Name
+				matchingBaseField := namedType.Fields.ForName(externalFieldName)
+
+				externalFieldType := externalField.Type
+
+				if schema.Types[externalField.Type.Name()] == nil {
+					gErr := gqlerror.ErrorPosf(
+						externalField.Type.Position,
+						"%s the type of the @external field does not exist in the resulting composed schema",
+						logServiceAndType(serviceName, typeName, externalFieldName),
+					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
+					gErr.Extensions["code"] = "EXTERNAL_TYPE_MISMATCH"
+					errors = append(errors, gErr)
+
+				} else if matchingBaseField != nil && matchingBaseField.Type.String() != externalFieldType.String() {
+					gErr := gqlerror.ErrorPosf(
+						externalField.Type.Position,
+						"%s Type `%s` does not match the type of the original field in %s (`%s`)",
+						logServiceAndType(serviceName, typeName, externalFieldName),
+						externalFieldType.String(),
+						typeFederationMetadata.ServiceName,
+						matchingBaseField.Type.String(),
+					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
+					gErr.Extensions["code"] = "EXTERNAL_TYPE_MISMATCH"
 					errors = append(errors, gErr)
 				}
 			}

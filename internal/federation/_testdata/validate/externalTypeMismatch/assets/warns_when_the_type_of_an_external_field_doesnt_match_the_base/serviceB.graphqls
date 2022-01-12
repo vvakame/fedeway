@@ -1,0 +1,9 @@
+# option:name: serviceB
+# externalTypeMismatch
+# validateExternalDirectivesOnSchema
+# warns when the type of an @external field doesnt match the base
+extend type Product {
+    sku: String @external
+    skew: String! @external
+    price: Int! @requires(fields: "sku skew")
+}

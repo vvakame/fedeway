@@ -1,0 +1,28 @@
+[
+  {
+    "message": "[serviceB] Product.sku -\u003e Type `String` does not match the type of the original field in serviceA (`String!`)",
+    "locations": [
+      {
+        "line": 6,
+        "column": 10
+      }
+    ],
+    "extensions": {
+      "code": "EXTERNAL_TYPE_MISMATCH",
+      "file": "serviceB.graphqls"
+    }
+  },
+  {
+    "message": "[serviceB] Product.skew -\u003e Type `String!` does not match the type of the original field in serviceA (`String`)",
+    "locations": [
+      {
+        "line": 7,
+        "column": 19
+      }
+    ],
+    "extensions": {
+      "code": "EXTERNAL_TYPE_MISMATCH",
+      "file": "serviceB.graphqls"
+    }
+  }
+]

@@ -34,6 +34,10 @@ func TestPostCompositionValidators(t *testing.T) {
 			Name: "externalMissingOnBase",
 			Rule: externalMissingOnBase,
 		},
+		{
+			Name: "externalTypeMismatch",
+			Rule: externalTypeMismatch,
+		},
 	}
 
 	for _, spec := range specs {
