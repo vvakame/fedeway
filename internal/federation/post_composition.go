@@ -17,7 +17,7 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 		requiresFieldsMissingOnBase,
 		keyFieldsMissingOnBase,
 		keyFieldsSelectInvalidType,
-		// providesFieldsMissingExternal,
+		providesFieldsMissingExternal,
 		// providesFieldsSelectInvalidType,
 		// providesNotOnEntity,
 		// executableDirectivesInAllServices,
