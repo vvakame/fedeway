@@ -1,0 +1,7 @@
+# option:name: serviceB
+# providesFieldsMissingExternal
+# does not warn with proper @provides usage
+type User @key(fields: "id") {
+    id: ID!
+    username: String
+}

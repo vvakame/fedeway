@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceA] Review.product -\u003e provides the field `id` and requires Product.id to be marked as @external.",
+    "locations": [
+      {
+        "line": 5,
+        "column": 5
+      }
+    ],
+    "extensions": {
+      "code": "PROVIDES_FIELDS_MISSING_EXTERNAL",
+      "file": "serviceB.graphqls"
+    }
+  }
+]

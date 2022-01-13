@@ -1,0 +1,12 @@
+# option:name: serviceA
+# providesFieldsMissingExternal
+# warns when there is a @provides with no matching @external field
+type Review @key(fields: "id") {
+    id: ID!
+    product: Product @provides(fields: "id")
+}
+
+extend type Product @key(fields: "sku") {
+    sku: String! @external
+    price: Int!
+}

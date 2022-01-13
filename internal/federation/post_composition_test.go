@@ -54,6 +54,10 @@ func TestPostCompositionValidators(t *testing.T) {
 			Name: "keyFieldsSelectInvalidType",
 			Rule: keyFieldsSelectInvalidType,
 		},
+		{
+			Name: "providesFieldsMissingExternal",
+			Rule: providesFieldsMissingExternal,
+		},
 	}
 
 	for _, spec := range specs {
