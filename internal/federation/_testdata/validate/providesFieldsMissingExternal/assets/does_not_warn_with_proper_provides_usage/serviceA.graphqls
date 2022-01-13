@@ -1,0 +1,8 @@
+# option:name: serviceA
+# providesFieldsMissingExternal
+# does not warn with proper @provides usage
+type Product @key(fields: "sku") {
+    sku: String!
+    upc: String!
+    id: ID!
+}

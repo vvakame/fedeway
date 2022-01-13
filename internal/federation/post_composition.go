@@ -716,3 +716,86 @@ func keyFieldsSelectInvalidType(schema *ast.Schema, metadata *FederationMetadata
 
 	return errors
 }
+
+// for every field in a @provides, there should be a matching @external
+func providesFieldsMissingExternal(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
+	var errors []error
+
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, typeName := range typeNames {
+		namedType := schema.Types[typeName]
+		// Only object types have fields
+		if namedType.Kind != ast.Object {
+			continue
+		}
+
+		// for each field, if there's a requires on it, check that there's a matching
+		// @external field, and that the types referenced are from the base type
+		for _, field := range namedType.Fields {
+			fieldName := field.Name
+			fieldFederationMetadata := metadata.FederationFieldMap.Get(field)
+			serviceName := fieldFederationMetadata.ServiceName
+
+			// serviceName should always exist on fields that have @provides federation data, since
+			// the only case where serviceName wouldn't exist is on a base type, and in that case,
+			// the `provides` metadata should never get added to begin with. This should be caught in
+			// composition work. This kind of error should be validated _before_ composition.
+			if serviceName == "" {
+				continue
+			}
+
+			fieldType := schema.Types[field.Type.Name()]
+			if fieldType.Kind != ast.Object {
+				continue
+			}
+
+			fieldTypeFederationMetadata := metadata.FederationTypeMap.Get(fieldType)
+
+			externalFieldsOnTypeForService := fieldTypeFederationMetadata.Externals[serviceName]
+
+			selections := fieldFederationMetadata.Provides
+
+			for _, selection := range selections {
+				field := selection.(*ast.Field)
+
+				var foundMatchingExternal bool
+				for _, ext := range externalFieldsOnTypeForService {
+					if ext.Field.Name == field.Name {
+						foundMatchingExternal = true
+						break
+					}
+				}
+
+				if !foundMatchingExternal {
+					typeNode := findTypeNodeInServiceList(typeName, serviceName, serviceList)
+					var target *ast.FieldDefinition
+					for _, typeField := range typeNode.Fields {
+						if typeField.Name == field.Name {
+							target = typeField
+						}
+					}
+
+					gErr := gqlerror.ErrorPosf(
+						target.Position,
+						"%s provides the field `%s` and requires %s.%s to be marked as @external.",
+						logServiceAndType(serviceName, typeName, fieldName),
+						field.Name,
+						fieldType.Name,
+						field.Name,
+					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
+					gErr.Extensions["code"] = "PROVIDES_FIELDS_MISSING_EXTERNAL"
+					errors = append(errors, gErr)
+				}
+			}
+		}
+	}
+
+	return errors
+}

@@ -1,0 +1,19 @@
+# option:name: serviceB
+# providesFieldsMissingExternal
+# does not warn with proper @provides usage
+type Review @key(fields: "id") {
+    id: ID!
+    product: Product @provides(fields: "id")
+    author: User @provides(fields: "username")
+}
+
+extend type Product @key(fields: "sku") {
+    sku: String! @external
+    id: ID! @external
+    price: Int!
+}
+
+extend type User @key(fields: "id") {
+    id: ID! @external
+    username: String @external
+}
