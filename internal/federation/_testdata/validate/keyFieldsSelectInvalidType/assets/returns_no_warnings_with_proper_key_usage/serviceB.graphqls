@@ -1,0 +1,8 @@
+# option:name: serviceB
+# keyFieldsSelectInvalidType
+# returns no warnings with proper @key usage
+
+extend type Product {
+    sku: String! @external
+    price: Int! @requires(fields: "sku")
+}

@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceA] Product -\u003e A @key selects Product.featuredItem, which is an interface type. Keys cannot select interfaces.",
+    "locations": [
+      {
+        "line": 5,
+        "column": 5
+      }
+    ],
+    "extensions": {
+      "code": "KEY_FIELDS_SELECT_INVALID_TYPE",
+      "file": "serviceA.graphqls"
+    }
+  }
+]

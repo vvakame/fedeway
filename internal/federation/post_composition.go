@@ -16,7 +16,7 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 		requiresFieldsMissingExternal,
 		requiresFieldsMissingOnBase,
 		keyFieldsMissingOnBase,
-		// keyFieldsSelectInvalidType,
+		keyFieldsSelectInvalidType,
 		// providesFieldsMissingExternal,
 		// providesFieldsSelectInvalidType,
 		// providesNotOnEntity,
@@ -605,6 +605,107 @@ func keyFieldsMissingOnBase(schema *ast.Schema, metadata *FederationMetadata, se
 								gErr.Extensions = make(map[string]interface{})
 							}
 							gErr.Extensions["code"] = "KEY_FIELDS_MISSING_ON_BASE"
+							errors = append(errors, gErr)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return errors
+}
+
+// The fields argument can not have root fields that result in a list.
+// The fields argument can not have root fields that result in an interface.
+// The fields argument can not have root fields that result in a union type.
+func keyFieldsSelectInvalidType(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
+	var errors []error
+
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, typeName := range typeNames {
+		namedType := schema.Types[typeName]
+		// Only object types have fields
+		if namedType.Kind != ast.Object {
+			continue
+		}
+
+		typeFederationMetadata := metadata.FederationTypeMap.Get(namedType)
+
+		if len(typeFederationMetadata.Keys) == 0 {
+			continue
+		}
+
+		allFieldsInType := namedType.Fields
+
+		serviceNames := make([]string, 0, len(typeFederationMetadata.Keys))
+		for serviceName := range typeFederationMetadata.Keys {
+			serviceNames = append(serviceNames, serviceName)
+		}
+		sort.Strings(serviceNames)
+		for _, serviceName := range serviceNames {
+			selectionSets := typeFederationMetadata.Keys[serviceName]
+
+			for _, selectionSet := range selectionSets {
+				for _, selection := range selectionSet {
+					field := selection.(*ast.Field)
+
+					name := field.Name
+
+					// find corresponding field for each selected field
+					matchingField := allFieldsInType.ForName(name)
+
+					typeNode := findTypeNodeInServiceList(typeName, serviceName, serviceList)
+					fieldNode := typeNode.Fields.ForName(name)
+
+					if matchingField == nil {
+						gErr := gqlerror.ErrorPosf(
+							fieldNode.Position, // TODO エラーを出力する箇所が厳密に元の実装を踏襲していない directiveのvalueのposはstripされていてわからなくなってしまっているため
+							"%s A @key selects %s, but %s.%s could not be found",
+							logServiceAndType(serviceName, typeName, ""),
+							name,
+							typeName,
+							name,
+						)
+						if gErr.Extensions == nil {
+							gErr.Extensions = make(map[string]interface{})
+						}
+						gErr.Extensions["code"] = "KEY_FIELDS_SELECT_INVALID_TYPE"
+						errors = append(errors, gErr)
+					}
+
+					if matchingField != nil {
+						if schema.Types[matchingField.Type.Name()].Kind == ast.Interface {
+							gErr := gqlerror.ErrorPosf(
+								fieldNode.Position, // TODO エラーを出力する箇所が厳密に元の実装を踏襲していない directiveのvalueのposはstripされていてわからなくなってしまっているため
+								"%s A @key selects %s.%s, which is an interface type. Keys cannot select interfaces.",
+								logServiceAndType(serviceName, typeName, ""),
+								typeName,
+								name,
+							)
+							if gErr.Extensions == nil {
+								gErr.Extensions = make(map[string]interface{})
+							}
+							gErr.Extensions["code"] = "KEY_FIELDS_SELECT_INVALID_TYPE"
+							errors = append(errors, gErr)
+						}
+
+						if schema.Types[matchingField.Type.Name()].Kind == ast.Union {
+							gErr := gqlerror.ErrorPosf(
+								fieldNode.Position, // TODO エラーを出力する箇所が厳密に元の実装を踏襲していない directiveのvalueのposはstripされていてわからなくなってしまっているため
+								"%s A @key selects %s.%s, which is a union type. Keys cannot select union types.",
+								logServiceAndType(serviceName, typeName, ""),
+								typeName,
+								name,
+							)
+							if gErr.Extensions == nil {
+								gErr.Extensions = make(map[string]interface{})
+							}
+							gErr.Extensions["code"] = "KEY_FIELDS_SELECT_INVALID_TYPE"
 							errors = append(errors, gErr)
 						}
 					}

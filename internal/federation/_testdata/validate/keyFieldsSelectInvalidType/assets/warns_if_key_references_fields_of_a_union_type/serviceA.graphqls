@@ -1,0 +1,9 @@
+# option:name: serviceA
+# keyFieldsSelectInvalidType
+# warns if @key references fields of a union type
+type Product @key(fields: "price") {
+    sku: String!
+    price: Numeric!
+}
+
+union Numeric = Float | Int

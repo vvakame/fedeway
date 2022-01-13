@@ -50,6 +50,10 @@ func TestPostCompositionValidators(t *testing.T) {
 			Name: "keyFieldsMissingOnBase",
 			Rule: keyFieldsMissingOnBase,
 		},
+		{
+			Name: "keyFieldsSelectInvalidType",
+			Rule: keyFieldsSelectInvalidType,
+		},
 	}
 
 	for _, spec := range specs {
