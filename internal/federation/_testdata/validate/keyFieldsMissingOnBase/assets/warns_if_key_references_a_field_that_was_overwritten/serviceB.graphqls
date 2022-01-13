@@ -1,0 +1,9 @@
+# option:name: serviceB
+# option:skip: true
+# skip is inherited from original test case...
+# keyFieldsMissingOnBase
+# warns if @key references a field that was overwritten
+extend type Product {
+    sku: ID! # overwritten from base service
+    weight: Float!
+}

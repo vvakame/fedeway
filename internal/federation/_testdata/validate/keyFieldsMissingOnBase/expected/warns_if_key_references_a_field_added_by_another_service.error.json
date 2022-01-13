@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceA] Product -\u003e A @key selects uid, but Product.uid was either created or overwritten by serviceB, not serviceA",
+    "locations": [
+      {
+        "line": 5,
+        "column": 5
+      }
+    ],
+    "extensions": {
+      "code": "KEY_FIELDS_MISSING_ON_BASE",
+      "file": "serviceB.graphqls"
+    }
+  }
+]

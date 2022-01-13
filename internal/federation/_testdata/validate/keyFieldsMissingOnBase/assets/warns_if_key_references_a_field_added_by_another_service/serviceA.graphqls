@@ -1,0 +1,7 @@
+# option:name: serviceA
+# keyFieldsMissingOnBase
+# warns if @key references a field added by another service
+type Product @key(fields: "sku uid") {
+    sku: String!
+    upc: String!
+}

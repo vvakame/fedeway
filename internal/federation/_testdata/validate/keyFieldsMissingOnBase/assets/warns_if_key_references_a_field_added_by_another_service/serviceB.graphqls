@@ -1,0 +1,8 @@
+# option:name: serviceB
+# keyFieldsMissingOnBase
+# warns if @key references a field added by another service
+extend type Product {
+    uid: String!
+    sku: String! @external
+    price: Int! @requires(fields: "sku")
+}
