@@ -1,0 +1,16 @@
+# option:name: serviceA
+# keyFieldsSelectInvalidType
+# returns no warnings with proper @key usage
+
+# FIXME: add second key "upc" when duplicate directives are supported
+# i.e. @key(fields: "sku") @key(fields: "upc")
+type Product @key(fields: "sku") {
+    sku: String!
+    upc: String!
+    color: Color!
+}
+
+type Color {
+    id: ID!
+    value: String!
+}

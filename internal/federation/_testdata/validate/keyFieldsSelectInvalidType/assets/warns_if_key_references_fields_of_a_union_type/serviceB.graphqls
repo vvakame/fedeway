@@ -1,0 +1,7 @@
+# option:name: serviceB
+# keyFieldsSelectInvalidType
+# warns if @key references fields of a union type
+extend type Product {
+    sku: String! @external
+    name: String!
+}

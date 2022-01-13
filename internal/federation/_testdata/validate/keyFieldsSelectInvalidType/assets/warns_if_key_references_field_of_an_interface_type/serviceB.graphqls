@@ -1,0 +1,7 @@
+# option:name: serviceB
+# keyFieldsSelectInvalidType
+# warns if @key references fields of an interface type
+extend type Product {
+    sku: String! @external
+    price: Int! @requires(fields: "sku")
+}

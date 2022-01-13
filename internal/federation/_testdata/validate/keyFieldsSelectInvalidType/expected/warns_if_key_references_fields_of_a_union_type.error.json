@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceA] Product -\u003e A @key selects Product.price, which is a union type. Keys cannot select union types.",
+    "locations": [
+      {
+        "line": 6,
+        "column": 5
+      }
+    ],
+    "extensions": {
+      "code": "KEY_FIELDS_SELECT_INVALID_TYPE",
+      "file": "serviceA.graphqls"
+    }
+  }
+]

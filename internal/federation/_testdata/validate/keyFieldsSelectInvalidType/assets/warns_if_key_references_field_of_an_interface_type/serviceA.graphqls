@@ -1,0 +1,11 @@
+# option:name: serviceA
+# keyFieldsSelectInvalidType
+# warns if @key references fields of an interface type
+type Product @key(fields: "featuredItem") {
+    featuredItem: Node!
+    sku: String!
+}
+
+interface Node {
+    id: ID!
+}
