@@ -15,7 +15,7 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 		externalTypeMismatch,
 		requiresFieldsMissingExternal,
 		requiresFieldsMissingOnBase,
-		// keyFieldsMissingOnBase,
+		keyFieldsMissingOnBase,
 		// keyFieldsSelectInvalidType,
 		// providesFieldsMissingExternal,
 		// providesFieldsSelectInvalidType,
@@ -532,6 +532,82 @@ func requiresFieldsMissingOnBase(schema *ast.Schema, metadata *FederationMetadat
 					}
 					gErr.Extensions["code"] = "REQUIRES_FIELDS_MISSING_ON_BASE"
 					errors = append(errors, gErr)
+				}
+			}
+		}
+	}
+
+	return errors
+}
+
+// The fields argument can not select fields that were overwritten by another service
+func keyFieldsMissingOnBase(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
+	var errors []error
+
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, typeName := range typeNames {
+		namedType := schema.Types[typeName]
+		// Only object types have fields
+		if namedType.Kind != ast.Object {
+			continue
+		}
+
+		typeFederationMetadata := metadata.FederationTypeMap.Get(namedType)
+
+		if len(typeFederationMetadata.Keys) == 0 {
+			continue
+		}
+
+		allFieldsInType := namedType.Fields
+
+		serviceNames := make([]string, 0, len(typeFederationMetadata.Keys))
+		for serviceName := range typeFederationMetadata.Keys {
+			serviceNames = append(serviceNames, serviceName)
+		}
+		sort.Strings(serviceNames)
+		for _, serviceName := range serviceNames {
+			selectionSets := typeFederationMetadata.Keys[serviceName]
+
+			for _, selectionSet := range selectionSets {
+				for _, selection := range selectionSet {
+					field := selection.(*ast.Field)
+
+					name := field.Name
+
+					// find corresponding field for each selected field
+					matchingField := allFieldsInType.ForName(name)
+
+					// NOTE: We don't need to warn if there is no matching field.
+					// keyFieldsSelectInvalidType already does that :)
+					if matchingField != nil {
+						typeNode := findTypeNodeInServiceList(typeName, serviceName, serviceList)
+						fieldNode := typeNode.Fields.ForName(name)
+
+						fieldFederationMetadata := metadata.FederationFieldMap.Get(matchingField)
+
+						// warn if not from base type OR IF IT WAS OVERWITTEN
+						if fieldFederationMetadata.ServiceName != "" {
+							gErr := gqlerror.ErrorPosf(
+								fieldNode.Position, // TODO エラーを出力する箇所が厳密に元の実装を踏襲していない directiveのvalueのposはstripされていてわからなくなってしまっているため
+								"%s A @key selects %s, but %s.%s was either created or overwritten by %s, not %s",
+								logServiceAndType(serviceName, typeName, ""),
+								name,
+								typeName,
+								name,
+								fieldFederationMetadata.ServiceName,
+								serviceName,
+							)
+							if gErr.Extensions == nil {
+								gErr.Extensions = make(map[string]interface{})
+							}
+							gErr.Extensions["code"] = "KEY_FIELDS_MISSING_ON_BASE"
+							errors = append(errors, gErr)
+						}
+					}
 				}
 			}
 		}

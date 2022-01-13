@@ -1,0 +1,12 @@
+# option:name: serviceA
+# option:skip: true
+# skip is inherited from original test case...
+# keyFieldsMissingOnBase
+# warns if @key references a field that was overwritten
+
+# FIXME: shouldn't composition _allow_ this with a warning?
+# right now, it errors during composition
+type Product @key(fields: "sku") {
+    sku: String!
+    upc: String!
+}
