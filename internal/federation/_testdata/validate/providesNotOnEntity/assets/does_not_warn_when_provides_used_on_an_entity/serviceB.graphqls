@@ -1,0 +1,7 @@
+# option:name: serviceB
+# providesNotOnEntity
+# does not warn when @provides used on an entity
+type Product {
+    lineItem: LineItem @provides(fields: "quantity")
+    lineItemNonNull: LineItem! @provides(fields: "quantity")
+}

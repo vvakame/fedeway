@@ -1,0 +1,10 @@
+# option:name: serviceB
+# providesNotOnEntity
+# does not warn when @provides used on an entity of a child type
+type Review {
+    author: User @provides(fields: "username")
+}
+
+type User {
+    username: String @external
+}

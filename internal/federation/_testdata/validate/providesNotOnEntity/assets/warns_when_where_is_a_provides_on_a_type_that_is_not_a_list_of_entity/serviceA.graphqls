@@ -1,0 +1,13 @@
+# option:name: serviceA
+# providesNotOnEntity
+# warns when there is a @provides on a type that is not a list of entity
+type Product @key(fields: "sku") {
+    sku: String!
+    upc: String!
+    id: ID!
+}
+
+type LineItem {
+    sku: String!
+    quantity: Int!
+}

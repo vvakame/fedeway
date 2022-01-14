@@ -62,6 +62,10 @@ func TestPostCompositionValidators(t *testing.T) {
 			Name: "providesFieldsSelectInvalidType",
 			Rule: providesFieldsSelectInvalidType,
 		},
+		{
+			Name: "providesNotOnEntity",
+			Rule: providesNotOnEntity,
+		},
 	}
 
 	for _, spec := range specs {

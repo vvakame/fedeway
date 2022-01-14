@@ -1,0 +1,10 @@
+# option:name: serviceB
+# providesNotOnEntity
+# does not warn when @provides used on a list of entity
+type Product {
+    lineItems: [LineItem] @provides(fields: "quantity")
+    lineItemsNonNull: [LineItem]! @provides(fields: "quantity")
+    nonNullLineItems: [LineItem!] @provides(fields: "quantity")
+    nonNullLineItemsNonNull: [LineItem!]! @provides(fields: "quantity")
+    deep: [[LineItem!]!]! @provides(fields: "quantity")
+}
