@@ -1,0 +1,11 @@
+# option:name: serviceB
+# providesFieldsSelectInvalidType
+# warns if @provides references fields of an interface type
+type User @key(fields: "id") {
+    id: ID!
+    account: Account
+}
+
+interface Account {
+    username: String
+}

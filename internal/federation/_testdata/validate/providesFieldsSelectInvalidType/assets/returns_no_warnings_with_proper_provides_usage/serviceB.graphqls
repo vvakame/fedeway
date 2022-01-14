@@ -1,0 +1,7 @@
+# option:name: serviceB
+# providesFieldsSelectInvalidType
+# returns no warnings with proper @provides usage
+extend type Product {
+    upc: String! @external
+    price: Int! @provides(fields: "upc")
+}

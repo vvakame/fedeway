@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceA] Review.author -\u003e A @provides selects User.account, which is an interface type. A field cannot @provide interfaces.",
+    "locations": [
+      {
+        "line": 6,
+        "column": 5
+      }
+    ],
+    "extensions": {
+      "code": "PROVIDES_FIELDS_SELECT_INVALID_TYPE",
+      "file": "serviceA.graphqls"
+    }
+  }
+]
