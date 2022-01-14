@@ -18,7 +18,7 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 		keyFieldsMissingOnBase,
 		keyFieldsSelectInvalidType,
 		providesFieldsMissingExternal,
-		// providesFieldsSelectInvalidType,
+		providesFieldsSelectInvalidType,
 		// providesNotOnEntity,
 		// executableDirectivesInAllServices,
 		// executableDirectivesIdentical,
@@ -791,6 +791,123 @@ func providesFieldsMissingExternal(schema *ast.Schema, metadata *FederationMetad
 						gErr.Extensions = make(map[string]interface{})
 					}
 					gErr.Extensions["code"] = "PROVIDES_FIELDS_MISSING_EXTERNAL"
+					errors = append(errors, gErr)
+				}
+			}
+		}
+	}
+
+	return errors
+}
+
+// The fields argument can not have root fields that result in a list.
+// The fields argument can not have root fields that result in an interface.
+// The fields argument can not have root fields that result in a union type.
+func providesFieldsSelectInvalidType(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
+	var errors []error
+
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, typeName := range typeNames {
+		namedType := schema.Types[typeName]
+		// Only object types have fields
+		if namedType.Kind != ast.Object {
+			continue
+		}
+
+		// for each field, if there's a provides on it, check the type of the field
+		// it references
+		for _, field := range namedType.Fields {
+			fieldName := field.Name
+			fieldFederationMetadata := metadata.FederationFieldMap.Get(field)
+			serviceName := fieldFederationMetadata.ServiceName
+
+			// serviceName should always exist on fields that have @provides federation data, since
+			// the only case where serviceName wouldn't exist is on a base type, and in that case,
+			// the `provides` metadata should never get added to begin with. This should be caught in
+			// composition work. This kind of error should be validated _before_ composition.
+			if serviceName == "" {
+				continue
+			}
+
+			fieldType := schema.Types[field.Type.Name()]
+			if fieldType.Kind != ast.Object {
+				continue
+			}
+
+			allFields := fieldType.Fields
+
+			if len(fieldFederationMetadata.Provides) == 0 {
+				continue
+			}
+
+			selections := fieldFederationMetadata.Provides
+
+			for _, selection := range selections {
+				selectionField := selection.(*ast.Field)
+				name := selectionField.Name
+				matchingField := allFields.ForName(name)
+
+				if matchingField == nil {
+					gErr := gqlerror.ErrorPosf(
+						field.Position, // TODO エラーを出力する箇所が厳密に元の実装を踏襲していない directiveのvalueのposはstripされていてわからなくなってしまっているため
+						"%s A @provides selects %s, but %s.%s could not be found",
+						logServiceAndType(serviceName, typeName, fieldName),
+						name,
+						fieldType.Name,
+						name,
+					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
+					gErr.Extensions["code"] = "PROVIDES_FIELDS_SELECT_INVALID_TYPE"
+					errors = append(errors, gErr)
+					continue
+				}
+
+				if matchingField.Type.Elem != nil {
+					gErr := gqlerror.ErrorPosf(
+						field.Position, // TODO エラーを出力する箇所が厳密に元の実装を踏襲していない directiveのvalueのposはstripされていてわからなくなってしまっているため
+						"%s A @provides selects %s.%s, which is a list type. A field cannot @provide lists.",
+						logServiceAndType(serviceName, typeName, fieldName),
+						fieldType.Name,
+						name,
+					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
+					gErr.Extensions["code"] = "PROVIDES_FIELDS_SELECT_INVALID_TYPE"
+					errors = append(errors, gErr)
+				}
+				if schema.Types[matchingField.Type.Name()].Kind == ast.Interface {
+					gErr := gqlerror.ErrorPosf(
+						field.Position, // TODO エラーを出力する箇所が厳密に元の実装を踏襲していない directiveのvalueのposはstripされていてわからなくなってしまっているため
+						"%s A @provides selects %s.%s, which is an interface type. A field cannot @provide interfaces.",
+						logServiceAndType(serviceName, typeName, fieldName),
+						fieldType.Name,
+						name,
+					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
+					gErr.Extensions["code"] = "PROVIDES_FIELDS_SELECT_INVALID_TYPE"
+					errors = append(errors, gErr)
+				}
+				if schema.Types[matchingField.Type.Name()].Kind == ast.Union {
+					gErr := gqlerror.ErrorPosf(
+						field.Position, // TODO エラーを出力する箇所が厳密に元の実装を踏襲していない directiveのvalueのposはstripされていてわからなくなってしまっているため
+						"%s A @provides selects %s.%s, which is a union type. A field cannot @provide union types.",
+						logServiceAndType(serviceName, typeName, fieldName),
+						fieldType.Name,
+						name,
+					)
+					if gErr.Extensions == nil {
+						gErr.Extensions = make(map[string]interface{})
+					}
+					gErr.Extensions["code"] = "PROVIDES_FIELDS_SELECT_INVALID_TYPE"
 					errors = append(errors, gErr)
 				}
 			}
