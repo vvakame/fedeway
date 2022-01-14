@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceB] Product.lineItem -\u003e uses the @provides directive but `Product.lineItem` does not return a type that has a @key. Try adding a @key to the `LineItem` type.",
+    "locations": [
+      {
+        "line": 6,
+        "column": 5
+      }
+    ],
+    "extensions": {
+      "code": "PROVIDES_NOT_ON_ENTITY",
+      "file": "serviceB.graphqls"
+    }
+  }
+]

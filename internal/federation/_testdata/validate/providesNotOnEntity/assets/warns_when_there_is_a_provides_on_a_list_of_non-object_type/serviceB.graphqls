@@ -1,0 +1,7 @@
+# option:name: serviceA
+# providesNotOnEntity
+# warns when there is a @provides on a list of non-object type
+extend type Product @key(fields: "sku") {
+    sku: String! @external
+    categories: [Category] @provides(fields: "id")
+}

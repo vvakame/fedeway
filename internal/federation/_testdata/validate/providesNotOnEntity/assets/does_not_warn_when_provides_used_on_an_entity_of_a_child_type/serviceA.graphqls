@@ -1,0 +1,7 @@
+# option:name: serviceA
+# providesNotOnEntity
+# does not warn when @provides used on an entity of a child type
+type User @key(fields: "id") {
+    id: ID!
+    username: String
+}

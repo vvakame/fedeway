@@ -1,6 +1,7 @@
 package federation
 
 import (
+	pkgerrors "errors"
 	"sort"
 
 	"github.com/vektah/gqlparser/v2/ast"
@@ -19,7 +20,7 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 		keyFieldsSelectInvalidType,
 		providesFieldsMissingExternal,
 		providesFieldsSelectInvalidType,
-		// providesNotOnEntity,
+		providesNotOnEntity,
 		// executableDirectivesInAllServices,
 		// executableDirectivesIdentical,
 		// keysMatchBaseService,
@@ -910,6 +911,95 @@ func providesFieldsSelectInvalidType(schema *ast.Schema, metadata *FederationMet
 					gErr.Extensions["code"] = "PROVIDES_FIELDS_SELECT_INVALID_TYPE"
 					errors = append(errors, gErr)
 				}
+			}
+		}
+	}
+
+	return errors
+}
+
+// Provides directive can only be added to return types that are entities
+func providesNotOnEntity(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
+	var errors []error
+
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, typeName := range typeNames {
+		namedType := schema.Types[typeName]
+		// Only object types have fields
+		if namedType.Kind != ast.Object {
+			continue
+		}
+
+		// for each field, if there's a provides on it, check that the containing
+		// type has a `key` field under the federation metadata.
+		for _, field := range namedType.Fields {
+			fieldName := field.Name
+			fieldFederationMetadata := metadata.FederationFieldMap.Get(field)
+			serviceName := fieldFederationMetadata.ServiceName
+
+			// serviceName should always exist on fields that have @provides federation data, since
+			// the only case where serviceName wouldn't exist is on a base type, and in that case,
+			// the `provides` metadata should never get added to begin with. This should be caught in
+			// composition work. This kind of error should be validated _before_ composition.
+			if serviceName == "" &&
+				len(fieldFederationMetadata.Provides) != 0 &&
+				!fieldFederationMetadata.BelongsToValueType {
+				return []error{pkgerrors.New("Internal Consistency Error: field with provides information does not have service name.")}
+			}
+			if serviceName == "" {
+				continue
+			}
+
+			baseType := schema.Types[field.Type.Name()]
+
+			// field has a @provides directive on it
+			if len(fieldFederationMetadata.Provides) == 0 {
+				continue
+			}
+
+			typeNode := findTypeNodeInServiceList(typeName, serviceName, serviceList)
+			fieldNode := typeNode.Fields.ForName(fieldName)
+
+			if baseType.Kind != ast.Object {
+				gErr := gqlerror.ErrorPosf(
+					fieldNode.Position,
+					"%s uses the @provides directive but `%s.%s` returns `%s`, which is not an Object or List type. @provides can only be used on Object types with at least one @key, or Lists of such Objects.",
+					logServiceAndType(serviceName, typeName, fieldName),
+					typeName,
+					fieldName,
+					field.Type.String(),
+				)
+				if gErr.Extensions == nil {
+					gErr.Extensions = make(map[string]interface{})
+				}
+				gErr.Extensions["code"] = "PROVIDES_NOT_ON_ENTITY"
+				errors = append(errors, gErr)
+
+				continue
+			}
+
+			fieldType := schema.Types[baseType.Name]
+			selectedFieldIsEntity := len(metadata.FederationTypeMap.Get(fieldType).Keys) != 0
+
+			if !selectedFieldIsEntity {
+				gErr := gqlerror.ErrorPosf(
+					fieldNode.Position,
+					"%s uses the @provides directive but `%s.%s` does not return a type that has a @key. Try adding a @key to the `%s` type.",
+					logServiceAndType(serviceName, typeName, fieldName),
+					typeName,
+					fieldName,
+					field.Type.String(),
+				)
+				if gErr.Extensions == nil {
+					gErr.Extensions = make(map[string]interface{})
+				}
+				gErr.Extensions["code"] = "PROVIDES_NOT_ON_ENTITY"
+				errors = append(errors, gErr)
+
 			}
 		}
 	}

@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceB] Product.category -\u003e uses the @provides directive but `Product.category` returns `Category`, which is not an Object or List type. @provides can only be used on Object types with at least one @key, or Lists of such Objects.",
+    "locations": [
+      {
+        "line": 6,
+        "column": 5
+      }
+    ],
+    "extensions": {
+      "code": "PROVIDES_NOT_ON_ENTITY",
+      "file": "serviceB.graphqls"
+    }
+  }
+]
