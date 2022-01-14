@@ -3,6 +3,7 @@ package federation
 import (
 	pkgerrors "errors"
 	"sort"
+	"strings"
 
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -21,7 +22,7 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 		providesFieldsMissingExternal,
 		providesFieldsSelectInvalidType,
 		providesNotOnEntity,
-		// executableDirectivesInAllServices,
+		executableDirectivesInAllServices,
 		// executableDirectivesIdentical,
 		// keysMatchBaseService,
 	}
@@ -1001,6 +1002,79 @@ func providesNotOnEntity(schema *ast.Schema, metadata *FederationMetadata, servi
 				errors = append(errors, gErr)
 
 			}
+		}
+	}
+
+	return errors
+}
+
+// All custom directives with executable locations must be implemented in every
+// service. This validator is not responsible for ensuring the directives are an
+// ExecutableDirective, however composition ensures this by filtering out all
+// TypeSystemDirectiveLocations.
+func executableDirectivesInAllServices(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
+	var errors []error
+
+	var customExecutableDirectives ast.DirectiveDefinitionList
+	directiveNames := make([]string, 0, len(schema.Directives))
+	for directiveName := range schema.Directives {
+		directiveNames = append(directiveNames, directiveName)
+	}
+	sort.Strings(directiveNames)
+	for _, directiveName := range directiveNames {
+		directive := schema.Directives[directiveName]
+		if isApolloTypeSystemDirective(directive.Name) {
+			continue
+		}
+		if isFederationDirective(directive.Name) {
+			continue
+		}
+		customExecutableDirectives = append(customExecutableDirectives, directive)
+	}
+
+	for _, directive := range customExecutableDirectives {
+		directiveFederationMetadata := metadata.FederationDirectiveMap.Get(directive)
+		if len(directiveFederationMetadata.DirectiveDefinitions) == 0 {
+			continue
+		}
+
+		allServiceNames := make([]string, 0, len(serviceList))
+		for _, service := range serviceList {
+			allServiceNames = append(allServiceNames, service.Name)
+		}
+
+		var serviceNamesWithDirective []string
+		for serviceName := range directiveFederationMetadata.DirectiveDefinitions {
+			serviceNamesWithDirective = append(serviceNamesWithDirective, serviceName)
+		}
+		sort.Strings(serviceNamesWithDirective)
+
+		var serviceNamesWithoutDirective []string
+	OUTER:
+		for _, serviceName := range allServiceNames {
+			for _, serviceName2 := range serviceNamesWithDirective {
+				if serviceName2 == serviceName {
+					continue OUTER
+				}
+			}
+			serviceNamesWithoutDirective = append(serviceNamesWithoutDirective, serviceName)
+		}
+
+		if len(serviceNamesWithoutDirective) > 0 {
+			gErr := gqlerror.ErrorPosf(
+				// TODO (Issue #705): when we can associate locations to service names, we should expose
+				// locations of the services where this directive is not used
+				directive.Position,
+				"%s Custom directives must be implemented in every service. The following services do not implement the @%s directive: %s.",
+				logDirective(directive.Name),
+				directive.Name,
+				strings.Join(serviceNamesWithoutDirective, ", "),
+			)
+			if gErr.Extensions == nil {
+				gErr.Extensions = make(map[string]interface{})
+			}
+			gErr.Extensions["code"] = "EXECUTABLE_DIRECTIVES_IN_ALL_SERVICES"
+			errors = append(errors, gErr)
 		}
 	}
 

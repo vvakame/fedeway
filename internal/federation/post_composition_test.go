@@ -66,6 +66,10 @@ func TestPostCompositionValidators(t *testing.T) {
 			Name: "providesNotOnEntity",
 			Rule: providesNotOnEntity,
 		},
+		{
+			Name: "executableDirectivesInAllServices",
+			Rule: executableDirectivesInAllServices,
+		},
 	}
 
 	for _, spec := range specs {

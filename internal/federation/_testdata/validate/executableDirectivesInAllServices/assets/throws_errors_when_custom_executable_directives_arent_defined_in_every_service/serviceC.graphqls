@@ -1,0 +1,6 @@
+# option:name: serviceC
+# executableDirectivesInAllServices
+# throws errors when custom, executable directives aren't defined in every service
+extend type Query {
+    otherThing: String
+}

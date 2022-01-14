@@ -186,6 +186,10 @@ func logServiceAndType(serviceName, typeName, fieldName string) string {
 	return fmt.Sprintf("[%s] %s%s ->", serviceName, typeName, fieldName)
 }
 
+func logDirective(directiveName string) string {
+	return fmt.Sprintf("[@%s] -> ", directiveName)
+}
+
 // Used for finding a field on the `schema` that returns `typeToFind`
 //
 // Used in validation of external directives to find uses of a field in a
@@ -430,6 +434,15 @@ func findTypeNodeInServiceList(typeName string, serviceName string, serviceList 
 	}
 
 	return nil
+}
+
+func isApolloTypeSystemDirective(directiveName string) bool {
+	for _, directive := range apolloTypeSystemDirectives {
+		if directive.Name == directiveName {
+			return true
+		}
+	}
+	return false
 }
 
 func isFederationDirective(directiveName string) bool {
