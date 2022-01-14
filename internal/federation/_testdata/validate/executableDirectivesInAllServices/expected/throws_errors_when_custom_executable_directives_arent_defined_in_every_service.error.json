@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[@stream] -\u003e  Custom directives must be implemented in every service. The following services do not implement the @stream directive: serviceB, serviceC.",
+    "locations": [
+      {
+        "line": 4,
+        "column": 12
+      }
+    ],
+    "extensions": {
+      "code": "EXECUTABLE_DIRECTIVES_IN_ALL_SERVICES",
+      "file": "serviceA.graphqls"
+    }
+  }
+]

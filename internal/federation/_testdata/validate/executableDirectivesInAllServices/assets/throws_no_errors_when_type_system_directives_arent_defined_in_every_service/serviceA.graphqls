@@ -1,0 +1,4 @@
+# option:name: serviceA
+# executableDirectivesInAllServices
+# throws no errors when type system directives aren't defined in every service
+directive @stream on FIELD

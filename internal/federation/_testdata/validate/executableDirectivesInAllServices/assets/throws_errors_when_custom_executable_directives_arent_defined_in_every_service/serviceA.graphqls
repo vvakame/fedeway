@@ -1,0 +1,4 @@
+# option:name: serviceA
+# executableDirectivesInAllServices
+# throws errors when custom, executable directives aren't defined in every service
+directive @stream on FIELD

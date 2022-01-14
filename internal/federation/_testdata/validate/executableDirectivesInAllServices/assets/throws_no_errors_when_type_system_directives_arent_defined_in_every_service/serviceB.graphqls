@@ -1,0 +1,6 @@
+# option:name: serviceB
+# executableDirectivesInAllServices
+# throws no errors when type system directives aren't defined in every service
+directive @stream on FIELD
+# This directive is ignored by composition and therefore post-composition validators
+directive @ignored on FIELD_DEFINITION
