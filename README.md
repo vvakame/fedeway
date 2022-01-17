@@ -8,7 +8,6 @@ Apollo Federation Gateway v1 implementations by Go.
 
 * implements validation rules on...
   * `validateServicesBeforeNormalization`
-  * `validateComposedSchema`
 * remove all of `option:skip: true` from test cases
 * capture `panic` by recover func on ExecuteQueryPlan
 * improve logging settings & implementations
