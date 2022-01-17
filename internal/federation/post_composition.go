@@ -26,7 +26,7 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 		providesNotOnEntity,
 		executableDirectivesInAllServices,
 		executableDirectivesIdentical,
-		// keysMatchBaseService,
+		keysMatchBaseService,
 	}
 }
 
@@ -1156,6 +1156,123 @@ func executableDirectivesIdentical(schema *ast.Schema, metadata *FederationMetad
 			}
 			gErr.Extensions["code"] = "EXECUTABLE_DIRECTIVES_IDENTICAL"
 			errors = append(errors, gErr)
+		}
+	}
+
+	return errors
+}
+
+// 1. KEY_MISSING_ON_BASE - Originating types must specify at least 1 @key directive
+// 2. MULTIPLE_KEYS_ON_EXTENSION - Extending services may not use more than 1 @key directive
+// 3. 3. KEY_NOT_SPECIFIED - Extending services must use a valid @key specified by the originating type
+func keysMatchBaseService(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
+	var errors []error
+
+	typeNames := make([]string, 0, len(schema.Types))
+	for typeName := range schema.Types {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+	for _, parentTypeName := range typeNames {
+		parentType := schema.Types[parentTypeName]
+
+		// Only object types have fields
+		if parentType.Kind != ast.Object {
+			continue
+		}
+
+		typeFederationMetadata := metadata.FederationTypeMap.Get(parentType)
+		serviceName := typeFederationMetadata.ServiceName
+		keys := typeFederationMetadata.Keys
+
+		if typeFederationMetadata.ServiceName == "" || len(keys) == 0 {
+			continue
+		}
+
+		if len(keys[serviceName]) == 0 {
+			typeNode := findTypeNodeInServiceList(parentTypeName, serviceName, serviceList)
+
+			gErr := gqlerror.ErrorPosf(
+				typeNode.Position,
+				"%s appears to be an entity but no @key directives are specified on the originating type.",
+				logServiceAndType(serviceName, parentTypeName, ""),
+			)
+			if gErr.Extensions == nil {
+				gErr.Extensions = make(map[string]interface{})
+			}
+			gErr.Extensions["code"] = "KEY_MISSING_ON_BASE"
+			errors = append(errors, gErr)
+			continue
+		}
+
+		availableKeys := make([]string, 0, len(keys[serviceName]))
+		for _, key := range keys[serviceName] {
+			availableKeys = append(availableKeys, printSelectionSet(key))
+		}
+
+		serviceNames := make([]string, 0, len(keys))
+		for serviceName := range keys {
+			serviceNames = append(serviceNames, serviceName)
+		}
+		sort.Strings(serviceNames)
+		for _, extendingService := range serviceNames {
+			// No need to validate that the owning service matches its specified keys
+			if extendingService == serviceName {
+				continue
+			}
+
+			keyFields := keys[extendingService]
+
+			// Extensions can't specify more than one key
+			extendingServiceTypeNode := findTypeNodeInServiceList(parentTypeName, extendingService, serviceList)
+
+			if len(keyFields) > 1 {
+				gErr := gqlerror.ErrorPosf(
+					extendingServiceTypeNode.Position,
+					"%s is extended from service %s but specifies multiple @key directives. Extensions may only specify one @key.",
+					logServiceAndType(extendingService, parentTypeName, ""),
+					serviceName,
+				)
+				if gErr.Extensions == nil {
+					gErr.Extensions = make(map[string]interface{})
+				}
+				gErr.Extensions["code"] = "MULTIPLE_KEYS_ON_EXTENSION"
+				errors = append(errors, gErr)
+				continue
+			}
+
+			// This isn't representative of an invalid graph, but it is an existing
+			// limitation of the query planner that we want to validate against for now.
+			// In the future, `@key`s just need to be "reachable" through a number of
+			// services which can link one key to another via "joins".
+			extensionKey := printSelectionSet(keyFields[0])
+			var foundKeys bool
+			for _, availableKey := range availableKeys {
+				if availableKey == extensionKey {
+					foundKeys = true
+					break
+				}
+			}
+			if !foundKeys {
+				lines := make([]string, 0, len(availableKeys))
+				for _, fieldSet := range availableKeys {
+					lines = append(lines, fmt.Sprintf(`@key(fields: "%s")`, fieldSet))
+				}
+
+				gErr := gqlerror.ErrorPosf(
+					extendingServiceTypeNode.Position,
+					"%s extends from %s but specifies an invalid @key directive. Valid @key directives are specified by the originating type. Available @key directives for this type are:\n\t%s",
+					logServiceAndType(extendingService, parentTypeName, ""),
+					serviceName,
+					strings.Join(lines, "\n\t"),
+				)
+				if gErr.Extensions == nil {
+					gErr.Extensions = make(map[string]interface{})
+				}
+				gErr.Extensions["code"] = "KEY_NOT_SPECIFIED"
+				errors = append(errors, gErr)
+				continue
+			}
 		}
 	}
 

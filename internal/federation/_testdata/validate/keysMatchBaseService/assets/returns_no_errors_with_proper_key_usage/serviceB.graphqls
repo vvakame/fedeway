@@ -1,0 +1,7 @@
+# option:name: serviceB
+# keysMatchBaseService
+# returns no errors with proper @key usage
+extend type Product @key(fields: "sku") {
+    sku: String! @external
+    price: Int!
+}

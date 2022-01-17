@@ -1,0 +1,7 @@
+# option:name: serviceB
+# keysMatchBaseService
+# requires extending services to use a @key specified by the originating type
+extend type Product @key(fields: "sku") {
+    sku: String! @external
+    price: Int!
+}

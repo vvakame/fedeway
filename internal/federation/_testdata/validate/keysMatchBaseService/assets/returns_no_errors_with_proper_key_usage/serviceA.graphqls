@@ -1,0 +1,7 @@
+# option:name: serviceA
+# keysMatchBaseService
+# returns no errors with proper @key usage
+type Product @key(fields: "sku") {
+    sku: String!
+    upc: String!
+}

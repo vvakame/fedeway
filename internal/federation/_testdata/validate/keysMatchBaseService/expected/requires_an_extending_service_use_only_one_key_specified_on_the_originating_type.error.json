@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceB] Product -\u003e is extended from service serviceA but specifies multiple @key directives. Extensions may only specify one @key.",
+    "locations": [
+      {
+        "line": 4,
+        "column": 13
+      }
+    ],
+    "extensions": {
+      "code": "MULTIPLE_KEYS_ON_EXTENSION",
+      "file": "serviceB.graphqls"
+    }
+  }
+]
