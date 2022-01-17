@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceA] Product -\u003e appears to be an entity but no @key directives are specified on the originating type.",
+    "locations": [
+      {
+        "line": 4,
+        "column": 6
+      }
+    ],
+    "extensions": {
+      "code": "KEY_MISSING_ON_BASE",
+      "file": "serviceA.graphqls"
+    }
+  }
+]

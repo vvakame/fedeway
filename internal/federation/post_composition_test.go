@@ -74,6 +74,10 @@ func TestPostCompositionValidators(t *testing.T) {
 			Name: "executableDirectivesIdentical",
 			Rule: executableDirectivesIdentical,
 		},
+		{
+			Name: "keysMatchBaseService",
+			Rule: keysMatchBaseService,
+		},
 	}
 
 	for _, spec := range specs {

@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[serviceB] Product -\u003e extends from serviceA but specifies an invalid @key directive. Valid @key directives are specified by the originating type. Available @key directives for this type are:\n\t@key(fields: \"sku upc\")",
+    "locations": [
+      {
+        "line": 4,
+        "column": 13
+      }
+    ],
+    "extensions": {
+      "code": "KEY_NOT_SPECIFIED",
+      "file": "serviceB.graphqls"
+    }
+  }
+]

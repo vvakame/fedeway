@@ -1,0 +1,7 @@
+# option:name: serviceA
+# keysMatchBaseService
+# requires a @key to be specified on the originating type
+type Product {
+    sku: String!
+    upc: String!
+}

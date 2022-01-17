@@ -1,0 +1,7 @@
+# option:name: serviceA
+# keysMatchBaseService
+# requires extending services to use a @key specified by the originating type
+type Product @key(fields: "sku upc") {
+    sku: String!
+    upc: String!
+}
