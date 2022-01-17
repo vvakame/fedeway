@@ -14,6 +14,8 @@ import (
 )
 
 func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument, metadata *federation.FederationMetadata) (*ComposedSchema, error) {
+	// TODO metadata に依存しないようにする(@join__* からの情報でやりくりする)
+
 	schema, gErr := validator.ValidateSchemaDocument(document)
 	if gErr != nil {
 		return nil, gErr
