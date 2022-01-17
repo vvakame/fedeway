@@ -1,0 +1,4 @@
+# option:name: serviceB
+# executableDirectivesIdentical
+# throws errors when custom, executable directives aren't defined with the same arguments in every service
+directive @instrument(tag: Boolean) on FIELD

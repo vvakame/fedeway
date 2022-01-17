@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[@instrument] -\u003e  custom directives must be defined identically across all services. See below for a list of current implementations:\n\tserviceA: instrument\n\tserviceB: instrument",
+    "locations": [
+      {
+        "line": 4,
+        "column": 12
+      }
+    ],
+    "extensions": {
+      "code": "EXECUTABLE_DIRECTIVES_IDENTICAL",
+      "file": "serviceA.graphqls"
+    }
+  }
+]

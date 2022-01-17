@@ -2,11 +2,13 @@ package federation
 
 import (
 	pkgerrors "errors"
+	"fmt"
 	"sort"
 	"strings"
 
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
+	"github.com/vvakame/fedeway/internal/graphql"
 )
 
 func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*ServiceDefinition) []error {
@@ -23,7 +25,7 @@ func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*Ser
 		providesFieldsSelectInvalidType,
 		providesNotOnEntity,
 		executableDirectivesInAllServices,
-		// executableDirectivesIdentical,
+		executableDirectivesIdentical,
 		// keysMatchBaseService,
 	}
 }
@@ -1074,6 +1076,85 @@ func executableDirectivesInAllServices(schema *ast.Schema, metadata *FederationM
 				gErr.Extensions = make(map[string]interface{})
 			}
 			gErr.Extensions["code"] = "EXECUTABLE_DIRECTIVES_IN_ALL_SERVICES"
+			errors = append(errors, gErr)
+		}
+	}
+
+	return errors
+}
+
+// A custom directive must be defined identically across all services. This means
+// they must have the same name and same locations. Locations are the "on" part of
+// a directive, for example:
+//    directive @stream on FIELD | QUERY
+func executableDirectivesIdentical(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
+	var errors []error
+
+	var customDirectives ast.DirectiveDefinitionList
+	directiveNames := make([]string, 0, len(schema.Directives))
+	for directiveName := range schema.Directives {
+		directiveNames = append(directiveNames, directiveName)
+	}
+	sort.Strings(directiveNames)
+	for _, directiveName := range directiveNames {
+		directive := schema.Directives[directiveName]
+		if isApolloTypeSystemDirective(directive.Name) {
+			continue
+		}
+		if graphql.IsSpecifiedDirective(directive.Name) {
+			continue
+		}
+		customDirectives = append(customDirectives, directive)
+	}
+
+	for _, directive := range customDirectives {
+		directiveFederationMetadata := metadata.FederationDirectiveMap.Get(directive)
+		if len(directiveFederationMetadata.DirectiveDefinitions) == 0 {
+			continue
+		}
+
+		serviceNames := make([]string, 0, len(directiveFederationMetadata.DirectiveDefinitions))
+		for serviceName := range directiveFederationMetadata.DirectiveDefinitions {
+			serviceNames = append(serviceNames, serviceName)
+		}
+		sort.Strings(serviceNames)
+
+		// Side-by-side compare all definitions of a single directive, if there's a
+		// discrepancy in any of those diffs, we should provide an error.
+		var targetDefinition *ast.DirectiveDefinition
+		for index, serviceName := range serviceNames {
+			definition := directiveFederationMetadata.DirectiveDefinitions[serviceName]
+
+			// Skip the non-comparison step
+			if index == 0 {
+				continue
+			}
+
+			previousDefinition := directiveFederationMetadata.DirectiveDefinitions[serviceNames[index-1]]
+			if !directiveTypeNodesAreEquivalent(definition, previousDefinition) {
+				targetDefinition = previousDefinition
+				break
+			}
+		}
+
+		if targetDefinition != nil {
+			var lines []string
+			for _, serviceName := range serviceNames {
+				definition := directiveFederationMetadata.DirectiveDefinitions[serviceName]
+				// TODO ここのdefinitionの出力形式はoriginalに比べるとだいぶ貧弱
+				lines = append(lines, fmt.Sprintf("\t%s: %s", serviceName, definition.Name))
+			}
+
+			gErr := gqlerror.ErrorPosf(
+				targetDefinition.Position, // TODO originalの出力とは異なる
+				"%s custom directives must be defined identically across all services. See below for a list of current implementations:\n%s",
+				logDirective(directive.Name),
+				strings.Join(lines, "\n"),
+			)
+			if gErr.Extensions == nil {
+				gErr.Extensions = make(map[string]interface{})
+			}
+			gErr.Extensions["code"] = "EXECUTABLE_DIRECTIVES_IDENTICAL"
 			errors = append(errors, gErr)
 		}
 	}

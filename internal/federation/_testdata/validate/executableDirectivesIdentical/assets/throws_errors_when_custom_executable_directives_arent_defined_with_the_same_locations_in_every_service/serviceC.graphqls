@@ -1,0 +1,4 @@
+# option:name: serviceC
+# executableDirectivesIdentical
+# throws errors when custom, executable directives aren't defined with the same locations in every service
+directive @stream on INLINE_FRAGMENT

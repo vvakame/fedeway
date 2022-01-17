@@ -1,0 +1,5 @@
+# option:name: serviceA
+# executableDirectivesIdentical
+# throws no errors when custom, executable directives are defined identically every service
+directive @stream on FIELD
+directive @instrument(tag: String!) on FIELD

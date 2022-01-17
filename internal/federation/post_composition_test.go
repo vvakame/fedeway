@@ -70,6 +70,10 @@ func TestPostCompositionValidators(t *testing.T) {
 			Name: "executableDirectivesInAllServices",
 			Rule: executableDirectivesInAllServices,
 		},
+		{
+			Name: "executableDirectivesIdentical",
+			Rule: executableDirectivesIdentical,
+		},
 	}
 
 	for _, spec := range specs {

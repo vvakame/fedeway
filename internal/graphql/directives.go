@@ -115,3 +115,12 @@ var SpecifiedDirectives = ast.DirectiveDefinitionList{
 	GraphQLDeprecatedDirective,
 	GraphQLSpecifiedByDirective,
 }
+
+func IsSpecifiedDirective(directiveName string) bool {
+	for _, directive := range SpecifiedDirectives {
+		if directive.Name == directiveName {
+			return true
+		}
+	}
+	return false
+}
