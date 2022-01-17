@@ -1,0 +1,5 @@
+# option:name: serviceB
+# executableDirectivesIdentical
+# throws no errors when directives (excluding their TypeSystemDirectiveLocations) are identical for every service
+directive @stream on FIELD
+directive @instrument(tag: String!) on FIELD

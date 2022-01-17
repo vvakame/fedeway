@@ -418,6 +418,45 @@ func typeNodesAreEquivalent(firstNode *ast.Definition, secondNode *ast.Definitio
 	return true
 }
 
+func directiveTypeNodesAreEquivalent(firstNode *ast.DirectiveDefinition, secondNode *ast.DirectiveDefinition) bool {
+	// NOTE オリジナルの実装をだいぶ簡素化しているがベタ移植は難しいので一旦目的に合致してそうな実装を書く
+	// オリジナルは typeNodesAreEquivalent だが型が合わないので分離した
+
+	if firstNode.Name != secondNode.Name {
+		return false
+	}
+
+	{
+		if len(firstNode.Arguments) != len(secondNode.Arguments) {
+			return false
+		}
+		for i := 0; i < len(firstNode.Arguments); i++ {
+			firstValue := firstNode.Arguments[i]
+			secondValue := secondNode.Arguments[i]
+			if firstValue.Name != secondValue.Name {
+				return true
+			}
+			if firstValue.Type.String() != secondValue.Type.String() {
+				return false
+			}
+		}
+	}
+	{
+		if len(firstNode.Locations) != len(secondNode.Locations) {
+			return false
+		}
+		for i := 0; i < len(firstNode.Locations); i++ {
+			firstValue := firstNode.Locations[i]
+			secondValue := secondNode.Locations[i]
+			if firstValue != secondValue {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
 func findTypeNodeInServiceList(typeName string, serviceName string, serviceList []*ServiceDefinition) *ast.Definition {
 	for _, service := range serviceList {
 		if service.Name != serviceName {
