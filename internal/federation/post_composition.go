@@ -13,7 +13,6 @@ import (
 
 func postCompositionValidators() []func(*ast.Schema, *FederationMetadata, []*ServiceDefinition) []error {
 	return []func(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error{
-		// TODO let's implements below rules!
 		externalUnused,
 		externalMissingOnBase,
 		externalTypeMismatch,
@@ -1164,7 +1163,7 @@ func executableDirectivesIdentical(schema *ast.Schema, metadata *FederationMetad
 
 // 1. KEY_MISSING_ON_BASE - Originating types must specify at least 1 @key directive
 // 2. MULTIPLE_KEYS_ON_EXTENSION - Extending services may not use more than 1 @key directive
-// 3. 3. KEY_NOT_SPECIFIED - Extending services must use a valid @key specified by the originating type
+// 3. KEY_NOT_SPECIFIED - Extending services must use a valid @key specified by the originating type
 func keysMatchBaseService(schema *ast.Schema, metadata *FederationMetadata, serviceList []*ServiceDefinition) []error {
 	var errors []error
 
