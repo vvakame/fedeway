@@ -6,7 +6,6 @@ import (
 
 	"github.com/goccy/go-yaml"
 	"github.com/vektah/gqlparser/v2/ast"
-	"github.com/vvakame/fedeway/internal/federation"
 )
 
 type FederationSchemaMetadata struct {
@@ -97,31 +96,6 @@ func (cs *ComposedSchema) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(obj)
-}
-
-func newComposedSchema(schema *ast.Schema, metadata *federation.FederationMetadata) *ComposedSchema {
-	cs := &ComposedSchema{
-		Schema: schema,
-	}
-	if metadata != nil {
-		for typ, prevMeta := range metadata.FederationTypeMap {
-			meta := cs.getTypeMetadata(typ)
-			meta.IsValueType = prevMeta.IsValueType
-			// is this right...?
-			for serviceName, keyss := range prevMeta.Keys {
-				for _, keys := range keyss {
-					meta.Keys[serviceName] = append(meta.Keys[serviceName], keys...)
-				}
-			}
-		}
-		for typ, prevMeta := range metadata.FederationFieldMap {
-			meta := cs.getFieldMetadata(typ)
-			meta.Provides = prevMeta.Provides
-			meta.Requires = prevMeta.Requires
-		}
-	}
-
-	return cs
 }
 
 func (cs *ComposedSchema) getSchemaMetadata() *FederationSchemaMetadata {

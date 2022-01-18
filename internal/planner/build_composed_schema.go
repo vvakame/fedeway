@@ -9,11 +9,10 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vektah/gqlparser/v2/validator"
-	"github.com/vvakame/fedeway/internal/federation"
 	"github.com/vvakame/fedeway/internal/graphql"
 )
 
-func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument, metadata *federation.FederationMetadata) (*ComposedSchema, error) {
+func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument) (*ComposedSchema, error) {
 	// TODO metadata に依存しないようにする(@join__* からの情報でやりくりする)
 
 	schema, gErr := validator.ValidateSchemaDocument(document)
@@ -60,7 +59,7 @@ func BuildComposedSchema(ctx context.Context, document *ast.SchemaDocument, meta
 		return nil, fmt.Errorf("%s__Graph should be an enum", joinName)
 	}
 
-	cs := newComposedSchema(schema, metadata)
+	cs := &ComposedSchema{Schema: schema}
 
 	graphMap := make(map[string]*Graph)
 	cs.getSchemaMetadata().Graphs = graphMap

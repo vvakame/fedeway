@@ -106,7 +106,7 @@ func (g *gatewayImpl) fetchSDLs(ctx context.Context) error {
 		serviceMap[serviceDef.Name] = serviceDef.DataSource
 	}
 
-	_, sdl, metadata, err := federation.ComposeAndValidate(ctx, services)
+	_, sdl, _, err := federation.ComposeAndValidate(ctx, services)
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func (g *gatewayImpl) fetchSDLs(ctx context.Context) error {
 		return err
 	}
 
-	cs, err := planner.BuildComposedSchema(ctx, schemaDoc, metadata)
+	cs, err := planner.BuildComposedSchema(ctx, schemaDoc)
 	if err != nil {
 		return err
 	}
