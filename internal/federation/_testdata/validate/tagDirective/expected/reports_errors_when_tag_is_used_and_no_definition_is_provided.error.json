@@ -1,0 +1,15 @@
+[
+  {
+    "message": "[@tag] -\u003e  Found @tag definition in service serviceA, but the @tag directive definition was invalid. Please ensure the directive definition in your schema's type definitions matches the following:\n\tdirective @tag(name: String!) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION",
+    "locations": [
+      {
+        "line": 5,
+        "column": 12
+      }
+    ],
+    "extensions": {
+      "code": "TAG_DIRECTIVE_DEFINITION_INVALID",
+      "file": "reports_errors_when_tag_is_used_and_no_definition_is_provided.graphqls"
+    }
+  }
+]

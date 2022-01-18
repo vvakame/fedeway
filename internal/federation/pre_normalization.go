@@ -10,9 +10,8 @@ import (
 
 func preNormalizationValidators() []func(*ServiceDefinition) []error {
 	return []func(definition *ServiceDefinition) []error{
-		// TODO let's implements below rules!
 		rootFieldUsed,
-		// tagDirective,
+		tagDirectiveRule,
 	}
 }
 
@@ -83,6 +82,73 @@ func rootFieldUsed(service *ServiceDefinition) []error {
 				gErr.Extensions["code"] = fmt.Sprintf("ROOT_%s_USED", strings.ToUpper(rootOperationName))
 				errors = append(errors, gErr)
 			}
+		}
+	}
+
+	return errors
+}
+
+// If there are tag usages in the service definition, check that the tag directive
+// definition is included and correct.
+func tagDirectiveRule(service *ServiceDefinition) []error {
+	// NOTE original name: tagDirective
+
+	serviceName := service.Name
+	typeDefs := service.TypeDefs
+
+	var errors []error
+
+	// TODO 本家では3つの標準GraphQLのチェックをしている めんどいのでここでは割愛する
+	// KnownArgumentNamesOnDirectivesRule,
+	// KnownDirectivesRule,
+	// ProvidedRequiredArgumentsOnDirectivesRule,
+
+	tagDirectiveDefinition := typeDefs.Directives.ForName("tag")
+
+	// Ensure the tag directive definition is correct
+	if tagDirectiveDefinition != nil {
+		printedTagDefinition := "directive @tag(name: String!) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION"
+
+		// NOTE originalはprintして想定と比較してるけどそのほうがめんどいので各部をチェックする
+		var foundError bool
+		if len(tagDirectiveDefinition.Arguments) != 1 {
+			foundError = true
+		} else if arg := tagDirectiveDefinition.Arguments[0]; arg.Name != "name" {
+			foundError = true
+		} else if arg.Type.String() != "String!" {
+			foundError = true
+		} else if !tagDirectiveDefinition.IsRepeatable {
+			foundError = true
+		} else if len(tagDirectiveDefinition.Locations) != 4 {
+			foundError = true
+		} else {
+			for _, loc := range tagDirectiveDefinition.Locations {
+				switch loc {
+				case ast.LocationFieldDefinition,
+					ast.LocationInterface,
+					ast.LocationObject,
+					ast.LocationUnion:
+				// ok
+				default:
+					foundError = true
+					break
+				}
+			}
+		}
+
+		if foundError {
+			gErr := gqlerror.ErrorPosf(
+				tagDirectiveDefinition.Position,
+				"%s Found @tag definition in service %s, but the @tag directive definition was invalid. Please ensure the directive definition in your schema's type definitions matches the following:\n\t%s",
+				logDirective("tag"),
+				serviceName,
+				printedTagDefinition,
+			)
+			if gErr.Extensions == nil {
+				gErr.Extensions = make(map[string]interface{})
+			}
+			gErr.Extensions["code"] = "TAG_DIRECTIVE_DEFINITION_INVALID"
+			errors = append(errors, gErr)
 		}
 	}
 

@@ -1,0 +1,11 @@
+# option:name: serviceA
+# tagDirective
+# reports no errors
+# when there are no @tag usages
+type Query {
+    product: Product
+}
+
+type Product {
+    sku: String
+}
