@@ -3,6 +3,7 @@ package federation
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"path"
 	"strings"
@@ -15,73 +16,92 @@ import (
 	"github.com/vvakame/fedeway/internal/testutils"
 )
 
-func TestRootFieldUsed(t *testing.T) {
-	// test case are ported from federation-js/src/composition/validate/preNormalization/__tests__/rootFieldUsed.test.ts
+func TestPreNormalizationValidators(t *testing.T) {
+	t.Parallel()
 
-	const testFileDir = "./_testdata/validate/rootFieldUsed/assets"
-	expectFileDir := "./_testdata/validate/rootFieldUsed/expected"
-
-	rule := rootFieldUsed
-
-	files, err := ioutil.ReadDir(testFileDir)
-	if err != nil {
-		t.Fatal(err)
+	type Spec struct {
+		Name string
+		Rule func(*ServiceDefinition) []error
 	}
 
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		} else if !strings.HasSuffix(file.Name(), ".graphqls") {
-			continue
-		}
+	specs := []*Spec{
+		{
+			Name: "rootFieldUsed",
+			Rule: rootFieldUsed,
+		},
+	}
 
-		t.Run(file.Name(), func(t *testing.T) {
-			filePath := path.Join(testFileDir, file.Name())
-			b, err := ioutil.ReadFile(filePath)
+	for _, spec := range specs {
+		spec := spec
+		t.Run(spec.Name, func(t *testing.T) {
+			t.Parallel()
+
+			testFileDir := fmt.Sprintf("./_testdata/validate/%s/assets", spec.Name)
+			expectFileDir := fmt.Sprintf("./_testdata/validate/%s/expected", spec.Name)
+
+			rule := spec.Rule
+
+			files, err := ioutil.ReadDir(testFileDir)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if testutils.FindOptionBool(t, "skip", string(b)) {
-				t.Logf("test case skip by %s", filePath)
-				t.SkipNow()
+			for _, file := range files {
+				if file.IsDir() {
+					continue
+				} else if !strings.HasSuffix(file.Name(), ".graphqls") {
+					continue
+				}
+
+				t.Run(file.Name(), func(t *testing.T) {
+					filePath := path.Join(testFileDir, file.Name())
+					b, err := ioutil.ReadFile(filePath)
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					if testutils.FindOptionBool(t, "skip", string(b)) {
+						t.Logf("test case skip by %s", filePath)
+						t.SkipNow()
+					}
+
+					name := testutils.FindOptionString(t, "name", string(b))
+					if name == "" {
+						t.Fatalf("option:name is not exists on %s", filePath)
+					}
+
+					schemaDoc, gErr := parser.ParseSchema(&ast.Source{
+						Name:  file.Name(),
+						Input: string(b),
+					})
+					if gErr != nil {
+						t.Fatal(gErr)
+					}
+
+					serviceDef := &ServiceDefinition{
+						TypeDefs: schemaDoc,
+						Name:     name,
+					}
+
+					ctx := context.Background()
+					ctx = log.WithLogger(ctx, testlogr.NewTestLogger(t))
+
+					errs := rule(serviceDef)
+					if errs == nil {
+						// for pretty print
+						errs = []error{}
+					}
+
+					b, err = json.MarshalIndent(errs, "", "  ")
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					fileName := file.Name()[:len(file.Name())-len(".graphqls")]
+
+					testutils.CheckGoldenFile(t, b, path.Join(expectFileDir, fileName+".error.json"))
+				})
 			}
-
-			name := testutils.FindOptionString(t, "name", string(b))
-			if name == "" {
-				t.Fatalf("option:name is not exists on %s", filePath)
-			}
-
-			schemaDoc, gErr := parser.ParseSchema(&ast.Source{
-				Name:  file.Name(),
-				Input: string(b),
-			})
-			if gErr != nil {
-				t.Fatal(gErr)
-			}
-
-			serviceDef := &ServiceDefinition{
-				TypeDefs: schemaDoc,
-				Name:     name,
-			}
-
-			ctx := context.Background()
-			ctx = log.WithLogger(ctx, testlogr.NewTestLogger(t))
-
-			errs := rule(serviceDef)
-			if errs == nil {
-				// for pretty print
-				errs = []error{}
-			}
-
-			b, err = json.MarshalIndent(errs, "", "  ")
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			fileName := file.Name()[:len(file.Name())-len(".graphqls")]
-
-			testutils.CheckGoldenFile(t, b, path.Join(expectFileDir, fileName+".error.json"))
 		})
 	}
 }
