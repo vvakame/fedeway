@@ -1,0 +1,16 @@
+# option:name: serviceA
+# tagDirective
+# reports no errors
+# permits descriptions in the @tag definition
+"""
+description
+"""
+directive @tag(
+    """
+    description
+    """
+    name: String!
+) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION
+type Query {
+    hello: String @tag(name: "hello")
+}

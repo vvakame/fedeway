@@ -1,0 +1,13 @@
+# option:name: serviceA
+# option:skip: true
+#   標準GraphQLの範囲のバリデーションを省いているため
+# tagDirective
+# reports errors
+# when @tag is used and no definition is provided
+type Query {
+    product: Product
+}
+
+type Product {
+    sku: String @tag(name: "product")
+}

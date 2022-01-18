@@ -29,6 +29,10 @@ func TestPreNormalizationValidators(t *testing.T) {
 			Name: "rootFieldUsed",
 			Rule: rootFieldUsed,
 		},
+		{
+			Name: "tagDirective",
+			Rule: tagDirectiveRule,
+		},
 	}
 
 	for _, spec := range specs {

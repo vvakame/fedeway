@@ -1,0 +1,9 @@
+# option:name: serviceA
+# tagDirective
+# reports errors
+# when @tag usage and definition exist, but definition is incorrect
+directive @tag(name: String!) on FIELD_DEFINITION
+
+type Query {
+    hello: String @tag(name: "hello")
+}

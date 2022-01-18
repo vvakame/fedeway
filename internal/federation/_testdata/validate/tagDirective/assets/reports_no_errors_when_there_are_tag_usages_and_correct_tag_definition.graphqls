@@ -1,0 +1,10 @@
+# option:name: serviceA
+# tagDirective
+# reports no errors
+# when there are @tag usages and a correct @tag definition
+directive @tag(
+    name: String!
+) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION
+type Query {
+    hello: String @tag(name: "hello")
+}
