@@ -85,8 +85,8 @@ func TestPostCompositionValidators(t *testing.T) {
 		t.Run(spec.Name, func(t *testing.T) {
 			t.Parallel()
 
-			testFileDir := fmt.Sprintf("./_testdata/validate/%s/assets", spec.Name)
-			expectFileDir := fmt.Sprintf("./_testdata/validate/%s/expected", spec.Name)
+			testFileDir := fmt.Sprintf("./_testdata/postCompositionValidators/%s/assets", spec.Name)
+			expectFileDir := fmt.Sprintf("./_testdata/postCompositionValidators/%s/expected", spec.Name)
 
 			rule := spec.Rule
 
