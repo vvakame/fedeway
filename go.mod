@@ -3,7 +3,7 @@ module github.com/vvakame/fedeway
 go 1.17
 
 require (
-	github.com/99designs/gqlgen v0.14.0
+	github.com/99designs/gqlgen v0.15.1
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/go-logr/logr v1.2.2
 	github.com/go-logr/stdr v1.2.2
@@ -21,7 +21,6 @@ require (
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/urfave/cli/v2 v2.3.0 // indirect
 	golang.org/x/mod v0.5.1 // indirect
