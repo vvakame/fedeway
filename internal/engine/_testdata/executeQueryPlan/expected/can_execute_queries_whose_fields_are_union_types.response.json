@@ -1,0 +1,15 @@
+{
+  "data": {
+    "user": {
+      "name": {
+        "first": "Ada",
+        "last": "Lovelace"
+      },
+      "thing": {
+        "description": "Humble Toyota",
+        "price": "9990",
+        "retailPrice": "9990"
+      }
+    }
+  }
+}

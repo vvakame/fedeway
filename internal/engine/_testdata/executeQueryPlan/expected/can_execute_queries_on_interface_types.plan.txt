@@ -1,0 +1,49 @@
+QueryPlan {
+	Sequence {
+		Fetch(service: "product") {
+			query {
+				vehicle(id: "1") {
+					__typename
+					description
+					price
+					... on Car {
+						__typename
+						id
+						price
+					}
+					... on Van {
+						__typename
+						id
+						price
+					}
+				}
+			}
+		},
+		Flatten(path: "vehicle") {
+			Fetch(service: "reviews") {
+				{
+					... on Car {
+						__typename
+						id
+						price
+					}
+				}
+				{
+					... on Van {
+						__typename
+						id
+						price
+					}
+				} =>
+				{
+					... on Car {
+						retailPrice
+					}
+					... on Van {
+						retailPrice
+					}
+				}
+			},
+		},
+	},
+}

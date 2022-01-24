@@ -1,4 +1,3 @@
-# option:skip: true
 # can execute queries whose fields are interface types
 query {
     user(id: "1") {
