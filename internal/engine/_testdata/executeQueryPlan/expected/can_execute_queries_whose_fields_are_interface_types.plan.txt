@@ -1,0 +1,71 @@
+QueryPlan {
+	Sequence {
+		Fetch(service: "accounts") {
+			query {
+				user(id: "1") {
+					name {
+						first
+						last
+					}
+					__typename
+					id
+				}
+			}
+		},
+		Flatten(path: "user") {
+			Fetch(service: "product") {
+				{
+					... on User {
+						__typename
+						id
+					}
+				} =>
+				{
+					... on User {
+						vehicle {
+							__typename
+							description
+							price
+							... on Car {
+								__typename
+								id
+								price
+							}
+							... on Van {
+								__typename
+								id
+								price
+							}
+						}
+					}
+				}
+			},
+		},
+		Flatten(path: "user.vehicle") {
+			Fetch(service: "reviews") {
+				{
+					... on Car {
+						__typename
+						id
+						price
+					}
+				}
+				{
+					... on Van {
+						__typename
+						id
+						price
+					}
+				} =>
+				{
+					... on Car {
+						retailPrice
+					}
+					... on Van {
+						retailPrice
+					}
+				}
+			},
+		},
+	},
+}

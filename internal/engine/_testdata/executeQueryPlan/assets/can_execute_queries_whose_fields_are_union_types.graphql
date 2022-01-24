@@ -1,4 +1,3 @@
-# option:skip: true
 # can execute queries whose fields are union types
 query {
     user(id: "1") {

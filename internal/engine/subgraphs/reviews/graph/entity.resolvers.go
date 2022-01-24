@@ -16,7 +16,7 @@ func (r *entityResolver) FindBookByIsbn(ctx context.Context, isbn string) (*mode
 }
 
 func (r *entityResolver) FindCarByID(ctx context.Context, id string) (*model.Car, error) {
-	return nil, errors.New("FindCarByID is not implemented")
+	return &model.Car{ID: id}, nil
 }
 
 func (r *entityResolver) FindFurnitureByUpc(ctx context.Context, upc string) (*model.Furniture, error) {

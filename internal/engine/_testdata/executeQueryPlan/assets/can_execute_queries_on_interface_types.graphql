@@ -1,4 +1,3 @@
-# option:skip: true
 # can execute queries on interface types
 query {
     vehicle(id: "1") {
