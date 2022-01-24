@@ -49,6 +49,19 @@ func (r *entityResolver) FindFurnitureByUpc(ctx context.Context, upc string) (*m
 	return nil, nil
 }
 
+func (r *entityResolver) FindFurnitureBySku(ctx context.Context, sku string) (*model.Furniture, error) {
+	for _, product := range r.products {
+		switch product := product.(type) {
+		case *model.Furniture:
+			if product.Sku == sku {
+				return product, nil
+			}
+		}
+	}
+
+	return nil, nil
+}
+
 func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.User, error) {
 	return &model.User{
 		ID: id,
