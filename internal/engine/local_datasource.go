@@ -47,6 +47,11 @@ func (ds *LocalDataSource) Process(ctx context.Context, oc *graphql.OperationCon
 			return next(ctx)
 		}
 	}
+	if oc.RootResolverMiddleware == nil {
+		oc.RootResolverMiddleware = func(ctx context.Context, next graphql.RootResolver) graphql.Marshaler {
+			return next(ctx)
+		}
+	}
 
 	ctx = graphql.WithOperationContext(ctx, oc)
 	// TODO make configurable

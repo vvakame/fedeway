@@ -33,6 +33,10 @@ func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.Us
 	return nil, nil
 }
 
+func (r *entityResolver) FindUserByUsernameAndNameFirstAndNameLast(ctx context.Context, username *string, nameFirst *string, nameLast *string) (*model.User, error) {
+	return nil, errors.New("not implemented")
+}
+
 // Entity returns generated.EntityResolver implementation.
 func (r *Resolver) Entity() generated.EntityResolver { return &entityResolver{r} }
 

@@ -34,6 +34,9 @@ func CreateOperationContext(ctx context.Context, schema *ast.Schema, query strin
 		ResolverMiddleware: func(ctx context.Context, next graphql.Resolver) (res interface{}, err error) {
 			return next(ctx)
 		},
+		RootResolverMiddleware: func(ctx context.Context, next graphql.RootResolver) graphql.Marshaler {
+			return next(ctx)
+		},
 		Stats: graphql.Stats{},
 	}
 
