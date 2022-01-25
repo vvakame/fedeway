@@ -26,6 +26,10 @@ jobs:
           key: ${{ runner.os }}-go-cache-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/go.sum') }}
           path: |-
             ~/go/pkg/mod
+      - name: Check code generate
+        run: |-
+          go generate ./...
+          git diff --exit-code
       - name: Run tests
         run: |-
           go test -coverprofile=./cover.out ./...
