@@ -6,7 +6,6 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vektah/gqlparser/v2/parser"
 	"github.com/vektah/gqlparser/v2/validator"
-	"github.com/vvakame/fedeway/internal/graphql"
 )
 
 func preCompositionValidators() []func(*ServiceDefinition) []error {
@@ -120,7 +119,6 @@ func keyFieldsMissingExternal(service *ServiceDefinition) []error {
 		errors = append(errors, gErr)
 		return errors
 	}
-	schemaDoc.Directives = append(schemaDoc.Directives, graphql.GraphQLSpecifiedByDirective) // TODO remove this line later when validator.Prelude contains @specifiedBy directive
 	schemaDoc.Directives = append(schemaDoc.Directives, apolloTypeSystemDirectives...)
 	schemaDoc.Merge(typeDefs)
 
