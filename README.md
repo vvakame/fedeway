@@ -15,7 +15,7 @@ Apollo Federation Gateway v1 implementations by Go.
   * support `graphql.Stats`
   * observability. support OpenCensus or OpenTelemetry
 
-## Issue from gqlgen
+## Issues from gqlgen
 
 * nested `@requires` is not supported [#1138](https://github.com/99designs/gqlgen/issues/1138)
 * multiple `@key` is not supported [#1031](https://github.com/99designs/gqlgen/issues/1031)
