@@ -73,7 +73,7 @@ extend type Van implements Vehicle @key(fields: "id") {
 input ReviewProduct {
     upc: String!
     body: String!
-    stars: Int # TODO gqlgen not suported  @deprecated(reason: "Stars are no longer in use")
+    stars: Int @deprecated(reason: "Stars are no longer in use")
 }
 
 extend type Mutation {
