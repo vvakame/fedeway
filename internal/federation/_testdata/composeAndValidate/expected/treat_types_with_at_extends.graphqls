@@ -12,13 +12,9 @@ type Query {
 	products: [Product]! @join__field(graph: SERVICEA)
 }
 enum core__Purpose {
-	"""
-	`EXECUTION` features provide metadata necessary to for operation execution.
-	"""
+	"""`EXECUTION` features provide metadata necessary to for operation execution."""
 	EXECUTION
-	"""
-	`SECURITY` features provide metadata necessary to securely resolve fields.
-	"""
+	"""`SECURITY` features provide metadata necessary to securely resolve fields."""
 	SECURITY
 }
 scalar join__FieldSet

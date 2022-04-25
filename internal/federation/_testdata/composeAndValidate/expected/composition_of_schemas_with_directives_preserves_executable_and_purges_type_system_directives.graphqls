@@ -1,6 +1,4 @@
-"""
-directives at FIELDs are executable
-"""
+"""directives at FIELDs are executable"""
 directive @audit(risk: Int!) on FIELD
 directive @core(feature: String!, as: String, for: core__Purpose) on SCHEMA
 directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
@@ -15,13 +13,9 @@ type Query {
 	importantDirectives: [EarthConcern!]! @join__field(graph: SERVICEA)
 }
 enum core__Purpose {
-	"""
-	`EXECUTION` features provide metadata necessary to for operation execution.
-	"""
+	"""`EXECUTION` features provide metadata necessary to for operation execution."""
 	EXECUTION
-	"""
-	`SECURITY` features provide metadata necessary to securely resolve fields.
-	"""
+	"""`SECURITY` features provide metadata necessary to securely resolve fields."""
 	SECURITY
 }
 scalar join__FieldSet
