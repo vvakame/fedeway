@@ -21,13 +21,9 @@ type Review @join__owner(graph: SERVICEB) @join__type(graph: SERVICEB, key: "id"
 	id: String!
 }
 enum core__Purpose {
-	"""
-	`EXECUTION` features provide metadata necessary to for operation execution.
-	"""
+	"""`EXECUTION` features provide metadata necessary to for operation execution."""
 	EXECUTION
-	"""
-	`SECURITY` features provide metadata necessary to securely resolve fields.
-	"""
+	"""`SECURITY` features provide metadata necessary to securely resolve fields."""
 	SECURITY
 }
 scalar join__FieldSet

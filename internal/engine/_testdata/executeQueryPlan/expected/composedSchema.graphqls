@@ -136,7 +136,7 @@ type Review @join__owner(graph: REVIEWS) @join__type(graph: REVIEWS, key: "id") 
 }
 input ReviewProduct {
 	body: String!
-	stars: Int
+	stars: Int @deprecated(reason: "Stars are no longer in use")
 	upc: String!
 }
 type SMSAccount @join__owner(graph: ACCOUNTS) @join__type(graph: ACCOUNTS, key: "number") {
@@ -188,13 +188,9 @@ interface Vehicle {
 	retailPrice: String
 }
 enum core__Purpose {
-	"""
-	`EXECUTION` features provide metadata necessary to for operation execution.
-	"""
+	"""`EXECUTION` features provide metadata necessary to for operation execution."""
 	EXECUTION
-	"""
-	`SECURITY` features provide metadata necessary to securely resolve fields.
-	"""
+	"""`SECURITY` features provide metadata necessary to securely resolve fields."""
 	SECURITY
 }
 scalar join__FieldSet
