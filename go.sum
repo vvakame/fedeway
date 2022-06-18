@@ -1,5 +1,5 @@
-github.com/99designs/gqlgen v0.17.9 h1:0XvE3nMaTaLYq7XbBz1MY0t9BFcntydlt1zzNa4eY+4=
-github.com/99designs/gqlgen v0.17.9/go.mod h1:PThAZAK9t2pAat7g8QdSI4dCBMOhBO+t2qj+0jvDqps=
+github.com/99designs/gqlgen v0.17.10 h1:+JtGPZ6jqL0IcmLopq4iaEbh5Ggye+NiutU57w82xvk=
+github.com/99designs/gqlgen v0.17.10/go.mod h1:tjgUrZGpynt+w38zmgTn5QGgd3EUhkHa4VRcX6/AyGo=
 github.com/BurntSushi/toml v1.1.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/MakeNowJust/heredoc/v2 v2.0.1 h1:rlCHh70XXXv7toz95ajQWOWQnN4WNLt0TdpZYIR/J6A=
 github.com/MakeNowJust/heredoc/v2 v2.0.1/go.mod h1:6/2Abh5s+hc3g9nbWLe9ObDIOhaRrqsyY9MWy+4JdRM=
@@ -74,7 +74,6 @@ github.com/stretchr/testify v1.7.1 h1:5TQK59W5E3v0r2duFAb7P95B6hEeOyEnHRa8MjYSMT
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/urfave/cli/v2 v2.8.1 h1:CGuYNZF9IKZY/rfBe3lJpccSoIY1ytfvmgQT90cNOl4=
 github.com/urfave/cli/v2 v2.8.1/go.mod h1:Z41J9TPoffeoqP0Iza0YbAhGvymRdZAd2uPmZ5JxRdY=
-github.com/vektah/gqlparser/v2 v2.4.4/go.mod h1:flJWIR04IMQPGz+BXLrORkrARBxv/rtyIAFvd/MceW0=
 github.com/vektah/gqlparser/v2 v2.4.5 h1:C02NsyEsL4TXJB7ndonqTfuQOL4XPIu0aAWugdmTgmc=
 github.com/vektah/gqlparser/v2 v2.4.5/go.mod h1:flJWIR04IMQPGz+BXLrORkrARBxv/rtyIAFvd/MceW0=
 github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 h1:bAn7/zixMGCfxrRTfdpNzjtPYqr8smhKouy9mxVdGPU=
