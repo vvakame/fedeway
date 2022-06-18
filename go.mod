@@ -3,7 +3,7 @@ module github.com/vvakame/fedeway
 go 1.17
 
 require (
-	github.com/99designs/gqlgen v0.17.9
+	github.com/99designs/gqlgen v0.17.10
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/stdr v1.2.2
