@@ -7,7 +7,7 @@ require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/stdr v1.2.2
-	github.com/goccy/go-yaml v1.9.5
+	github.com/goccy/go-yaml v1.9.6
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/vektah/gqlparser/v2 v2.4.8
 )
