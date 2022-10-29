@@ -9,7 +9,7 @@ require (
 	github.com/go-logr/stdr v1.2.2
 	github.com/goccy/go-yaml v1.9.6
 	github.com/pmezard/go-difflib v1.0.0
-	github.com/vektah/gqlparser/v2 v2.4.8
+	github.com/vektah/gqlparser/v2 v2.5.1
 )
 
 require (
