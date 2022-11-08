@@ -304,7 +304,7 @@ type Noop @key(fields: "noop") {
 	{Name: "../../federation/directives.graphql", Input: `
 	scalar _Any
 	scalar _FieldSet
-	
+
 	directive @external on FIELD_DEFINITION
 	directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
 	directive @provides(fields: _FieldSet!) on FIELD_DEFINITION

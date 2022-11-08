@@ -11,6 +11,7 @@ import (
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/documents/graph/model"
 )
 
+// FindNoopByNoop is the resolver for the findNoopByNoop field.
 func (r *entityResolver) FindNoopByNoop(ctx context.Context, noop *string) (*model.Noop, error) {
 	return nil, errors.New("not implemented")
 }

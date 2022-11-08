@@ -131,9 +131,11 @@ func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNo
 	}
 
 	sendOperation := func(ec *executionContext, source string, variables map[string]interface{}) (map[string]interface{}, *gqlerror.Error) {
-		doc, gErr := parser.ParseQuery(&ast.Source{Input: source})
-		if gErr != nil {
+		doc, err := parser.ParseQuery(&ast.Source{Input: source})
+		if gErr, ok := err.(*gqlerror.Error); ok {
 			return nil, gErr
+		} else if err != nil {
+			return nil, gqlerror.WrapPath(nil, err)
 		}
 		oc := &graphql.OperationContext{
 			RawQuery:             source,
@@ -166,7 +168,7 @@ func executeFetch(ctx context.Context, ec *executionContext, fetch *plan.FetchNo
 		dec.UseNumber()
 
 		result := make(map[string]interface{})
-		err := dec.Decode(&result)
+		err = dec.Decode(&result)
 		if err != nil {
 			return nil, gqlerror.Errorf("json unmarshal error: %s", err)
 		}

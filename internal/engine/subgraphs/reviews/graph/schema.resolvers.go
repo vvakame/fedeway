@@ -12,6 +12,7 @@ import (
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/reviews/graph/model"
 )
 
+// Reviews is the resolver for the reviews field.
 func (r *bookResolver) Reviews(ctx context.Context, obj *model.Book) ([]*model.Review, error) {
 	var result []*model.Review
 	for _, review := range r.reviews {
@@ -28,6 +29,7 @@ func (r *bookResolver) Reviews(ctx context.Context, obj *model.Book) ([]*model.R
 	return result, nil
 }
 
+// RelatedReviews is the resolver for the relatedReviews field.
 func (r *bookResolver) RelatedReviews(ctx context.Context, obj *model.Book) ([]*model.Review, error) {
 	result := make([]*model.Review, 0)
 	for _, similarBool := range obj.SimilarBooks {
@@ -46,10 +48,12 @@ func (r *bookResolver) RelatedReviews(ctx context.Context, obj *model.Book) ([]*
 	return result, nil
 }
 
+// RetailPrice is the resolver for the retailPrice field.
 func (r *carResolver) RetailPrice(ctx context.Context, obj *model.Car) (*string, error) {
 	return obj.Price, nil
 }
 
+// Reviews is the resolver for the reviews field.
 func (r *furnitureResolver) Reviews(ctx context.Context, obj *model.Furniture) ([]*model.Review, error) {
 	var result []*model.Review
 	for _, review := range r.reviews {
@@ -66,6 +70,7 @@ func (r *furnitureResolver) Reviews(ctx context.Context, obj *model.Furniture) (
 	return result, nil
 }
 
+// ReviewProduct is the resolver for the reviewProduct field.
 func (r *mutationResolver) ReviewProduct(ctx context.Context, input model.ReviewProduct) (model.Product, error) {
 	latestID := r.reviews[len(r.reviews)-1].ID
 	i, err := strconv.ParseInt(latestID, 10, 32)
@@ -88,6 +93,7 @@ func (r *mutationResolver) ReviewProduct(ctx context.Context, input model.Review
 	return product, nil
 }
 
+// UpdateReview is the resolver for the updateReview field.
 func (r *mutationResolver) UpdateReview(ctx context.Context, review model.UpdateReviewInput) (*model.Review, error) {
 	var target *model.Review
 	for _, exist := range r.reviews {
@@ -105,6 +111,7 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, review model.Update
 	return target, nil
 }
 
+// DeleteReview is the resolver for the deleteReview field.
 func (r *mutationResolver) DeleteReview(ctx context.Context, id string) (*bool, error) {
 	newList := make([]*model.Review, 0, len(r.reviews))
 	var deleted bool
@@ -121,6 +128,7 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, id string) (*bool, 
 	return &deleted, nil
 }
 
+// TopReviews is the resolver for the topReviews field.
 func (r *queryResolver) TopReviews(ctx context.Context, first *int) ([]*model.Review, error) {
 	if first == nil {
 		return r.reviews, nil
@@ -134,12 +142,14 @@ func (r *queryResolver) TopReviews(ctx context.Context, first *int) ([]*model.Re
 	return result, nil
 }
 
+// Author is the resolver for the author field.
 func (r *reviewResolver) Author(ctx context.Context, obj *model.Review) (*model.User, error) {
 	return &model.User{
 		ID: obj.AuthorID,
 	}, nil
 }
 
+// Username is the resolver for the username field.
 func (r *userResolver) Username(ctx context.Context, obj *model.User) (*string, error) {
 	for _, username := range r.usernames {
 		if username.ID == obj.ID {
@@ -150,6 +160,7 @@ func (r *userResolver) Username(ctx context.Context, obj *model.User) (*string, 
 	return nil, nil
 }
 
+// Reviews is the resolver for the reviews field.
 func (r *userResolver) Reviews(ctx context.Context, obj *model.User) ([]*model.Review, error) {
 	var result []*model.Review
 	for _, review := range r.reviews {
@@ -161,6 +172,7 @@ func (r *userResolver) Reviews(ctx context.Context, obj *model.User) ([]*model.R
 	return result, nil
 }
 
+// NumberOfReviews is the resolver for the numberOfReviews field.
 func (r *userResolver) NumberOfReviews(ctx context.Context, obj *model.User) (int, error) {
 	var count int
 	for _, review := range r.reviews {
@@ -172,6 +184,7 @@ func (r *userResolver) NumberOfReviews(ctx context.Context, obj *model.User) (in
 	return count, nil
 }
 
+// GoodAddress is the resolver for the goodAddress field.
 func (r *userResolver) GoodAddress(ctx context.Context, obj *model.User) (*bool, error) {
 	if len(obj.Metadata) == 0 || obj.Metadata[0].Address == nil {
 		return nil, errors.New("unexpected metadata. gqlgen not supported nested @requires")
@@ -181,6 +194,7 @@ func (r *userResolver) GoodAddress(ctx context.Context, obj *model.User) (*bool,
 	return &b, nil
 }
 
+// RetailPrice is the resolver for the retailPrice field.
 func (r *vanResolver) RetailPrice(ctx context.Context, obj *model.Van) (*string, error) {
 	return obj.Price, nil
 }

@@ -18,10 +18,16 @@ type MetadataOrError interface {
 
 type Product interface {
 	IsProduct()
+	GetUpc() string
+	GetSku() string
+	GetName() *string
+	GetPrice() *string
+	GetDetails() ProductDetails
 }
 
 type ProductDetails interface {
 	IsProductDetails()
+	GetCountry() *string
 }
 
 type Thing interface {
@@ -30,6 +36,9 @@ type Thing interface {
 
 type Vehicle interface {
 	IsVehicle()
+	GetID() string
+	GetDescription() *string
+	GetPrice() *string
 }
 
 type Amazon struct {
@@ -49,8 +58,14 @@ type Book struct {
 	Details *ProductDetailsBook `json:"details"`
 }
 
-func (Book) IsEntity()  {}
-func (Book) IsProduct() {}
+func (Book) IsEntity() {}
+
+func (Book) IsProduct()                      {}
+func (this Book) GetUpc() string             { return this.Upc }
+func (this Book) GetSku() string             { return this.Sku }
+func (this Book) GetName() *string           { return this.Name }
+func (this Book) GetPrice() *string          { return this.Price }
+func (this Book) GetDetails() ProductDetails { return *this.Details }
 
 type Car struct {
 	ID          string  `json:"id"`
@@ -58,9 +73,14 @@ type Car struct {
 	Price       *string `json:"price"`
 }
 
-func (Car) IsVehicle() {}
-func (Car) IsThing()   {}
-func (Car) IsEntity()  {}
+func (Car) IsVehicle()                   {}
+func (this Car) GetID() string           { return this.ID }
+func (this Car) GetDescription() *string { return this.Description }
+func (this Car) GetPrice() *string       { return this.Price }
+
+func (Car) IsThing() {}
+
+func (Car) IsEntity() {}
 
 type Error struct {
 	Code    *int    `json:"code"`
@@ -79,14 +99,21 @@ type Furniture struct {
 	Details  *ProductDetailsFurniture `json:"details"`
 }
 
-func (Furniture) IsProduct() {}
-func (Furniture) IsEntity()  {}
+func (Furniture) IsProduct()                      {}
+func (this Furniture) GetUpc() string             { return this.Upc }
+func (this Furniture) GetSku() string             { return this.Sku }
+func (this Furniture) GetName() *string           { return this.Name }
+func (this Furniture) GetPrice() *string          { return this.Price }
+func (this Furniture) GetDetails() ProductDetails { return *this.Details }
+
+func (Furniture) IsEntity() {}
 
 type Ikea struct {
 	Asile *int `json:"asile"`
 }
 
 func (Ikea) IsBrand() {}
+
 func (Ikea) IsThing() {}
 
 type KeyValue struct {
@@ -101,14 +128,16 @@ type ProductDetailsBook struct {
 	Pages   *int    `json:"pages"`
 }
 
-func (ProductDetailsBook) IsProductDetails() {}
+func (ProductDetailsBook) IsProductDetails()        {}
+func (this ProductDetailsBook) GetCountry() *string { return this.Country }
 
 type ProductDetailsFurniture struct {
 	Country *string `json:"country"`
 	Color   *string `json:"color"`
 }
 
-func (ProductDetailsFurniture) IsProductDetails() {}
+func (ProductDetailsFurniture) IsProductDetails()        {}
+func (this ProductDetailsFurniture) GetCountry() *string { return this.Country }
 
 type User struct {
 	ID      string  `json:"id"`
@@ -124,8 +153,12 @@ type Van struct {
 	Price       *string `json:"price"`
 }
 
-func (Van) IsVehicle() {}
-func (Van) IsEntity()  {}
+func (Van) IsVehicle()                   {}
+func (this Van) GetID() string           { return this.ID }
+func (this Van) GetDescription() *string { return this.Description }
+func (this Van) GetPrice() *string       { return this.Price }
+
+func (Van) IsEntity() {}
 
 type CacheControlScope string
 

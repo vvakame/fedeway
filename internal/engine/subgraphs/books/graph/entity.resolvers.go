@@ -10,6 +10,7 @@ import (
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/books/graph/model"
 )
 
+// FindBookByIsbn is the resolver for the findBookByIsbn field.
 func (r *entityResolver) FindBookByIsbn(ctx context.Context, isbn string) (*model.Book, error) {
 	for _, book := range r.books {
 		if book.Isbn == isbn {
@@ -19,6 +20,7 @@ func (r *entityResolver) FindBookByIsbn(ctx context.Context, isbn string) (*mode
 	return nil, nil
 }
 
+// FindLibraryByID is the resolver for the findLibraryByID field.
 func (r *entityResolver) FindLibraryByID(ctx context.Context, id string) (*model.Library, error) {
 	for _, library := range r.libraries {
 		if library.ID == id {

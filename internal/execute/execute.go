@@ -73,11 +73,15 @@ func Execute(ctx context.Context, args *ExecutionArgs) *graphql.Response {
 		RecoverFunc:        nil, // TODO
 		ResolverMiddleware: nil, // TODO
 	}
-	var gErr *gqlerror.Error
-	oc.Variables, gErr = validator.VariableValues(schema, oc.Operation, variableValues)
-	if gErr != nil {
+	var err error
+	oc.Variables, err = validator.VariableValues(schema, oc.Operation, variableValues)
+	if gErr, ok := err.(*gqlerror.Error); ok {
 		return &graphql.Response{
 			Errors: gqlerror.List{gErr},
+		}
+	} else if err != nil {
+		return &graphql.Response{
+			Errors: gqlerror.List{gqlerror.WrapPath(nil, err)},
 		}
 	}
 	ctx = graphql.WithOperationContext(ctx, oc)

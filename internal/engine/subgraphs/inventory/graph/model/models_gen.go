@@ -4,6 +4,7 @@ package model
 
 type Product interface {
 	IsProduct()
+	GetInStock() *bool
 }
 
 type Book struct {
@@ -12,8 +13,10 @@ type Book struct {
 	IsCheckedOut *bool  `json:"isCheckedOut"`
 }
 
-func (Book) IsEntity()  {}
-func (Book) IsProduct() {}
+func (Book) IsEntity() {}
+
+func (Book) IsProduct()             {}
+func (this Book) GetInStock() *bool { return this.InStock }
 
 type Furniture struct {
 	Sku     string `json:"sku"`
@@ -21,8 +24,10 @@ type Furniture struct {
 	IsHeavy *bool  `json:"isHeavy"`
 }
 
-func (Furniture) IsEntity()  {}
-func (Furniture) IsProduct() {}
+func (Furniture) IsEntity() {}
+
+func (Furniture) IsProduct()             {}
+func (this Furniture) GetInStock() *bool { return this.InStock }
 
 type User struct {
 	ID              string          `json:"id"`

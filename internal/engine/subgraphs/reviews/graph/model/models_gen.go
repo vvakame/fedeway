@@ -8,10 +8,12 @@ type MetadataOrError interface {
 
 type Product interface {
 	IsProduct()
+	GetReviews() []*Review
 }
 
 type Vehicle interface {
 	IsVehicle()
+	GetRetailPrice() *string
 }
 
 type Book struct {
@@ -21,8 +23,19 @@ type Book struct {
 	RelatedReviews []*Review `json:"relatedReviews"`
 }
 
-func (Book) IsEntity()  {}
+func (Book) IsEntity() {}
+
 func (Book) IsProduct() {}
+func (this Book) GetReviews() []*Review {
+	if this.Reviews == nil {
+		return nil
+	}
+	interfaceSlice := make([]*Review, 0, len(this.Reviews))
+	for _, concrete := range this.Reviews {
+		interfaceSlice = append(interfaceSlice, concrete)
+	}
+	return interfaceSlice
+}
 
 type Car struct {
 	ID          string  `json:"id"`
@@ -30,8 +43,10 @@ type Car struct {
 	RetailPrice *string `json:"retailPrice"`
 }
 
-func (Car) IsEntity()  {}
-func (Car) IsVehicle() {}
+func (Car) IsEntity() {}
+
+func (Car) IsVehicle()                   {}
+func (this Car) GetRetailPrice() *string { return this.RetailPrice }
 
 type Error struct {
 	Code    *int    `json:"code"`
@@ -45,8 +60,19 @@ type Furniture struct {
 	Reviews []*Review `json:"reviews"`
 }
 
-func (Furniture) IsEntity()  {}
+func (Furniture) IsEntity() {}
+
 func (Furniture) IsProduct() {}
+func (this Furniture) GetReviews() []*Review {
+	if this.Reviews == nil {
+		return nil
+	}
+	interfaceSlice := make([]*Review, 0, len(this.Reviews))
+	for _, concrete := range this.Reviews {
+		interfaceSlice = append(interfaceSlice, concrete)
+	}
+	return interfaceSlice
+}
 
 type KeyValue struct {
 	Key   string `json:"key"`
@@ -87,5 +113,7 @@ type Van struct {
 	RetailPrice *string `json:"retailPrice"`
 }
 
-func (Van) IsEntity()  {}
-func (Van) IsVehicle() {}
+func (Van) IsEntity() {}
+
+func (Van) IsVehicle()                   {}
+func (this Van) GetRetailPrice() *string { return this.RetailPrice }

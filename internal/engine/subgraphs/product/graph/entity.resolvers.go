@@ -10,6 +10,7 @@ import (
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/product/graph/model"
 )
 
+// FindBookByIsbn is the resolver for the findBookByIsbn field.
 func (r *entityResolver) FindBookByIsbn(ctx context.Context, isbn string) (*model.Book, error) {
 	for _, product := range r.products {
 		switch product := product.(type) {
@@ -23,6 +24,7 @@ func (r *entityResolver) FindBookByIsbn(ctx context.Context, isbn string) (*mode
 	return nil, nil
 }
 
+// FindCarByID is the resolver for the findCarByID field.
 func (r *entityResolver) FindCarByID(ctx context.Context, id string) (*model.Car, error) {
 	for _, vehicle := range r.vehicles {
 		switch vehicle := vehicle.(type) {
@@ -36,6 +38,7 @@ func (r *entityResolver) FindCarByID(ctx context.Context, id string) (*model.Car
 	return nil, nil
 }
 
+// FindFurnitureByUpc is the resolver for the findFurnitureByUpc field.
 func (r *entityResolver) FindFurnitureByUpc(ctx context.Context, upc string) (*model.Furniture, error) {
 	for _, product := range r.products {
 		switch product := product.(type) {
@@ -49,6 +52,7 @@ func (r *entityResolver) FindFurnitureByUpc(ctx context.Context, upc string) (*m
 	return nil, nil
 }
 
+// FindFurnitureBySku is the resolver for the findFurnitureBySku field.
 func (r *entityResolver) FindFurnitureBySku(ctx context.Context, sku string) (*model.Furniture, error) {
 	for _, product := range r.products {
 		switch product := product.(type) {
@@ -62,12 +66,14 @@ func (r *entityResolver) FindFurnitureBySku(ctx context.Context, sku string) (*m
 	return nil, nil
 }
 
+// FindUserByID is the resolver for the findUserByID field.
 func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.User, error) {
 	return &model.User{
 		ID: id,
 	}, nil
 }
 
+// FindVanByID is the resolver for the findVanByID field.
 func (r *entityResolver) FindVanByID(ctx context.Context, id string) (*model.Van, error) {
 	for _, vehicle := range r.vehicles {
 		switch vehicle := vehicle.(type) {

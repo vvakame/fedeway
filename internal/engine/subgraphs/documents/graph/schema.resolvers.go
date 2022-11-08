@@ -11,6 +11,7 @@ import (
 	model1 "github.com/vvakame/fedeway/internal/engine/subgraphs/documents/graph/model"
 )
 
+// Body is the resolver for the body field.
 func (r *queryResolver) Body(ctx context.Context) (model1.Body, error) {
 	panic(fmt.Errorf("not implemented"))
 }
