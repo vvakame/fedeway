@@ -12,6 +12,7 @@ import (
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/accounts/graph/model"
 )
 
+// UserAccount is the resolver for the userAccount field.
 func (r *libraryResolver) UserAccount(ctx context.Context, obj *model.Library, id string) (*model.User, error) {
 	libraryUserIDs := r.libraryUsers[*obj.Name]
 	for _, libraryUserID := range libraryUserIDs {
@@ -23,6 +24,7 @@ func (r *libraryResolver) UserAccount(ctx context.Context, obj *model.Library, i
 	return nil, nil
 }
 
+// Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, username string, password string, userID *string) (*model.User, error) {
 	for _, user := range r.users {
 		if user.Username != nil && *user.Username == username {
@@ -33,6 +35,7 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	return nil, nil
 }
 
+// User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
 	for _, user := range r.users {
 		if user.ID == id {
@@ -43,10 +46,12 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 	return nil, nil
 }
 
+// Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	return r.users[0], nil
 }
 
+// BirthDate is the resolver for the birthDate field.
 func (r *userResolver) BirthDate(ctx context.Context, obj *model.User, locale *string) (*string, error) {
 	if locale == nil || *locale == "" {
 		return obj.BirthDate, nil
@@ -70,6 +75,7 @@ func (r *userResolver) BirthDate(ctx context.Context, obj *model.User, locale *s
 	}
 }
 
+// Metadata is the resolver for the metadata field.
 func (r *userResolver) Metadata(ctx context.Context, obj *model.User) ([]*model.UserMetadata, error) {
 	return r.metadata[obj.ID], nil
 }

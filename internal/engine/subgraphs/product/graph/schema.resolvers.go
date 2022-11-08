@@ -13,14 +13,17 @@ import (
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/product/graph/model"
 )
 
+// Upc is the resolver for the upc field.
 func (r *bookResolver) Upc(ctx context.Context, obj *model.Book) (string, error) {
 	return obj.Isbn, nil
 }
 
+// Sku is the resolver for the sku field.
 func (r *bookResolver) Sku(ctx context.Context, obj *model.Book) (string, error) {
 	return obj.Isbn, nil
 }
 
+// Name is the resolver for the name field.
 func (r *bookResolver) Name(ctx context.Context, obj *model.Book, delimeter *string) (*string, error) {
 	var title, year string
 	if obj.Title == nil {
@@ -37,6 +40,7 @@ func (r *bookResolver) Name(ctx context.Context, obj *model.Book, delimeter *str
 	return &s, nil
 }
 
+// Product is the resolver for the product field.
 func (r *queryResolver) Product(ctx context.Context, upc string) (model.Product, error) {
 	for _, product := range r.products {
 		switch product := product.(type) {
@@ -56,6 +60,7 @@ func (r *queryResolver) Product(ctx context.Context, upc string) (model.Product,
 	return nil, nil
 }
 
+// Vehicle is the resolver for the vehicle field.
 func (r *queryResolver) Vehicle(ctx context.Context, id string) (model.Vehicle, error) {
 	for _, vehicle := range r.vehicles {
 		switch vehicle := vehicle.(type) {
@@ -75,6 +80,7 @@ func (r *queryResolver) Vehicle(ctx context.Context, id string) (model.Vehicle, 
 	return nil, nil
 }
 
+// TopProducts is the resolver for the topProducts field.
 func (r *queryResolver) TopProducts(ctx context.Context, first *int) ([]model.Product, error) {
 	if first == nil {
 		return r.products, nil
@@ -88,6 +94,7 @@ func (r *queryResolver) TopProducts(ctx context.Context, first *int) ([]model.Pr
 	return result, nil
 }
 
+// TopCars is the resolver for the topCars field.
 func (r *queryResolver) TopCars(ctx context.Context, first *int) ([]*model.Car, error) {
 	var cars []*model.Car
 
@@ -110,6 +117,7 @@ func (r *queryResolver) TopCars(ctx context.Context, first *int) ([]*model.Car, 
 	return result, nil
 }
 
+// Vehicle is the resolver for the vehicle field.
 func (r *userResolver) Vehicle(ctx context.Context, obj *model.User) (model.Vehicle, error) {
 	for _, vehicle := range r.vehicles {
 		switch vehicle := vehicle.(type) {
@@ -129,6 +137,7 @@ func (r *userResolver) Vehicle(ctx context.Context, obj *model.User) (model.Vehi
 	return nil, nil
 }
 
+// Thing is the resolver for the thing field.
 func (r *userResolver) Thing(ctx context.Context, obj *model.User) (model.Thing, error) {
 	for _, vehicle := range r.vehicles {
 		switch vehicle := vehicle.(type) {

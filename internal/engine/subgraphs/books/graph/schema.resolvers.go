@@ -10,6 +10,7 @@ import (
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/books/graph/model"
 )
 
+// Book is the resolver for the book field.
 func (r *queryResolver) Book(ctx context.Context, isbn string) (*model.Book, error) {
 	for _, book := range r.books {
 		if book.Isbn == isbn {
@@ -20,10 +21,12 @@ func (r *queryResolver) Book(ctx context.Context, isbn string) (*model.Book, err
 	return nil, nil
 }
 
+// Books is the resolver for the books field.
 func (r *queryResolver) Books(ctx context.Context) ([]*model.Book, error) {
 	return r.books, nil
 }
 
+// Library is the resolver for the library field.
 func (r *queryResolver) Library(ctx context.Context, id string) (*model.Library, error) {
 	for _, library := range r.libraries {
 		if library.ID == id {

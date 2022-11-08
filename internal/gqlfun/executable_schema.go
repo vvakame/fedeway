@@ -11,12 +11,14 @@ import (
 )
 
 func CreateOperationContext(ctx context.Context, schema *ast.Schema, query string, vairables map[string]interface{}) (*graphql.OperationContext, gqlerror.List) {
-	queryDoc, gErr := parser.ParseQuery(&ast.Source{
+	queryDoc, err := parser.ParseQuery(&ast.Source{
 		Input:   query,
 		BuiltIn: false,
 	})
-	if gErr != nil {
+	if gErr, ok := err.(*gqlerror.Error); ok {
 		return nil, gqlerror.List{gErr}
+	} else if err != nil {
+		return nil, gqlerror.List{gqlerror.WrapPath(nil, err)}
 	}
 	gErrs := validator.Validate(schema, queryDoc)
 	if len(gErrs) != 0 {

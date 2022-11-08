@@ -11,6 +11,7 @@ import (
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/inventory/graph/model"
 )
 
+// GoodDescription is the resolver for the goodDescription field.
 func (r *userResolver) GoodDescription(ctx context.Context, obj *model.User) (*bool, error) {
 	if len(obj.Metadata) == 0 || obj.Metadata[0].Description == nil {
 		return nil, errors.New("unexpected object value")

@@ -10,6 +10,7 @@ import (
 	"github.com/vvakame/fedeway/internal/engine/subgraphs/inventory/graph/model"
 )
 
+// FindBookByIsbn is the resolver for the findBookByIsbn field.
 func (r *entityResolver) FindBookByIsbn(ctx context.Context, isbn string) (*model.Book, error) {
 	for _, product := range r.inventory {
 		book, ok := product.(*model.Book)
@@ -23,6 +24,7 @@ func (r *entityResolver) FindBookByIsbn(ctx context.Context, isbn string) (*mode
 	return nil, nil
 }
 
+// FindFurnitureBySku is the resolver for the findFurnitureBySku field.
 func (r *entityResolver) FindFurnitureBySku(ctx context.Context, sku string) (*model.Furniture, error) {
 	for _, product := range r.inventory {
 		furniture, ok := product.(*model.Furniture)
@@ -36,6 +38,7 @@ func (r *entityResolver) FindFurnitureBySku(ctx context.Context, sku string) (*m
 	return nil, nil
 }
 
+// FindUserByID is the resolver for the findUserByID field.
 func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.User, error) {
 	return &model.User{ID: id}, nil
 }

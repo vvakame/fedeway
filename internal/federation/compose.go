@@ -8,7 +8,6 @@ import (
 
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/formatter"
-	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vektah/gqlparser/v2/validator"
 	"github.com/vvakame/fedeway/internal/graphql"
 )
@@ -50,16 +49,17 @@ type DirectiveDefinitionsMap map[string]map[string]*ast.DirectiveDefinition
 //
 // Example resulting typeToServiceMap shape:
 //
-// const typeToServiceMap = {
-//   Product: {
-//     serviceName: "ProductService",
-//     extensionFieldsToOwningServiceMap: {
-//       reviews: "ReviewService", // Product.reviews comes from the ReviewService
-//       dimensions: "ShippingService",
-//       weight: "ShippingService"
-//     }
-//   }
-// }
+//	const typeToServiceMap = {
+//	  Product: {
+//	    serviceName: "ProductService",
+//	    extensionFieldsToOwningServiceMap: {
+//	      reviews: "ReviewService", // Product.reviews comes from the ReviewService
+//	      dimensions: "ShippingService",
+//	      weight: "ShippingService"
+//	    }
+//	  }
+//	}
+//
 // original: [typeName: string]: { owningService?: string; extensionFieldsToOwningServiceMap: { [fieldName: string]: string }; };
 type TypeToServiceMap map[string]*TypeToServiceEntity
 type TypeToServiceEntity struct {
@@ -71,12 +71,13 @@ type TypeToServiceEntity struct {
 //
 // Example resulting KeyDirectivesMap shape:
 //
-// const keyDirectives = {
-//   Product: {
-//     serviceA: ["sku", "upc"]
-//     serviceB: ["color {id value}"] // Selection node simplified for readability
-//   }
-// }
+//	const keyDirectives = {
+//	  Product: {
+//	    serviceA: ["sku", "upc"]
+//	    serviceB: ["color {id value}"] // Selection node simplified for readability
+//	  }
+//	}
+//
 // original: [typeName: string]: ServiceNameToKeyDirectivesMap;
 type KeyDirectivesMap map[string]ServiceNameToKeyDirectivesMap
 
@@ -346,10 +347,10 @@ func buildSchemaFromDefinitionsAndExtensions(ctx context.Context, typeDefinition
 		schemaDoc.Definitions = append(schemaDoc.Definitions, graphql.IntrospectionTypes...)
 		schemaDoc.Definitions = append(schemaDoc.Definitions, CorePurpose)
 
-		var gErr *gqlerror.Error
-		schema, gErr = validator.ValidateSchemaDocument(schemaDoc)
-		if gErr != nil {
-			errors = append(errors, gErr)
+		var err error
+		schema, err = validator.ValidateSchemaDocument(schemaDoc)
+		if err != nil {
+			errors = append(errors, err)
 			return nil, errors
 		}
 	}

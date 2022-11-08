@@ -8,6 +8,7 @@ type Body interface {
 
 type NamedObject interface {
 	IsNamedObject()
+	GetName() string
 }
 
 type Image struct {
@@ -15,8 +16,10 @@ type Image struct {
 	Attributes *ImageAttributes `json:"attributes"`
 }
 
-func (Image) IsBody()        {}
-func (Image) IsNamedObject() {}
+func (Image) IsBody() {}
+
+func (Image) IsNamedObject()       {}
+func (this Image) GetName() string { return this.Name }
 
 type ImageAttributes struct {
 	URL string `json:"url"`
@@ -33,8 +36,10 @@ type Text struct {
 	Attributes *TextAttributes `json:"attributes"`
 }
 
-func (Text) IsBody()        {}
-func (Text) IsNamedObject() {}
+func (Text) IsBody() {}
+
+func (Text) IsNamedObject()       {}
+func (this Text) GetName() string { return this.Name }
 
 type TextAttributes struct {
 	Bold *bool   `json:"bold"`

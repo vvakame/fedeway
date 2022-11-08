@@ -30,14 +30,16 @@ type PasswordAccount struct {
 }
 
 func (PasswordAccount) IsAccountType() {}
-func (PasswordAccount) IsEntity()      {}
+
+func (PasswordAccount) IsEntity() {}
 
 type SMSAccount struct {
 	Number *string `json:"number"`
 }
 
 func (SMSAccount) IsAccountType() {}
-func (SMSAccount) IsEntity()      {}
+
+func (SMSAccount) IsEntity() {}
 
 type User struct {
 	ID        string          `json:"id"`
