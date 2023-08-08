@@ -14,17 +14,17 @@ type MetadataOrError interface {
 
 type Book struct {
 	Isbn         string            `json:"isbn"`
-	Title        *string           `json:"title"`
-	Year         *int              `json:"year"`
+	Title        *string           `json:"title,omitempty"`
+	Year         *int              `json:"year,omitempty"`
 	SimilarBooks []*Book           `json:"similarBooks"`
-	Metadata     []MetadataOrError `json:"metadata"`
+	Metadata     []MetadataOrError `json:"metadata,omitempty"`
 }
 
 func (Book) IsEntity() {}
 
 type Error struct {
-	Code    *int    `json:"code"`
-	Message *string `json:"message"`
+	Code    *int    `json:"code,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 func (Error) IsMetadataOrError() {}
@@ -38,7 +38,7 @@ func (KeyValue) IsMetadataOrError() {}
 
 type Library struct {
 	ID   string  `json:"id"`
-	Name *string `json:"name"`
+	Name *string `json:"name,omitempty"`
 }
 
 func (Library) IsEntity() {}

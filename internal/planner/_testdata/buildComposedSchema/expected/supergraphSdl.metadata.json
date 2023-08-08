@@ -50,6 +50,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -62,6 +63,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -74,6 +76,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -86,6 +89,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -104,6 +108,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -116,6 +121,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -139,6 +145,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -151,6 +158,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -163,6 +171,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -201,6 +210,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -213,6 +223,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -241,6 +252,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -274,6 +286,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -292,6 +305,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -320,6 +334,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           },
@@ -336,6 +351,7 @@
                 "Directives": null,
                 "SelectionSet": null,
                 "Position": null,
+                "Comment": null,
                 "Definition": null,
                 "ObjectDefinition": null
               },
@@ -346,11 +362,13 @@
                 "Directives": null,
                 "SelectionSet": null,
                 "Position": null,
+                "Comment": null,
                 "Definition": null,
                 "ObjectDefinition": null
               }
             ],
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -363,6 +381,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -375,6 +394,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -387,6 +407,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -410,6 +431,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -422,6 +444,7 @@
             "Directives": null,
             "SelectionSet": null,
             "Position": null,
+            "Comment": null,
             "Definition": null,
             "ObjectDefinition": null
           }
@@ -465,6 +488,7 @@
           "Directives": null,
           "SelectionSet": null,
           "Position": null,
+          "Comment": null,
           "Definition": null,
           "ObjectDefinition": null
         },
@@ -475,6 +499,7 @@
           "Directives": null,
           "SelectionSet": null,
           "Position": null,
+          "Comment": null,
           "Definition": null,
           "ObjectDefinition": null
         }
@@ -502,11 +527,13 @@
               "Directives": null,
               "SelectionSet": null,
               "Position": null,
+              "Comment": null,
               "Definition": null,
               "ObjectDefinition": null
             }
           ],
           "Position": null,
+          "Comment": null,
           "Definition": null,
           "ObjectDefinition": null
         }
@@ -568,6 +595,7 @@
           "Directives": null,
           "SelectionSet": null,
           "Position": null,
+          "Comment": null,
           "Definition": null,
           "ObjectDefinition": null
         }
@@ -644,6 +672,7 @@
           "Directives": null,
           "SelectionSet": null,
           "Position": null,
+          "Comment": null,
           "Definition": null,
           "ObjectDefinition": null
         }
@@ -741,6 +770,7 @@
           "Directives": null,
           "SelectionSet": null,
           "Position": null,
+          "Comment": null,
           "Definition": null,
           "ObjectDefinition": null
         }
@@ -802,11 +832,13 @@
               "Directives": null,
               "SelectionSet": null,
               "Position": null,
+              "Comment": null,
               "Definition": null,
               "ObjectDefinition": null
             }
           ],
           "Position": null,
+          "Comment": null,
           "Definition": null,
           "ObjectDefinition": null
         }
@@ -829,11 +861,13 @@
               "Directives": null,
               "SelectionSet": null,
               "Position": null,
+              "Comment": null,
               "Definition": null,
               "ObjectDefinition": null
             }
           ],
           "Position": null,
+          "Comment": null,
           "Definition": null,
           "ObjectDefinition": null
         }
@@ -905,6 +939,7 @@
           "Directives": null,
           "SelectionSet": null,
           "Position": null,
+          "Comment": null,
           "Definition": null,
           "ObjectDefinition": null
         }

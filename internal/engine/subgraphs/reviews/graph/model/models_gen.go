@@ -18,7 +18,7 @@ type Vehicle interface {
 
 type Book struct {
 	Isbn           string    `json:"isbn"`
-	Reviews        []*Review `json:"reviews"`
+	Reviews        []*Review `json:"reviews,omitempty"`
 	SimilarBooks   []*Book   `json:"similarBooks"`
 	RelatedReviews []*Review `json:"relatedReviews"`
 }
@@ -39,8 +39,8 @@ func (this Book) GetReviews() []*Review {
 
 type Car struct {
 	ID          string  `json:"id"`
-	Price       *string `json:"price"`
-	RetailPrice *string `json:"retailPrice"`
+	Price       *string `json:"price,omitempty"`
+	RetailPrice *string `json:"retailPrice,omitempty"`
 }
 
 func (Car) IsEntity() {}
@@ -49,15 +49,15 @@ func (Car) IsVehicle()                   {}
 func (this Car) GetRetailPrice() *string { return this.RetailPrice }
 
 type Error struct {
-	Code    *int    `json:"code"`
-	Message *string `json:"message"`
+	Code    *int    `json:"code,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 func (Error) IsMetadataOrError() {}
 
 type Furniture struct {
 	Upc     string    `json:"upc"`
-	Reviews []*Review `json:"reviews"`
+	Reviews []*Review `json:"reviews,omitempty"`
 }
 
 func (Furniture) IsEntity() {}
@@ -84,33 +84,33 @@ func (KeyValue) IsMetadataOrError() {}
 type ReviewProduct struct {
 	Upc   string `json:"upc"`
 	Body  string `json:"body"`
-	Stars *int   `json:"stars"`
+	Stars *int   `json:"stars,omitempty"`
 }
 
 type UpdateReviewInput struct {
 	ID   string  `json:"id"`
-	Body *string `json:"body"`
+	Body *string `json:"body,omitempty"`
 }
 
 type User struct {
 	ID              string          `json:"id"`
-	Username        *string         `json:"username"`
-	Reviews         []*Review       `json:"reviews"`
+	Username        *string         `json:"username,omitempty"`
+	Reviews         []*Review       `json:"reviews,omitempty"`
 	NumberOfReviews int             `json:"numberOfReviews"`
-	Metadata        []*UserMetadata `json:"metadata"`
-	GoodAddress     *bool           `json:"goodAddress"`
+	Metadata        []*UserMetadata `json:"metadata,omitempty"`
+	GoodAddress     *bool           `json:"goodAddress,omitempty"`
 }
 
 func (User) IsEntity() {}
 
 type UserMetadata struct {
-	Address *string `json:"address"`
+	Address *string `json:"address,omitempty"`
 }
 
 type Van struct {
 	ID          string  `json:"id"`
-	Price       *string `json:"price"`
-	RetailPrice *string `json:"retailPrice"`
+	Price       *string `json:"price,omitempty"`
+	RetailPrice *string `json:"retailPrice,omitempty"`
 }
 
 func (Van) IsEntity() {}

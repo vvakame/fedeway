@@ -14,15 +14,15 @@ type AccountType interface {
 
 type Library struct {
 	ID          string  `json:"id"`
-	Name        *string `json:"name"`
-	UserAccount *User   `json:"userAccount"`
+	Name        *string `json:"name,omitempty"`
+	UserAccount *User   `json:"userAccount,omitempty"`
 }
 
 func (Library) IsEntity() {}
 
 type Name struct {
-	First *string `json:"first"`
-	Last  *string `json:"last"`
+	First *string `json:"first,omitempty"`
+	Last  *string `json:"last,omitempty"`
 }
 
 type PasswordAccount struct {
@@ -34,7 +34,7 @@ func (PasswordAccount) IsAccountType() {}
 func (PasswordAccount) IsEntity() {}
 
 type SMSAccount struct {
-	Number *string `json:"number"`
+	Number *string `json:"number,omitempty"`
 }
 
 func (SMSAccount) IsAccountType() {}
@@ -43,20 +43,20 @@ func (SMSAccount) IsEntity() {}
 
 type User struct {
 	ID        string          `json:"id"`
-	Name      *Name           `json:"name"`
-	Username  *string         `json:"username"`
-	BirthDate *string         `json:"birthDate"`
-	Account   AccountType     `json:"account"`
-	Metadata  []*UserMetadata `json:"metadata"`
-	Ssn       *string         `json:"ssn"`
+	Name      *Name           `json:"name,omitempty"`
+	Username  *string         `json:"username,omitempty"`
+	BirthDate *string         `json:"birthDate,omitempty"`
+	Account   AccountType     `json:"account,omitempty"`
+	Metadata  []*UserMetadata `json:"metadata,omitempty"`
+	Ssn       *string         `json:"ssn,omitempty"`
 }
 
 func (User) IsEntity() {}
 
 type UserMetadata struct {
-	Name        *string `json:"name"`
-	Address     *string `json:"address"`
-	Description *string `json:"description"`
+	Name        *string `json:"name,omitempty"`
+	Address     *string `json:"address,omitempty"`
+	Description *string `json:"description,omitempty"`
 }
 
 type CacheControlScope string
