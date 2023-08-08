@@ -1,10 +1,10 @@
-directive @core(feature: String!, as: String, for: core__Purpose) on SCHEMA
+directive @core(feature: String!, as: String, for: core__Purpose) repeatable on SCHEMA
 directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
 directive @join__graph(name: String!, url: String!) on ENUM_VALUE
 directive @join__owner(graph: join__Graph!) on OBJECT | INTERFACE
-directive @join__type(graph: join__Graph!, key: join__FieldSet) on OBJECT | INTERFACE
+directive @join__type(graph: join__Graph!, key: join__FieldSet) repeatable on OBJECT | INTERFACE
 directive @stream on FIELD
-directive @tag(name: String!) on FIELD_DEFINITION | OBJECT | INTERFACE | UNION
+directive @tag(name: String!) repeatable on FIELD_DEFINITION | OBJECT | INTERFACE | UNION
 directive @transform(from: String!) on FIELD
 union AccountType @tag(name: "from-accounts") = PasswordAccount | SMSAccount
 type Amazon @join__owner(graph: PRODUCT) {

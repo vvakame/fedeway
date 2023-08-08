@@ -38,6 +38,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       inventory:
@@ -47,6 +48,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       product:
@@ -56,6 +58,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       reviews:
@@ -65,6 +68,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
   Car:
@@ -78,6 +82,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       reviews:
@@ -87,6 +92,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
   Error:
@@ -104,6 +110,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       product:
@@ -113,6 +120,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       reviews:
@@ -122,6 +130,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
   Ikea:
@@ -151,6 +160,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       books:
@@ -160,6 +170,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
   Mutation:
@@ -181,6 +192,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
   ProductDetailsBook:
@@ -206,6 +218,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
   SMSAccount:
@@ -219,6 +232,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
   Text:
@@ -240,6 +254,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       - alias: name
@@ -253,6 +268,7 @@ type:
           directives: []
           selectionset: []
           position: null
+          comment: null
           definition: null
           objectdefinition: null
         - alias: last
@@ -261,9 +277,11 @@ type:
           directives: []
           selectionset: []
           position: null
+          comment: null
           definition: null
           objectdefinition: null
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       inventory:
@@ -273,6 +291,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       product:
@@ -282,6 +301,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       reviews:
@@ -291,6 +311,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
   UserMetadata:
@@ -308,6 +329,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       reviews:
@@ -317,6 +339,7 @@ type:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
 field:
@@ -349,6 +372,7 @@ field:
       directives: []
       selectionset: []
       position: null
+      comment: null
       definition: null
       objectdefinition: null
     - alias: year
@@ -357,6 +381,7 @@ field:
       directives: []
       selectionset: []
       position: null
+      comment: null
       definition: null
       objectdefinition: null
     provides: []
@@ -378,9 +403,11 @@ field:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       position: null
+      comment: null
       definition: null
       objectdefinition: null
     provides: []
@@ -429,6 +456,7 @@ field:
       directives: []
       selectionset: []
       position: null
+      comment: null
       definition: null
       objectdefinition: null
     provides: []
@@ -489,6 +517,7 @@ field:
       directives: []
       selectionset: []
       position: null
+      comment: null
       definition: null
       objectdefinition: null
     provides: []
@@ -566,6 +595,7 @@ field:
       directives: []
       selectionset: []
       position: null
+      comment: null
       definition: null
       objectdefinition: null
   Review.body:
@@ -614,9 +644,11 @@ field:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       position: null
+      comment: null
       definition: null
       objectdefinition: null
     provides: []
@@ -634,9 +666,11 @@ field:
         directives: []
         selectionset: []
         position: null
+        comment: null
         definition: null
         objectdefinition: null
       position: null
+      comment: null
       definition: null
       objectdefinition: null
     provides: []
@@ -693,6 +727,7 @@ field:
       directives: []
       selectionset: []
       position: null
+      comment: null
       definition: null
       objectdefinition: null
     provides: []

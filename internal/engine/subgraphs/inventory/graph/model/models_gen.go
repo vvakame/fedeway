@@ -9,8 +9,8 @@ type Product interface {
 
 type Book struct {
 	Isbn         string `json:"isbn"`
-	InStock      *bool  `json:"inStock"`
-	IsCheckedOut *bool  `json:"isCheckedOut"`
+	InStock      *bool  `json:"inStock,omitempty"`
+	IsCheckedOut *bool  `json:"isCheckedOut,omitempty"`
 }
 
 func (Book) IsEntity() {}
@@ -20,8 +20,8 @@ func (this Book) GetInStock() *bool { return this.InStock }
 
 type Furniture struct {
 	Sku     string `json:"sku"`
-	InStock *bool  `json:"inStock"`
-	IsHeavy *bool  `json:"isHeavy"`
+	InStock *bool  `json:"inStock,omitempty"`
+	IsHeavy *bool  `json:"isHeavy,omitempty"`
 }
 
 func (Furniture) IsEntity() {}
@@ -31,12 +31,12 @@ func (this Furniture) GetInStock() *bool { return this.InStock }
 
 type User struct {
 	ID              string          `json:"id"`
-	Metadata        []*UserMetadata `json:"metadata"`
-	GoodDescription *bool           `json:"goodDescription"`
+	Metadata        []*UserMetadata `json:"metadata,omitempty"`
+	GoodDescription *bool           `json:"goodDescription,omitempty"`
 }
 
 func (User) IsEntity() {}
 
 type UserMetadata struct {
-	Description *string `json:"description"`
+	Description *string `json:"description,omitempty"`
 }

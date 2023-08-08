@@ -42,20 +42,20 @@ type Vehicle interface {
 }
 
 type Amazon struct {
-	Referrer *string `json:"referrer"`
+	Referrer *string `json:"referrer,omitempty"`
 }
 
 func (Amazon) IsBrand() {}
 
 type Book struct {
 	Isbn    string              `json:"isbn"`
-	Title   *string             `json:"title"`
-	Year    *int                `json:"year"`
+	Title   *string             `json:"title,omitempty"`
+	Year    *int                `json:"year,omitempty"`
 	Upc     string              `json:"upc"`
 	Sku     string              `json:"sku"`
-	Name    *string             `json:"name"`
-	Price   *string             `json:"price"`
-	Details *ProductDetailsBook `json:"details"`
+	Name    *string             `json:"name,omitempty"`
+	Price   *string             `json:"price,omitempty"`
+	Details *ProductDetailsBook `json:"details,omitempty"`
 }
 
 func (Book) IsEntity() {}
@@ -69,8 +69,8 @@ func (this Book) GetDetails() ProductDetails { return *this.Details }
 
 type Car struct {
 	ID          string  `json:"id"`
-	Description *string `json:"description"`
-	Price       *string `json:"price"`
+	Description *string `json:"description,omitempty"`
+	Price       *string `json:"price,omitempty"`
 }
 
 func (Car) IsVehicle()                   {}
@@ -83,8 +83,8 @@ func (Car) IsThing() {}
 func (Car) IsEntity() {}
 
 type Error struct {
-	Code    *int    `json:"code"`
-	Message *string `json:"message"`
+	Code    *int    `json:"code,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 func (Error) IsMetadataOrError() {}
@@ -92,11 +92,11 @@ func (Error) IsMetadataOrError() {}
 type Furniture struct {
 	Upc      string                   `json:"upc"`
 	Sku      string                   `json:"sku"`
-	Name     *string                  `json:"name"`
-	Price    *string                  `json:"price"`
-	Brand    Brand                    `json:"brand"`
-	Metadata []MetadataOrError        `json:"metadata"`
-	Details  *ProductDetailsFurniture `json:"details"`
+	Name     *string                  `json:"name,omitempty"`
+	Price    *string                  `json:"price,omitempty"`
+	Brand    Brand                    `json:"brand,omitempty"`
+	Metadata []MetadataOrError        `json:"metadata,omitempty"`
+	Details  *ProductDetailsFurniture `json:"details,omitempty"`
 }
 
 func (Furniture) IsProduct()                      {}
@@ -109,7 +109,7 @@ func (this Furniture) GetDetails() ProductDetails { return *this.Details }
 func (Furniture) IsEntity() {}
 
 type Ikea struct {
-	Asile *int `json:"asile"`
+	Asile *int `json:"asile,omitempty"`
 }
 
 func (Ikea) IsBrand() {}
@@ -124,16 +124,16 @@ type KeyValue struct {
 func (KeyValue) IsMetadataOrError() {}
 
 type ProductDetailsBook struct {
-	Country *string `json:"country"`
-	Pages   *int    `json:"pages"`
+	Country *string `json:"country,omitempty"`
+	Pages   *int    `json:"pages,omitempty"`
 }
 
 func (ProductDetailsBook) IsProductDetails()        {}
 func (this ProductDetailsBook) GetCountry() *string { return this.Country }
 
 type ProductDetailsFurniture struct {
-	Country *string `json:"country"`
-	Color   *string `json:"color"`
+	Country *string `json:"country,omitempty"`
+	Color   *string `json:"color,omitempty"`
 }
 
 func (ProductDetailsFurniture) IsProductDetails()        {}
@@ -141,16 +141,16 @@ func (this ProductDetailsFurniture) GetCountry() *string { return this.Country }
 
 type User struct {
 	ID      string  `json:"id"`
-	Vehicle Vehicle `json:"vehicle"`
-	Thing   Thing   `json:"thing"`
+	Vehicle Vehicle `json:"vehicle,omitempty"`
+	Thing   Thing   `json:"thing,omitempty"`
 }
 
 func (User) IsEntity() {}
 
 type Van struct {
 	ID          string  `json:"id"`
-	Description *string `json:"description"`
-	Price       *string `json:"price"`
+	Description *string `json:"description,omitempty"`
+	Price       *string `json:"price,omitempty"`
 }
 
 func (Van) IsVehicle()                   {}

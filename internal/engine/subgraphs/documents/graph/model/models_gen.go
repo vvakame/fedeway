@@ -26,7 +26,7 @@ type ImageAttributes struct {
 }
 
 type Noop struct {
-	Noop *string `json:"noop"`
+	Noop *string `json:"noop,omitempty"`
 }
 
 func (Noop) IsEntity() {}
@@ -42,6 +42,6 @@ func (Text) IsNamedObject()       {}
 func (this Text) GetName() string { return this.Name }
 
 type TextAttributes struct {
-	Bold *bool   `json:"bold"`
-	Text *string `json:"text"`
+	Bold *bool   `json:"bold,omitempty"`
+	Text *string `json:"text,omitempty"`
 }

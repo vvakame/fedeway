@@ -238,7 +238,7 @@ func executeFieldsSerially(ctx context.Context, exeContext *ExecutionContext, pa
 
 		out.Values[i] = data
 	}
-	out.Dispatch()
+	out.Dispatch(ctx)
 
 	var result graphql.Marshaler
 	if invalids > 0 {
@@ -259,12 +259,12 @@ func executeFields(ctx context.Context, exeContext *ExecutionContext, parentType
 	var invalids uint32
 	for i, field := range fields {
 		field := field
-		out.Concurrently(i, func() graphql.Marshaler {
+		out.Concurrently(i, func(ctx context.Context) graphql.Marshaler {
 			fc := &graphql.FieldContext{
 				Object: field.ObjectDefinition.Name,
 				Field:  field,
 			}
-			ctx := graphql.WithFieldContext(ctx, fc)
+			ctx = graphql.WithFieldContext(ctx, fc)
 			rawArgs := field.ArgumentMap(oc.Variables)
 			// TODO rawArgs から args への変換処理必要？ Unmarshal しない前提ならいらないはずだが
 			fc.Args = rawArgs
@@ -284,7 +284,7 @@ func executeFields(ctx context.Context, exeContext *ExecutionContext, parentType
 			return data
 		})
 	}
-	out.Dispatch()
+	out.Dispatch(ctx)
 
 	var result graphql.Marshaler
 	if invalids > 0 {
