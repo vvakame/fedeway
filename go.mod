@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/99designs/gqlgen v0.17.36
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
-	github.com/go-logr/logr v1.2.4
+	github.com/go-logr/logr v1.3.0
 	github.com/go-logr/stdr v1.2.2
 	github.com/goccy/go-yaml v1.11.2
 	github.com/pmezard/go-difflib v1.0.0
