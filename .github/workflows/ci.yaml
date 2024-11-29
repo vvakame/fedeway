@@ -23,7 +23,7 @@ jobs:
           go test -coverprofile=./cover.out ./...
           go tool cover -html=cover.out -o cover.html
       - name: Archive code coverage results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
           path: cover.html
